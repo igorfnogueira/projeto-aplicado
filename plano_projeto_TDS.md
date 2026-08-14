@@ -336,6 +336,8 @@ Desempenho no holdout (RMSE/MAE/R²) sem ser o único critério; largura/comport
 [ ] O resultado foi verificado contra a matriz de sensibilidade de tratamento (seção 1.4) — a conclusão se mantém sob as variantes testadas?
 [ ] Se a conclusão muda conforme o tratamento adotado, isso foi reportado explicitamente no artigo como limitação/robustez?
 [ ] A decisão tomada nesta execução foi registrada em `Artigo/DECISOES.md` com motivo e alternativa descartada?
+[ ] Algum termo técnico novo foi introduzido? Entrou no GLOSSARIO.md?
+[ ] A execução revelou alguma limitação ou fronteira nova? Entrou em ESCOPO_E_LIMITACOES.md?
 ```
 
 ## 9. Controle de versão (Git/GitHub)
@@ -343,6 +345,8 @@ Desempenho no holdout (RMSE/MAE/R²) sem ser o único critério; largura/comport
 **Git foi inicializado em 2026-08-14** (`prompt_decisoes_e_github.md`, Parte 2) — o projeto não tinha repositório antes disso. Branch padrão `main`, remoto em `https://github.com/igorfnogueira/projeto-aplicado`, primeiro commit com o pipeline completo (scripts 00-17, notebook, artigo, `Artigo/DECISOES.md`, READMEs). `.gitignore` exclui `.venv/`, `mlruns/`, `mlflow.db`, `__pycache__/`, artefatos de compilação LaTeX (`*.aux/.log/.bbl/.blg/.out/.toc`) e o scratch descartável da sessão; os CSVs brutos e de resultado são versionados (todos abaixo do limite de 100 MB do GitHub).
 
 **`Artigo/DECISOES.md`** passa a ser documento de manutenção contínua com o mesmo status do notebook, dos READMEs e do artigo (seção 2.C-2.G, 4.1, 4.2 já estabeleciam essa regra para os demais; agora estende-se explicitamente ao registro de decisões) — toda decisão metodológica relevante entra lá na mesma execução em que é tomada, com motivo e alternativa descartada, nunca só ao final.
+
+**`GLOSSARIO.md`** (criado em 2026-08-14, por exigência de `GOVERNANCA_DOCUMENTACAO_TEMPLATE.md`) e **`ESCOPO_E_LIMITACOES.md`** (mesma data) entram com o mesmo status de manutenção contínua do notebook/READMEs/artigo/`DECISOES.md`: todo termo técnico novo introduzido no projeto entra no glossário na mesma execução; toda fronteira ou fragilidade de resultado nova identificada entra em `ESCOPO_E_LIMITACOES.md`. Ver checklist §7.
 
 ## 8. Pontos ainda em aberto
 

@@ -323,6 +323,51 @@ Cinco candidatos -- escolhidos por equilibrarem MASE baixo e captação real de 
 
 O achado mais notável é que o \textbf{Detrend+RF é o único candidato sem autocorrelação residual detectável e sem heterocedasticidade condicional} -- só falha o teste de normalidade (resíduos com caudas mais pesadas que a normal, comum em modelos de árvore). Os quatro métodos com forma funcional linear/estocástica explícita (OLS, regressão bayesiana, SARIMA, híbrido) falham em pelo menos dois dos três testes -- os resíduos ainda carregam estrutura temporal e variância não-constante que o modelo não capturou, reforçando a mensagem já central deste trabalho (Seção "Síntese comparativa"): a série de TDS tem dinâmica de curto prazo que nenhum método individual, incluindo os que melhor capturam a tendência de longo prazo, modela completamente bem.
 
+\subsection{Tratamento de dados robusto e reenquadramento cíclico}
+
+Antes de estender a bateria de métodos, duas verificações adicionais (\texttt{prompt\_tratamento\_e\_metodos.md}) testaram se a tendência de alta de TDS reportada na Seção "Síntese comparativa" é robusta a escolhas de pré-processamento, ou se é artefato de alguma delas.
+
+\textbf{Reconstrução da vazão (\texttt{script\_16\_reconstrucao\_vazao.py}):} a identidade $\mathrm{lb/dia} = \mathrm{mg/L} \times \mathrm{vazão(MGD)} \times 8{,}34$ permite reconstruir a vazão do efluente, ausente do dataset original. A validação por consistência cruzada entre TDS, Cloreto, Amônia e BOD (medidos na mesma amostra física) confirmou a identidade: vazão derivada de TDS correlaciona 0,997 com Cloreto e 0,998 com Amônia (0,87 com BOD), com média de 9,49~MGD ($\sim$47\% da capacidade nominal de 20~MGD) e nenhum mês fora de uma faixa fisicamente plausível.
+
+\textbf{Matriz de 9 testes de sensibilidade (\texttt{script\_17\_matriz\_sensibilidade.py}):} a tendência de TDS mostrou-se \textbf{sensível} a três das nove decisões testadas. (1) Restrita ao período \texttt{EFF-001A} (2012--2026, 170 dos 182 meses), a inclinação cai de 3,91~mg/L/ano (p=0,0056, série completa) para 0,84~mg/L/ano (p=0,59, não significativa). (2) Três das quatro transições de limite de detecção (MDL) coincidem com mudança estatisticamente significativa (Mann-Whitney) no nível médio de TDS. (3) A significância do teste de Mann-Kendall se inverte conforme a correção de autocorrelação: significativa sob a correção padrão, \textit{trend-free pre-whitening} (p=0,0001) e Seasonal Kendall (p=0,0038); não significativa sob \textit{pre-whitening} simples (p=0,417) e a correção de variância de Hamed-Rao (p=0,182). Em contrapartida, a tendência mostrou-se robusta a outliers (3,6--3,9~mg/L/ano com/sem remoção, todas p$<$0,01), à reagregação de amostras brutas (diferença média de 0,0~mg/L frente à média mensal pré-calculada), à ausência de meses faltantes, e à transformação logarítmica (mesmo p-valor da escala bruta, como esperado -- o $\tau$ de Kendall é invariante a transformações monotônicas).
+
+\textbf{Investigação da quebra \texttt{EFF-001}$\to$\texttt{EFF-001A}:} a fragilidade acima levantou a hipótese de que a transição de código de monitoramento ($\sim$2012) introduziria um degrau artificial de instrumentação. Essa hipótese foi \textbf{rejeitada}: a transição é contínua mês a mês (580 para 598~mg/L), usa o mesmo método analítico, o mesmo limite de detecção e as mesmas coordenadas geográficas -- não há indício de mudança de equipamento ou protocolo. Em vez disso, a série de TDS revelou um \textbf{padrão cíclico por regime}: alta de 563 para 808~mg/L entre 2011 e 2015 (coincidindo com a seca da Califórnia de 2012--2016), queda até 636~mg/L em 2019, nova alta até 768~mg/L em 2022 (segunda seca, 2020--2022) e leve recuo depois. Testes de tendência \textit{monotônica} (o que a matriz de sensibilidade mede) naturalmente perdem poder diante de um padrão que sobe e desce -- o que explica por que a fragilidade acima não invalida a existência de um padrão real, apenas invalida descrevê-lo como reta ascendente única.
+
+\textbf{Teste do reenquadramento cíclico com uma variável externa independente (\texttt{script\_18\_pdsi\_regimes.py}):} para não depender só da inspeção visual da própria série de TDS, o padrão cíclico foi testado contra o Índice de Severidade de Seca de Palmer (PDSI) mensal do NOAA NCEI -- mesmo índice climático usado pelo estudo da Southern California Salinity Coalition (SCSC/DBS\&A, 2018) para explicar variação de TDS em 26 estações do sul da Califórnia. Três séries de PDSI foram testadas (estadual da Califórnia; divisão climática de Los Angeles; divisão de Sacramento, origem do \textit{State Water Project}), com defasagens de 0 a 36 meses e correção de graus de liberdade efetivos para a autocorrelação serial (Pyper \& Peterman, 1998), a mesma armadilha já documentada na correção de Mann-Kendall.
+
+A Figura \ref{fig:pdsi-vs-tds} mostra a série de TDS sobreposta ao PDSI invertido (seco = para cima); a Figura \ref{fig:pdsi-ccf} mostra a correlação cruzada por defasagem para as três séries.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\linewidth]{images/pdsi-vs-tds-regimes.png}
+    \caption{TDS observado × PDSI invertido, com os 5 regimes identificados sombreados.}
+    \label{fig:pdsi-vs-tds}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\linewidth]{images/pdsi-tds-correlacao-defasagem.png}
+    \caption{Correlação cruzada TDS × PDSI por defasagem (0-36 meses), bruta e destendenciada, para as três séries de PDSI.}
+    \label{fig:pdsi-ccf}
+\end{figure}
+
+\begin{table}[H]
+    \centering
+    \small
+    \begin{tabular}{l|c|c|c|c|c}
+         Série de PDSI & Defasagem & $r$ bruta & $p$ (dof efetivo) & LMG PDSI & LMG vazão \\ \hline
+        Califórnia estadual & 4 meses & $-0{,}651$ & 0,0003 & 79,3\% & 20,7\% \\
+        Los Angeles (div.\ 6) & 3 meses & $-0{,}526$ & 0,0126 & 67,5\% & 32,5\% \\
+        Sacramento (div.\ 2) & 4 meses & $-0{,}563$ & 0,0012 & 72,6\% & 27,4\% \\
+    \end{tabular}
+    \caption{Correlação cruzada máxima (bruta, corrigida por graus de liberdade efetivos) e decomposição LMG de importância relativa (PDSI defasado vs.\ vazão reconstruída) por série de PDSI.}
+    \label{tab:pdsi-resultados}
+\end{table}
+
+Quatro linhas de evidência, todas na mesma direção: (1) a correlação bruta entre PDSI e TDS é forte e altamente significativa mesmo após corrigir o número efetivo de observações independentes (que cai de $\sim$180 para 22-30, dada a forte autocorrelação de ambas as séries); (2) \textit{changepoints} detectados de forma independente no PDSI (segmentação binária recursiva com o teste de Pettitt, sem informar as datas do TDS ao algoritmo) coincidem com as quatro viradas de regime observadas (2012, 2015, 2019, 2022) dentro de poucos meses na maioria dos casos; (3) a decomposição LMG (\texttt{TDS} $\sim$ \texttt{PDSI defasado} + \texttt{vazão}) atribui 68 a 79\% da importância relativa ao PDSI nas três séries -- mesma ordem de grandeza do benchmark do estudo SCSC ($\sim$88\% água de origem / $\sim$12\% consumo per capita); (4) o coeficiente do PDSI permanece altamente significativo (p$<$0,0001) mesmo controlando por regime (5 \textit{dummies} de período), ou seja, carrega informação além de só marcar o período.
+
+\textbf{Ressalva que não deve ser omitida:} a correlação sobre as séries \textit{destendenciadas} (que isola a sincronia mês a mês, removendo o efeito de nível/regime comum) é bem mais fraca e \textbf{muda de sinal} ($r=+0{,}15$ a $+0{,}19$, $p$ entre 0,014 e 0,055). Isso indica que a seca explica principalmente o \textbf{nível médio de cada regime}, não a oscilação fina dentro dele -- uma leitura mais modesta e mais defensável do que "a seca prevê o TDS mês a mês". O desfecho declarado, entre os três definidos a priori no protocolo do teste, é que \textbf{o PDSI explica bem os ciclos observados}, corroborando o reenquadramento cíclico com uma variável externa ao próprio TDS -- mas o mecanismo provavelmente opera no nível de regime/período, não como resposta de alta frequência.
+
 \subsection{Comparação com a literatura}
 
 Dois estudos do mesmo mecanismo e da mesma região geográfica dão contexto à tendência de alta encontrada neste trabalho (2,9 a 3,9 mg/L/ano, Seção "Síntese comparativa"). Schwabe et al. \cite{schwabe2020unintended} encontraram, em 34 estações de tratamento do sul da Califórnia (2013--2017), que a conservação de água durante a seca reduziu o volume de esgoto e aumentou sua salinidade -- a mesma direção de efeito, no mesmo tipo de instalação e na mesma região, que a tendência de alta de TDS aqui identificada na LAGWRP. Wolfand et al. \cite{wolfand2022dilution} modelaram a mesma bacia hidrográfica onde a LAGWRP descarrega (rio Los Angeles) e encontraram que a concentração de TDS aumenta com o reúso de água, mesmo quando a carga total de poluentes diminui -- reforçando, em nível de bacia e não só de estação individual, o mesmo mecanismo de concentração por redução de volume.

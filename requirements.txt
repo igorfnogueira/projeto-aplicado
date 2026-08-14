@@ -17,3 +17,6 @@ matplotlib
 mlflow
 torch
 lifelines
+pygam
+nbclient
+ipykernel

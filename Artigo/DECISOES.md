@@ -115,12 +115,12 @@
 - **Evidência:** `matriz_sensibilidade_resultados.csv`, item `2_quebra_localizacao`.
 
 ### D-14 — Reenquadramento: padrão cíclico por regime, não tendência monotônica
-- **Data:** 2026-08-13 · **Status:** **Pendente de confirmação**
+- **Data:** 2026-08-13 · **Status:** **Confirmada** (2026-08-14 — ver D-37 para a evidência quantitativa completa: PDSI explica bem os ciclos)
 - **Contexto:** a investigação de D-13 revelou que a série tem estrutura por período, não inclinação constante.
 - **Padrão identificado:** 2011 baseline (563 mg/L) → alta 2011-2015 (+46%, coincide com a seca da Califórnia 2012-2016) → queda 2015-2019 (−21%) → alta 2019-2022 (+21%) → estável/leve queda 2022-hoje.
-- **Proposta:** reformular a Etapa 3 em torno de regime/ciclo ligado a seca-conservação, com WRTDS e balanço de massa testando se a vazão explica os ciclos.
-- **Verificação pendente antes de comprometer:** confirmar que a vazão reconstruída cai nesses mesmos 5 períodos e que as datas de virada (2012, 2015, 2019, 2022) batem com declarações oficiais de seca na Califórnia.
-- **Alternativas em aberto:** manter o enquadramento de tendência monotônica (mais simples, mas contradito pelos dados) vs. regime-switching (mais fiel, porém mais complexo).
+- **Decisão final:** reformular a Etapa 3 em torno de regime/ciclo ligado a seca (PDSI), não conservação isolada — com WRTDS e balanço de massa testando a decomposição água-de-origem × vazão local.
+- **Alternativas descartadas:** manter o enquadramento de tendência monotônica — descartada porque a checagem quantitativa (D-37) mostra que um índice de seca independente (PDSI, sem qualquer informação das datas do TDS) explica 68-79% da importância relativa na decomposição LMG e tem changepoints coincidindo com as viradas observadas dentro de ~4-9 meses (3 de 4 séries) a ~15 meses (1 caso).
+- **Evidência:** D-37; `pdsi_regimes_resultados.csv`; `script_18_pdsi_regimes.py`.
 
 ---
 
@@ -321,6 +321,19 @@
 - **Implicação:** os métodos WRTDS (f.1), balanço de massa (f.2), cenários (f.3) e GAM (f.5) — que motivaram a Etapa 3 desta sessão — **ainda não existem no repositório**, apesar do plano original prevê-los desde `script_06/07`. A Etapa 3 (`prompt_tratamento_e_metodos.md`) parte dessa lacuna real, não de um retrabalho.
 - **Alternativas descartadas:** renumerar os scripts existentes para bater com o plano original — descartada por ser puramente cosmética e arriscar quebrar referências já existentes no notebook/MLflow/artigo.
 - **Evidência:** comparação direta entre `plano_projeto_TDS.md` §4 e os arquivos `script_*.py` presentes no repositório; relatório de leitura desta sessão.
+
+### D-37 — Os ciclos de TDS são explicados por ciclos de seca (PDSI) ⭐ confirma D-14
+- **Data:** 2026-08-14 · **Status:** Decidida (Passo 1 de `prompt_pdsi_regimes.md`)
+- **Contexto:** D-14 propôs que os ciclos de TDS acompanham secas, mas não tinha sido testado com uma variável de seca independente. D-29/D-30 apontavam a lacuna (TDS da água de origem ausente do dataset) e sugeriam o PDSI como proxy climático.
+- **Dados:** PDSI mensal do NOAA NCEI nClimDiv (`climdiv-pdsidv`/`climdiv-pdsist`, versão `v1.0.0-20260806`, 1895-2026), três séries — California estadual (código `004005`), divisão climática 6/Los Angeles (código `040605`, contém o condado de LA, FIPS 06037 → `county-to-climdivs.txt` linha `06037 04037 0406`) e divisão 2/Sacramento (código `040205`, contém Sacramento e Butte/Oroville — origem do State Water Project, FIPS 06067/06007 → `0402`). Códigos confirmados na documentação oficial (`state-readme.txt`, `divisional-readme.txt`, `county-to-climdivs.txt`), não assumidos. Salvos como `pdsi_california_estadual.csv`, `pdsi_los_angeles_divisao.csv`, `pdsi_sacramento_divisao.csv`.
+- **Resultado — desfecho 1 dos 3 possíveis (`prompt_pdsi_regimes.md` Etapa 3): "PDSI explica bem os ciclos"**, com uma ressalva importante:
+  - **Correlação com defasagem (0-36 meses), corrigida por graus de liberdade efetivos (Pyper & Peterman 1998, mesma armadilha de D-15):** correlação bruta forte e altamente significativa em defasagem curta — California estadual r=−0,651 (lag=4m, p=0,0003, n_efetivo=26,3 de 178 nominais), LA divisão 6 r=−0,526 (lag=3m, p=0,0126), Sacramento divisão 2 r=−0,563 (lag=4m, p=0,0012). **Ressalva honesta:** a correlação sobre as séries diferenciadas (destendenciadas) cai bastante e **inverte de sinal** (r=+0,15 a +0,19, p entre 0,014 e 0,055) — a relação forte é sobretudo de nível/regime (a mesma informação que já embasa D-14), não uma sincronia mês a mês fina. Isso é reportado como resultado, não escondido.
+  - **Changepoints no PDSI, detectados de forma independente (segmentação binária recursiva com o teste de Pettitt de `script_07`, sem informar as datas do TDS ao algoritmo):** das 4 viradas esperadas (2012, 2015, 2019, 2022), a série da divisão de Los Angeles bate as 4 dentro de ~4-6 meses; California estadual bate 3 de 4 dentro de ~7-10 meses (a virada de 2012 fica a ~15 meses, fora do critério de 12 meses); Sacramento bate as 4 dentro de ~3-9 meses. **Nenhum alinhamento foi forçado** — os changepoints vieram de um algoritmo cego às datas do TDS.
+  - **Decomposição LMG (PDSI defasado × vazão reconstruída, `TDS ~ PDSI_lag + vazão`):** LMG do PDSI = 79,3% (California estadual), 67,5% (LA divisão 6), 72,6% (Sacramento divisão 2) — mesma ordem de grandeza do benchmark SCSC/DBS&A (~88% água de origem / ~12% consumo per capita, D-29), confirmando que o driver dominante não é a vazão local isolada. Ambos os coeficientes (PDSI e vazão) são significativos (p<0,0001) nas 3 séries — os dois mecanismos contribuem, mas o climático pesa mais.
+  - **Regressão por regime (5 dummies de período + PDSI):** o coeficiente do PDSI continua altamente significativo (p<0,0001) mesmo controlando por regime nas 3 séries — o efeito **não é** inteiramente absorvido pelas dummies de período, ou seja, o PDSI carrega informação além de só marcar "qual dos 5 blocos temporais".
+- **Interpretação honesta (sem escolher a leitura que "salva" a hipótese):** o padrão cíclico de D-14 tem sustentação empírica real e não-forçada — nível/regime do PDSI explica a maior parte, e o algoritmo de changepoint (cego às datas do TDS) recupera as mesmas viradas. Mas a sincronia fina mês a mês é mais fraca e de sinal invertido, então "seca explica os ciclos" é verdadeiro no nível de regime/período, não como um mecanismo de resposta imediata bem calibrado em alta frequência. Isso é consistente com D-29 (tempo de trânsito/mistura da água importada) e não deve ser lido como mais forte do que os números sustentam.
+- **Alternativas descartadas:** usar só a correlação contemporânea (lag=0) — descartada porque subestimaria a relação real (justificativa do próprio prompt: tempo de trânsito da água importada); usar `ruptures` para changepoint — pacote não instalado nesta sessão, optou-se por reaproveitar a implementação de Pettitt já existente em `script_07` via segmentação binária recursiva, evitando dependência nova para um teste que já tinha implementação própria validada no projeto.
+- **Evidência:** `script_18_pdsi_regimes.py`; `pdsi_regimes_resultados.csv`/`.json`; `Artigo/images/pdsi-vs-tds-regimes.png`; `Artigo/images/pdsi-tds-correlacao-defasagem.png`; run MLflow `pdsi_regimes`.
 
 ## Pendências de registro
 
