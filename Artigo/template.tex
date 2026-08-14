@@ -1,0 +1,52 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage[top=2cm, bottom=2cm, left=1.5cm, right=1.5cm]{geometry}
+\usepackage{multicol}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepackage{pgfplotstable}
+\usepackage{subcaption}
+\pgfplotsset{compat=1.18}
+\usetikzlibrary{shapes.geometric, positioning, arrows.meta}
+\usepackage{authblk}
+\usepackage{abstract}
+\usepackage{float}
+
+\setlength{\absleftindent}{0pt}
+\setlength{\absrightindent}{0pt}
+
+\renewcommand{\refname}{Referências}
+
+\title{Título do documento}
+\author[1]{Autor A}
+\author[1]{Autor B}
+\author[1]{Autor C}
+
+\affil[1]{Pós-graduação em Inteligência Artificial Aplicada, UniSENAI}
+
+\date{}
+
+\renewcommand\Authand{ e }
+\renewcommand\Authands{ e }
+
+\begin{document}
+
+\maketitle
+
+\begin{multicols*}{2}
+
+\input{src/abstract.tex}
+\input{src/introducao.tex}
+\input{src/trabalhos-relacionados.tex}
+\input{src/metodologia.tex}
+\input{src/resultados.tex}
+\input{src/conclusao.tex}
+
+\bibliographystyle{plain}
+\bibliography{refs.bib}
+
+\end{multicols*}
+
+\end{document}

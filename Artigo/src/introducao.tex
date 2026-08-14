@@ -1,0 +1,16 @@
+\section{Introdução}
+
+O tratamento convencional de esgoto depende de comunidades microbianas para remover matéria orgânica (medida pela Demanda Bioquímica de Oxigênio, BOD) e converter amônia em nitrato (nitrificação). Salinidade alta -- medida por Sólidos Dissolvidos Totais (TDS) -- pode inibir esses processos biológicos, reduzindo a eficiência do tratamento \cite{schwabe2020unintended}. Em regiões como Los Angeles, medidas de conservação de água reduzem o uso interno de água nas residências, o que pode aumentar involuntariamente a salinidade do esgoto: a mesma massa de sais passa a entrar na estação de tratamento dissolvida em um volume menor de água \cite{schwabe2020unintended}.
+
+Este trabalho analisa um período de 15 anos (fevereiro de 2011 a março de 2026) de medições mensais de TDS, cloreto, amônia e BOD no efluente da estação Los Angeles--Glendale Water Reclamation Plant (LAGWRP), obtidas do portal público eSMR (Electronic Self-Monitoring Report) do California Water Boards. A pergunta de pesquisa central é: a salinidade do esgoto tratado pela LAGWRP aumentou de forma estatisticamente significativa ao longo desse período e, em caso afirmativo, essa tendência está associada a sinais mensuráveis de perda de desempenho biológico do tratamento?
+
+\subsection{Contribuições}
+
+Este trabalho contribui com:
+
+\begin{enumerate}
+    \item Quantificação da tendência de longo prazo do TDS no efluente da LAGWRP por meio de uma bateria de dez métodos complementares -- estatística clássica de tendência (Mann-Kendall/Sen, Theil-Sen, OLS), séries temporais (STL, SARIMA), aprendizado de máquina baseado em árvore (Random Forest, XGBoost, LightGBM) e métodos que expõem incerteza crescente (Prophet, regressão bayesiana) -- em vez de depender de um único modelo;
+    \item Previsão de TDS para +10, +15 e +20 anos a partir do último dado observado, com discussão explícita de onde cada classe de método é confiável e onde deixa de ser (por exemplo, a saturação estrutural de modelos baseados em árvore ao extrapolar além do intervalo de treino);
+    \item Análise de correlação entre TDS e dois indicadores de desempenho do tratamento biológico (amônia, indicador de nitrificação, e BOD, indicador de remoção de matéria orgânica), com e sem remoção da tendência temporal comum, para isolar covariação real de coincidência de ambas as séries subirem ao longo do tempo;
+    \item Interpretação dos achados à luz da literatura sobre conservação de água e salinidade de esgoto \cite{schwabe2020unintended}, com implicações práticas para planejamento de infraestrutura e gestão ambiental em Los Angeles.
+\end{enumerate}

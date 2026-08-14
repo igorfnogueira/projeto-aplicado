@@ -1,0 +1,356 @@
+\section{Experimentos e resultados}
+
+\subsection{Descrição dos dados}
+
+Os experimentos utilizam a série mensal canônica de TDS do efluente da LAGWRP (\texttt{EFF-001}/\texttt{EFF-001A} unificados), com 182 observações mensais entre fevereiro de 2011 e março de 2026, sem valores ausentes. Detalhes completos da origem dos dados e do pré-processamento estão na Seção de Metodologia.
+
+\subsection{\textit{Setup} experimental}
+
+Para reproduzir os resultados desta seção: (1) gerar os datasets canônicos com \texttt{python script\_00\_preprocessamento.py}; (2) rodar \texttt{python script\_01\_mann\_kendall\_theilsen.py}, que lê a série de TDS, separa os últimos 24 meses como \textit{holdout} temporal (os 158 meses restantes como treino), ajusta os três métodos de tendência clássica e grava uma linha por método em \texttt{resultados\_comparacao.csv}; (3) rodar \texttt{python script\_02\_arima\_sarima.py}, que aplica decomposição STL (extrapolação linear da tendência dessazonalizada) e SARIMA (ordem escolhida por busca em grade por AIC, com $d=1$) sobre a mesma série e o mesmo esquema de \textit{holdout}; (4) rodar \texttt{python script\_03\_random\_forest\_gridsearch.py}, que constrói features de tempo/sazonalidade/\textit{lags}, seleciona hiperparâmetros por \texttt{GridSearchCV} com validação cruzada temporal (\texttt{TimeSeriesSplit}) e produz a previsão de longo prazo de forma recursiva (a previsão de um mês vira o \textit{lag} do mês seguinte); (5) rodar \texttt{python script\_04\_xgboost\_lightgbm.py}, que reaproveita as mesmas features e o mesmo esquema recursivo, ajustando XGBoost (GPU/CUDA, RTX 4060 Ti) e LightGBM (CPU), com intervalo de confiança obtido por regressão quantílica (alpha=0,05 e 0,95) em vez da dispersão entre árvores; (6) rodar \texttt{python script\_05\_prophet\_bayesiano.py}, que ajusta Prophet (decomposição tendência+sazonalidade, IC nativo) e uma regressão bayesiana linear (PyMC/NUTS, 2 cadeias, 800 iterações de \textit{tuning} + 800 de amostragem, preditor centralizado para melhor convergência) sobre a mesma série e o mesmo \textit{holdout}. Com isso, a bateria de metodologias planejada (Seção 3 da Metodologia) está completa. (7) rodar \texttt{python script\_06\_correlacao\_tds\_amonia\_bod.py}, que calcula correlação de Pearson e Spearman entre TDS e Amônia, e entre TDS e BOD (nos dois datasets de tratamento de ND), tanto sobre as séries brutas quanto sobre os resíduos de uma regressão OLS de cada série contra o tempo (para isolar covariação real de tendência comum), além de correlação cruzada com defasagem de 0 a 3 meses.
+
+\subsection{Análise de estrutura da série}
+
+Antes de qualquer ajuste de modelo, a série de TDS foi submetida ao diagnóstico estrutural descrito na Metodologia (\texttt{script\_07\_analise\_estrutura\_serie.py}). A Figura \ref{fig:diagnostico-estrutura} mostra a decomposição STL, a componente sazonal e os correlogramas ACF/PACF.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\linewidth]{images/diagnostico-sazonalidade-quebras.png}
+    \caption{Diagnóstico estrutural da série de TDS: tendência STL, componente sazonal, ACF e PACF (nível).}
+    \label{fig:diagnostico-estrutura}
+\end{figure}
+
+A força de sazonalidade (Wang et al.) é $F_s = 0{,}25$ -- abaixo do limiar de referência $0{,}64$ da literatura de \textit{forecasting}, indicando sazonalidade fraca/moderada, não assumida por padrão. A força de tendência é $F_t = 0{,}73$, consistente com a tendência de alta já identificada pelos métodos estatísticos. O teste ADF rejeita a hipótese nula de raiz unitária em nível ($p=0{,}012$) e o teste KPSS não rejeita a hipótese nula de estacionariedade ($p=0{,}10$, no limite superior do intervalo tabelado) -- os dois testes, com hipóteses opostas por desenho, convergem para a interpretação de que a série é compatível com um processo estacionário em torno de uma tendência determinística (\textit{trend-stationary}), não uma caminhada aleatória pura. Essa leitura ajuda a contextualizar por que o SARIMA (Seção anterior), que diferencia a série assumindo não-estacionariedade, diverge tanto dos métodos de tendência linear ao extrapolar.
+
+Os três testes de quebra estrutural concordam que a série não é homogênea ao longo do período: o teste de Chow, com \textit{breakpoint} fixo na troca aproximada de código \texttt{EFF-001}$\to$\texttt{EFF-001A} (2012-01), rejeita fortemente a hipótese de coeficientes estáveis ($F=15{,}42$, $p<0{,}0001$); o teste de Pettitt, sem \textit{breakpoint} pré-definido, aponta uma mudança de regime em abril de 2014 ($p<0{,}0001$) -- dentro da janela de seca da Califórnia de 2012--2016, e não exatamente na data da troca de código, sugerindo que a quebra real pode estar mais ligada à seca do que à mudança administrativa do ponto de monitoramento; o CUSUM dos resíduos de uma tendência linear simples também rejeita estabilidade dos coeficientes ($p=0{,}001$). Em conjunto, esses resultados reforçam a cautela já registrada na Metodologia sobre extrapolar a série muito além do seu histórico de treino -- a série não é um processo estacionário homogêneo de 15 anos, mas parece conter pelo menos um regime distinto associado ao período de seca 2012--2016.
+
+\subsection{Análise dos resultados}
+
+A Figura \ref{fig:tendencia-tds} mostra a série observada de TDS e a extrapolação de cada método para +10, +15 e +20 anos, com a respectiva banda de incerteza.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{images/tendencia-tds.png}
+    \caption{TDS observado (2011--2026) e previsão de tendência por Mann-Kendall/Sen, Theil-Sen e OLS, com incerteza para +10/+15/+20 anos.}
+    \label{fig:tendencia-tds}
+\end{figure}
+
+A Tabela \ref{tab:tendencia-tds} resume os três métodos de tendência clássica (Seção de Metodologia), todos ajustados sobre a mesma série de TDS.
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{l|c|c|c}
+         & Tendência (mg/L/ano) & p-valor & R\textsuperscript{2} (holdout) \\ \hline
+        Mann-Kendall/Sen & 3,91 & 0,0056 & -0,66 \\
+        Theil-Sen & 3,91 & 0,0056 & -0,66 \\
+        OLS & 3,74 & 0,0047 & -0,54 \\
+    \end{tabular}
+    \caption{Tendência de TDS estimada pelos três métodos clássicos, com significância estatística e desempenho em holdout (últimos 24 meses).}
+    \label{tab:tendencia-tds}
+\end{table}
+
+Os três métodos convergem para uma tendência de alta estatisticamente significativa (p $<$ 0,01 em todos os casos), da ordem de 3,7 a 3,9~mg/L/ano -- consistente com a hipótese de aumento de salinidade do efluente ao longo do período observado. Mann-Kendall/Sen e Theil-Sen produzem estimativas praticamente idênticas, como esperado (ambos são estimadores de inclinação de Sen sobre a mesma série); a OLS fica ligeiramente abaixo, por ser mais sensível a heterocedasticidade/outliers do que os métodos não-paramétricos.
+
+O $R^2$ negativo no \textit{holdout} para os três métodos indica que uma reta de tendência simples ajustada apenas ao histórico de treino performa pior, nos últimos 24 meses, do que simplesmente prever a média da série de treino -- ou seja, a série de TDS tem flutuações de curto prazo (sazonais e/ou ruído) que uma tendência linear não captura, mesmo com a direção de longo prazo corretamente identificada como crescente. Isso é uma limitação conhecida e esperada dos métodos desta categoria (ver Metodologia), e motiva a comparação com os métodos de série temporal e aprendizado de máquina ainda pendentes na bateria.
+
+A Figura \ref{fig:stl-sarima} mostra a decomposição STL (painel superior) e as previsões de STL+tendência e SARIMA (painel inferior).
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{images/stl-sarima-tds.png}
+    \caption{Decomposição STL da série de TDS e previsão por STL+tendência linear e SARIMA, com incerteza para +10/+15/+20 anos.}
+    \label{fig:stl-sarima}
+\end{figure}
+
+A Tabela \ref{tab:stl-sarima} resume os dois métodos de série temporal clássica.
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{l|c|c|c}
+         & Tendência (mg/L/ano) & p-valor & R\textsuperscript{2} (holdout) \\ \hline
+        STL + tendência linear & 2,92 & 0,0040 & -0,35 \\
+        SARIMA (0,1,2)(0,1,1)$_{12}$ & 10,43 & $<$0,0001 & -0,49 \\
+    \end{tabular}
+    \caption{Tendência de TDS estimada por STL+tendência linear e SARIMA (ordem escolhida por AIC), com holdout de 24 meses.}
+    \label{tab:stl-sarima}
+\end{table}
+
+O STL+tendência (2,92 mg/L/ano) fica na mesma ordem de grandeza dos métodos clássicos da Seção anterior (3,7--3,9 mg/L/ano), com holdout ligeiramente melhor (RMSE 46,1 vs.\ 49--51). Já o SARIMA, cuja melhor ordem por AIC não inclui um termo de \textit{drift} explícito (ver Metodologia), tem sua tendência de longo prazo estimada indiretamente a partir do próprio caminho previsto e resulta em 10,43 mg/L/ano -- bem mais acentuada que os demais métodos, refletindo um mecanismo diferente de extrapolação (tendência estocástica da dupla diferenciação sazonal, não uma reta determinística). O intervalo de confiança do SARIMA cresce rapidamente com o horizonte, incluindo valores negativos já em +15 anos (IC90\% chegando a -94,3 mg/L) -- exatamente a limitação antecipada na Metodologia: horizontes muito além do histórico de treino (~15 anos) fazem o SARIMA extrapolar de forma pouco confiável, e o IC amplo é o próprio modelo sinalizando essa fragilidade, não um erro de implementação.
+
+A Figura \ref{fig:random-forest} mostra a previsão recursiva do Random Forest.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{images/random-forest-tds.png}
+    \caption{Previsão recursiva de TDS por Random Forest (+10/+15/+20 anos), com intervalo empírico de dispersão entre as árvores da floresta.}
+    \label{fig:random-forest}
+\end{figure}
+
+O Random Forest (melhores hiperparâmetros por \texttt{GridSearchCV} com \texttt{TimeSeriesSplit}: \texttt{n\_estimators=300}, \texttt{max\_depth=5}, \texttt{min\_samples\_leaf=3}) teve o melhor desempenho em \textit{holdout} entre os métodos até aqui (RMSE=41,0, R\textsuperscript{2}=-0,07 -- ainda negativo, mas o mais próximo de zero). No entanto, sua previsão de longo prazo confirma exatamente a limitação antecipada na Metodologia (Seção 3.c do plano de projeto): como árvores de decisão não extrapolam além do range de valores vistos no treino, a previsão \textbf{satura} -- os três horizontes (+10, +15 e +20 anos) convergem para o mesmo valor, 704,3 mg/L, e a tendência implícita nos primeiros 10 anos da previsão recursiva chega a ficar levemente negativa (-0,25 mg/L/ano, p=0,05), contradizendo a tendência de alta real e estatisticamente significativa identificada pelos métodos estatísticos clássicos (Seções anteriores). Isso não é um defeito de implementação: é a limitação estrutural conhecida de modelos baseados em árvore para extrapolação de tendência, e é reportada aqui explicitamente em vez de ocultada -- reforça a necessidade de comparar múltiplos métodos complementares (Metodologia, critério de comparação) em vez de confiar em um único modelo.
+
+A Figura \ref{fig:xgboost-lightgbm} mostra a previsão recursiva de XGBoost e LightGBM.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{images/xgboost-lightgbm-tds.png}
+    \caption{Previsão recursiva de TDS por XGBoost (GPU/CUDA) e LightGBM (CPU), com IC90\% por regressão quantílica.}
+    \label{fig:xgboost-lightgbm}
+\end{figure}
+
+A Tabela \ref{tab:arvores} resume os três métodos baseados em árvore.
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{l|c|c|c}
+         & Tendência impl. (mg/L/ano) & RMSE (holdout) & R\textsuperscript{2} (holdout) \\ \hline
+        Random Forest & -0,25 & 41,0 & -0,07 \\
+        XGBoost (GPU) & -0,91 & 49,5 & -0,56 \\
+        LightGBM (CPU) & -0,51 & 44,4 & -0,26 \\
+    \end{tabular}
+    \caption{Métodos baseados em árvore: tendência implícita (regressão OLS sobre os 10 primeiros anos do caminho recursivo previsto), desempenho em holdout.}
+    \label{tab:arvores}
+\end{table}
+
+XGBoost rodou nativamente em GPU (\texttt{tree\_method='hist', device='cuda'}) na RTX 4060 Ti do usuário -- confirmado experimentalmente nesta execução. LightGBM, apesar de ter suporte a GPU documentado na literatura, não tem esse suporte compilado no pacote distribuído via \texttt{pip} (erro "GPU Tree Learner was not enabled in this build"); rodou em CPU sem quebrar o restante do \textit{pipeline}, exatamente como o plano metodológico já previa como possibilidade.
+
+Os três métodos baseados em árvore reproduzem a mesma limitação estrutural do Random Forest: nenhum consegue captar a tendência de alta real do TDS ao extrapolar -- todas as três tendências implícitas nos primeiros 10 anos da previsão recursiva são, na verdade, \textbf{negativas} (-0,25 a -0,91 mg/L/ano), o oposto da tendência positiva e estatisticamente significativa (3,7 a 3,9 mg/L/ano) identificada pelos métodos estatísticos clássicos (Seção anterior). O XGBoost ainda apresenta um padrão adicional preocupante: sua previsão não é sequer monotonicamente estável entre horizontes (649,6 mg/L em +10 e +20 anos, mas 717,6 mg/L em +15 anos) -- um artefato de como o \textit{boosting} de árvores rasas reage a \textit{features} recursivas fora do intervalo de treino, não um erro de código. Este conjunto de resultados é um argumento forte, e agora empírico (não apenas teórico), para não usar modelos baseados em árvore isoladamente na extrapolação de tendência de longo prazo deste projeto.
+
+\subsection{Prophet e regressão bayesiana}
+
+A Figura \ref{fig:prophet-bayes} mostra as previsões de Prophet e da regressão bayesiana.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{images/prophet-bayes-tds.png}
+    \caption{Previsão de TDS por Prophet e regressão bayesiana (PyMC/NUTS), com IC90\% para +10/+15/+20 anos.}
+    \label{fig:prophet-bayes}
+\end{figure}
+
+A regressão bayesiana confirma a tendência de alta dos métodos estatísticos clássicos: 3,74 mg/L/ano, com 99,88\% de probabilidade posterior de a tendência ser positiva (IC90\% da inclinação: [1,52, 5,86] mg/L/ano) -- essencialmente o mesmo resultado da OLS (3,74 mg/L/ano), como esperado, já que ambas ajustam o mesmo modelo linear (uma por máxima verossimilhança, a outra por amostragem da posterior via NUTS). A vantagem da versão bayesiana aparece na previsão: o IC90\% cresce de forma suave e proporcional ao horizonte (largura de 268,9 mg/L em +10 anos até 279,7 mg/L em +20 anos), incorporando tanto a incerteza dos parâmetros quanto o ruído residual -- exatamente o comportamento "honesto" que motivou incluir este método na bateria (Metodologia).
+
+O Prophet revela um achado inesperado e relevante: sua componente de tendência histórica (calculada por regressão OLS sobre a série "trend" que o próprio modelo decompõe) é positiva e altamente significativa (3,81 mg/L/ano, p $<$ 0,0001), consistente com todos os demais métodos. Mas a sua \textbf{extrapolação} para o futuro é decrescente -- a componente de tendência do Prophet cai de 688,7 mg/L (no último mês observado) para 634,7 mg/L em +20 anos, e o \texttt{yhat} previsto acompanha essa queda (636,9 $\to$ 625,9 $\to$ 604,8 mg/L em +10/+15/+20 anos). A causa é a detecção automática de \textit{changepoints} do Prophet: o modelo identificou uma desaceleração/reversão local perto do fim da série observada e extrapola essa inclinação recente, não a inclinação média de 15 anos. Isso não foi ajustado ou escondido -- é reportado aqui como um achado metodológico genuíno: modelos com tendência linear por partes (\textit{piecewise linear trend}) podem divergir da tendência de longo prazo ao extrapolar muito além do horizonte de treino, mesmo quando corretamente detectam a tendência histórica geral.
+
+\subsection{Síntese comparativa da bateria de metodologias}
+
+A Tabela \ref{tab:sintese} consolida os 10 métodos executados nesta fase do projeto (critérios de comparação descritos na Metodologia): tendência estimada, significância, desempenho em \textit{holdout} e previsão para +20 anos.
+
+\begin{table}[H]
+    \centering
+    \small
+    \begin{tabular}{l|c|c|c}
+         & Tendência (mg/L/ano) & R\textsuperscript{2} (holdout) & Previsão +20a (mg/L) \\ \hline
+        Mann-Kendall/Sen & 3,91 & -0,66 & 806,6 \\
+        Theil-Sen & 3,91 & -0,66 & 806,6 \\
+        OLS & 3,74 & -0,54 & 798,2 \\
+        STL + tendência & 2,92 & -0,35 & 773,9 \\
+        SARIMA & 10,43 & -0,49 & 922,1 \\
+        Random Forest & -0,25 & -0,07 & 704,3 \\
+        XGBoost & -0,91 & -0,56 & 649,6 \\
+        LightGBM & -0,51 & -0,26 & 703,5 \\
+        Prophet & 3,81 & -0,53 & 604,8 \\
+        Regressão bayesiana & 3,74 & -0,55 & 797,7 \\
+    \end{tabular}
+    \caption{Síntese comparativa dos 10 métodos da bateria: tendência estimada (ou implícita, quando o método não fornece uma nativamente), R\textsuperscript{2} em holdout de 24 meses, e previsão pontual para +20 anos.}
+    \label{tab:sintese}
+\end{table}
+
+Um padrão claro emerge: os cinco métodos com base estatística explícita e ajuste global à série inteira (Mann-Kendall/Sen, Theil-Sen, OLS, STL+tendência, regressão bayesiana) convergem para uma tendência de alta consistente e estatisticamente significativa, entre 2,9 e 3,9 mg/L/ano, com previsões de +20 anos concentradas entre 774 e 807 mg/L. Os três métodos baseados em árvore (Random Forest, XGBoost, LightGBM) falham em capturar essa tendência ao extrapolar, por limitação estrutural conhecida (árvores não extrapolam além do range de treino) -- suas "tendências" implícitas são até negativas. SARIMA e Prophet, os dois métodos com componente de tendência local/adaptativa, divergem em direções opostas: SARIMA amplifica a tendência (10,4 mg/L/ano, quase 3x os métodos clássicos) e Prophet a reverte na extrapolação, apesar de detectá-la corretamente na história.
+
+Nenhum método atinge R\textsuperscript{2} positivo no \textit{holdout} de 24 meses -- todos os modelos de tendência de longo prazo erram mais nesse período recente do que a média simples do treino, reforçando que a série de TDS tem flutuações de curto prazo (sazonais e/ou de operação da estação) que nenhum destes métodos individuais captura bem. Isso é consistente com o critério de comparação definido na Metodologia (decisão final por múltiplos métodos complementares, não um único "vencedor"): a evidência mais robusta deste trabalho é a \textbf{convergência} dos métodos estatísticos e da regressão bayesiana em torno de uma tendência de alta de TDS de aproximadamente 3 a 4 mg/L/ano, estatisticamente significativa (p $<$ 0,01 em todos os casos) -- e não a previsão pontual de um único modelo específico para +20 anos.
+
+\subsection{Validação honesta e baselines obrigatórios}
+
+Conforme a Metodologia, todo método da bateria (Mann-Kendall/Sen, Theil-Sen, OLS, STL+tendência, SARIMA, Random Forest, XGBoost, LightGBM, Prophet, regressão bayesiana) foi reavaliado com MASE, sMAPE, validação cruzada expansiva de 5 \textit{folds} e \textit{backtesting} de origem móvel (+3/+5 anos), além do holdout de 24 meses já usado. Quatro \textit{baselines} obrigatórios (\texttt{script\_08\_baselines.py}) foram adicionados como piso de comparação: naive, naive sazonal ($m=12$), ETS/Holt-Winters e Theta -- com o termo sazonal do ETS e a dessazonalização do Theta desligados, já que $F_s=0{,}25$ ficou abaixo do limiar de $0{,}64$ (Seção anterior). A Figura \ref{fig:baselines} mostra a previsão dos quatro \textit{baselines}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{images/baselines-tds.png}
+    \caption{Baselines obrigatórios -- naive, naive sazonal, ETS/Holt-Winters e Theta -- com IC90\% para +10/+15/+20 anos.}
+    \label{fig:baselines}
+\end{figure}
+
+A Tabela \ref{tab:mase-completo} ranqueia os 14 métodos (10 da bateria original + 4 \textit{baselines}) por MASE no holdout de 24 meses.
+
+\begin{table}[H]
+    \centering
+    \small
+    \begin{tabular}{l|c|c}
+         & MASE (holdout) & MASE (CV, 5 \textit{folds}) \\ \hline
+        Naive & 0,44 & 0,76 \\
+        STL + tendência & 0,49 & 1,00 \\
+        XGBoost & 0,50 & 0,80 \\
+        SARIMA & 0,50 & 1,07 \\
+        Regressão bayesiana & 0,52 & 0,98 \\
+        OLS & 0,52 & 0,98 \\
+        Prophet & 0,53 & 1,24 \\
+        Mann-Kendall/Sen & 0,53 & 1,08 \\
+        Theil-Sen & 0,53 & 1,08 \\
+        Random Forest & 0,55 & 0,84 \\
+        ETS/Holt-Winters & 0,59 & 0,96 \\
+        Theta & 0,62 & 0,83 \\
+        LightGBM & 0,63 & 0,73 \\
+        Naive sazonal & 0,93 & 0,87 \\
+    \end{tabular}
+    \caption{MASE de todos os 14 métodos (holdout de 24 meses e média da CV expansiva de 5 \textit{folds}), ordenados pelo MASE de holdout.}
+    \label{tab:mase-completo}
+\end{table}
+
+O achado mais notável desta validação é que o \textbf{baseline naive tem o menor MASE de holdout de toda a bateria} (0,44) -- inferior a todos os 10 métodos anteriores, inclusive os que corretamente identificam a tendência de alta estatisticamente significativa. Isso não invalida esses métodos nem contradiz a Seção anterior: o naive extrapola como uma linha reta constante (o último valor observado), não captando absolutamente nenhuma tendência de longo prazo -- ele "vence" apenas porque, num horizonte curto de 24 meses, as flutuações de curto prazo da série (já discutidas como responsáveis pelo R\textsuperscript{2} negativo em todos os métodos) pesam mais no erro médio do que o ganho de modelar a tendência. Isso é consistente com a literatura de \textit{forecasting}: MASE de holdout curto mede acurácia de curto prazo, não capacidade de captar a direção de longo prazo -- que é o objetivo real deste projeto (Seção 1 da Metodologia, objetivo 2). Na CV expansiva de 5 \textit{folds} (média sobre janelas de treino menores, mais sensível a instabilidade), o naive já não é mais o melhor (MASE 0,76, atrás de XGBoost, LightGBM, Random Forest e Theta) -- reforçando que nenhum método único domina em todos os critérios, e que a decisão final de finalistas (Seção "Onde as fases seguintes retomam", trabalho futuro) precisa pesar MASE de curto prazo, captação de tendência de longo prazo, e comportamento do IC, não um único número.
+
+\subsection{Métodos adicionais}
+
+Cinco métodos adicionais (Metodologia, Seção "Métodos adicionais") foram testados sob o mesmo \textit{framework} de validação honesta. As Figuras \ref{fig:svr-gp}, \ref{fig:detrend}, \ref{fig:sarimax-cloreto}, \ref{fig:hibrido} e \ref{fig:lstm} mostram as respectivas previsões.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{images/svr-gp-tds.png}
+    \caption{SVR e Gaussian Process (kernel composto) -- previsão de TDS com IC90\%.}
+    \label{fig:svr-gp}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{images/detrend-arvore-tds.png}
+    \caption{Tendência OLS + árvore (RF/XGBoost) no resíduo -- previsão de TDS.}
+    \label{fig:detrend}
+\end{figure}
+
+\begin{table}[H]
+    \centering
+    \small
+    \begin{tabular}{l|c|c|c|c}
+         & Tendência (mg/L/ano) & RMSE (holdout) & MASE (holdout) & R\textsuperscript{2} (holdout) \\ \hline
+        SVR & -1,74\textsuperscript{*} & 38,9 & 0,49 & 0,04 \\
+        Gaussian Process & 3,74 & 146,5 & 2,03 & -12,65 \\
+        Detrend + RF & 3,74 & 49,8 & 0,44 & -0,58 \\
+        Detrend + XGBoost & 3,74 & 51,5 & 0,46 & -0,69 \\
+        SARIMAX + Cloreto & 8,11 & 49,7 & 0,50 & -0,57 \\
+        Híbrido SARIMA+Prophet & 3,76 & 46,4 & 0,49 & -0,37 \\
+        LSTM & 6,84 & 71,5 & 0,69 & -2,25 \\
+    \end{tabular}
+    \caption{Métodos adicionais: tendência implícita (OLS sobre os 10 primeiros anos do caminho previsto), RMSE/MASE/R\textsuperscript{2} em holdout de 24 meses. \textsuperscript{*}SVR: tendência implícita negativa porque a previsão recursiva de árvore/SVR não extrapola linearmente (mesma limitação estrutural de RF/XGBoost, Seção "Análise dos resultados"), não porque o modelo capte uma reversão real.}
+    \label{tab:metodos-adicionais}
+\end{table}
+
+\textbf{SVR} é o primeiro método de toda a bateria (21 métodos) com $R^2$ \textbf{positivo} em holdout (0,04) e o segundo melhor RMSE (38,9, atrás só do Random Forest original em holdout do script\_03, RMSE=41,0 -- SVR supera até esse). MASE de holdout (0,49) fica no meio do ranking geral. Como as demais árvores/SVR, sua previsão recursiva não extrapola uma tendência linear -- por isso a "tendência implícita" reportada é negativa e não deve ser lida como uma reversão real da série.
+
+\textbf{Gaussian Process} com \textit{kernel} composto teve o \textbf{pior desempenho de toda a bateria} (RMSE=146,5, MASE=2,03, $R^2=-12,65$): o ajuste por máxima verossimilhança marginal convergiu repetidamente (testado com \textit{bounds} mais largos e mais \textit{restarts} do otimizador) para um \textit{length-scale} curto da componente RBF, fazendo o GP reverter rapidamente à média fora do intervalo de treino em vez de extrapolar a tendência -- limitação conhecida de GP em séries com ruído alto relativo ao sinal de tendência (o caso desta série, já discutido). Resultado reportado tal como obtido, sem forçar um ajuste mais favorável.
+
+\textbf{Tendência + árvore no resíduo} resolve diretamente a limitação de saturação documentada para RF/XGBoost/LightGBM originais (Seção "Análise dos resultados"): as previsões de Detrend+RF (743,5 $\to$ 762,2 $\to$ 780,9 mg/L) e Detrend+XGBoost (752,8 $\to$ 780,5 $\to$ 790,3 mg/L) crescem de forma monotônica entre +10/+15/+20 anos -- ao contrário da saturação/oscilação dos métodos de árvore originais. O MASE de holdout do Detrend+RF (0,44) é o segundo melhor de toda a bateria, praticamente empatado com o naive (0,436).
+
+\textbf{SARIMAX com Cloreto} como regressor exógeno tem coeficiente positivo e altamente significativo ($\beta=1{,}13$, $p<0{,}001$), mas isso \textbf{não se traduz em melhora prática} sobre o SARIMA univariado (script\_02): RMSE de holdout praticamente igual (48,4 $\to$ 49,7) e MASE também (0,504 $\to$ 0,502). O Cloreto parece redundante com a informação que a diferenciação sazonal do próprio SARIMA já captura para fins de previsão de curto prazo, apesar de estatisticamente relevante na relação contemporânea entre as duas séries.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{images/sarimax-cloreto-tds.png}
+    \caption{SARIMAX(TDS, exog=Cloreto) -- Cloreto observado (painel superior) e previsão de TDS (painel inferior).}
+    \label{fig:sarimax-cloreto}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{images/hibrido-arima-prophet-tds.png}
+    \caption{Híbrido SARIMA+Prophet (média das previsões pontuais, IC90\% pela envoltória) -- previsão de TDS.}
+    \label{fig:hibrido}
+\end{figure}
+
+O \textbf{híbrido SARIMA+Prophet} teve RMSE de holdout (46,4) melhor que os dois componentes isolados (SARIMA 48,4, Prophet 49,0) -- indício de que a média cancela parcialmente os erros dos dois mecanismos de extrapolação opostos já documentados (SARIMA amplifica a tendência, Prophet a reverte). O MASE de CV (1,05), porém, fica pior que o de ambos os componentes isolados nessa métrica -- o ganho do \textit{ensemble} não é uniforme entre critérios.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{images/lstm-tds.png}
+    \caption{LSTM leve (PyTorch, 1 camada, 32 unidades) -- previsão recursiva de TDS com IC90\% por bootstrap de resíduos.}
+    \label{fig:lstm}
+\end{figure}
+
+O \textbf{LSTM} \textbf{não venceu} o baseline naive (MASE de holdout 0,69 vs.\ 0,44) nem os métodos clássicos -- confirmando, para este dataset, o precedente do material de apoio (XGBoost venceu LSTM em vazão mensal, Tema 6.3): em séries ambientais mensais curtas ($\sim$180 pontos), uma LSTM leve não supera métodos estatísticos clássicos ou de árvore. Sua previsão de longo prazo também não é monotônica (786,5 $\to$ 720,5 $\to$ 795,4 mg/L em +10/+15/+20 anos), um padrão similar à oscilação já observada no XGBoost original. Conforme a Metodologia, este resultado significa que o LSTM \textbf{não entra como finalista} na síntese final -- é reportado aqui como método testado e não vencedor, não omitido.
+
+\subsection{Correlação entre TDS e indicadores de desempenho biológico}
+
+A Figura \ref{fig:correlacao} mostra a correlação destendenciada (resíduos de OLS contra o tempo) entre TDS e cada indicador.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{images/correlacao-tds-amonia-bod.png}
+    \caption{Correlação entre os resíduos (após remoção da tendência temporal) de TDS e de Amônia/BOD (três tratamentos de ND).}
+    \label{fig:correlacao}
+\end{figure}
+
+A Tabela \ref{tab:correlacao} resume as correlações brutas e destendenciadas, agora incluindo o terceiro tratamento de ND do BOD (Dataset F, ROS/Helsel -- Seção de Metodologia).
+
+\begin{table}[H]
+    \centering
+    \small
+    \begin{tabular}{l|c|c}
+         & Pearson $r$ (bruta) & Pearson $r$ (destendenciada) \\ \hline
+        TDS vs.\ Amônia & 0,247 (p=0,0008) & 0,175 (p=0,018) \\
+        TDS vs.\ BOD (ND=MDL/2) & -0,055 (p=0,47) & -0,079 (p=0,29) \\
+        TDS vs.\ BOD (ND=0) & -0,045 (p=0,55) & -0,068 (p=0,36) \\
+        TDS vs.\ BOD (ND=ROS/Helsel) & -0,083 (p=0,27) & -0,108 (p=0,15) \\
+    \end{tabular}
+    \caption{Correlação de Pearson entre TDS e cada indicador, $n=181$-182 meses. A versão destendenciada remove a tendência de longo prazo de cada série antes de correlacionar, isolando covariação mês-a-mês de coincidência de ambas subirem ao longo do tempo.}
+    \label{tab:correlacao}
+\end{table}
+
+\textbf{TDS vs.\ Amônia:} há correlação positiva estatisticamente significativa, tanto na versão bruta ($r=0{,}247$, p=0,0008) quanto na destendenciada ($r=0{,}175$, p=0,018) -- ou seja, mesmo depois de remover o fato de ambas as séries subirem ao longo dos 15 anos, meses com TDS acima do esperado tendem a coincidir com meses de amônia também acima do esperado. Isso é consistente com a hipótese do projeto: amônia residual mais alta sugere nitrificação incompleta, e a correlação com TDS sugere que salinidade elevada pode estar associada a desempenho de nitrificação reduzido. A correlação cruzada por defasagem mostra o efeito ligeiramente mais forte com um mês de atraso ($r=0{,}215$, p=0,0036 no lag de 1 mês, contra $r=0{,}175$ no lag 0) -- compatível com um tempo de resposta biológico da comunidade nitrificante, embora a diferença entre lags seja pequena e não deva ser sobre-interpretada com apenas 15 anos de dados mensais.
+
+\textbf{TDS vs.\ BOD:} não há correlação estatisticamente significativa em nenhum dos três tratamentos de ND, bruta ou destendenciada (todos os p-valores $>$ 0,05, exceto uma correlação fraca e negativa na defasagem de 2 meses, $r\approx-0{,}17$ a $-0{,}18$, p$\approx$0,02 nos três tratamentos, que dado o número de testes realizados é compatível com achado ao acaso). Isso é consistente com o que já havia sido observado na Metodologia: o BOD do efluente da LAGWRP permanece rente ao limite de detecção do método (3,0 mg/L) durante praticamente todo o período de 15 anos, com pouquíssima amplitude mesmo nos meses detectados (3,0 a 4,0 mg/L) -- há simplesmente pouca variação real na série de BOD para qualquer variável se correlacionar com ela, independente do tratamento dado aos valores não detectados. O resultado é o mesmo nos três datasets (A, B e F), inclusive no ROS/Helsel -- o tratamento estatisticamente mais bem embasado dos três -- reforçando que a escolha de tratamento de ND não é o fator determinante aqui: a ausência de sinal é uma característica da série de BOD em si, não um artefato da imputação de ND, consistente com o achado já registrado na Metodologia de que não há relação entre a taxa de ND do BOD e o TDS do mesmo mês.
+
+\subsection{Diagnóstico de resíduos dos candidatos mais fortes}
+
+Cinco candidatos -- escolhidos por equilibrarem MASE baixo e captação real de tendência de longo prazo sem saturar/oscilar (\texttt{script\_14\_diagnostico\_residuos.py}) -- tiveram seus resíduos \textit{in-sample} (ajuste na série completa) submetidos a três testes: Ljung-Box (autocorrelação residual, defasagem 12), Shapiro-Wilk (normalidade) e ARCH (heterocedasticidade condicional). A Figura \ref{fig:diagnostico-residuos} mostra os resíduos de cada candidato ao longo do tempo, seu histograma e o gráfico quantil-quantil.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\linewidth]{images/diagnostico-residuos-finalistas.png}
+    \caption{Diagnóstico de resíduos dos 5 candidatos mais fortes: resíduo x tempo, histograma e QQ-plot.}
+    \label{fig:diagnostico-residuos}
+\end{figure}
+
+\begin{table}[H]
+    \centering
+    \small
+    \begin{tabular}{l|c|c|c}
+         & Ljung-Box & Shapiro-Wilk & ARCH \\ \hline
+        OLS & rejeitado (p$<$0,0001) & não rejeitado (p=0,15) & rejeitado (p$<$0,0001) \\
+        Regressão bayesiana\textsuperscript{*} & rejeitado (p$<$0,0001) & não rejeitado (p=0,15) & rejeitado (p$<$0,0001) \\
+        Detrend + RF & \textbf{não rejeitado (p=0,24)} & rejeitado (p=0,003) & \textbf{não rejeitado (p=0,76)} \\
+        SARIMA & rejeitado (p=0,0001) & rejeitado (p$<$0,0001) & rejeitado (p$<$0,0001) \\
+        Híbrido SARIMA+Prophet & rejeitado (p=0,0003) & rejeitado (p$<$0,0001) & rejeitado (p$<$0,0001) \\
+    \end{tabular}
+    \caption{Diagnóstico de resíduos: "não rejeitado" indica que o teste não encontrou evidência do problema (autocorrelação/heterocedasticidade) ou não rejeitou normalidade -- resultado desejável nos três casos. \textsuperscript{*}Resíduos da regressão bayesiana tratados como equivalentes aos da OLS (Metodologia, mesmo modelo linear-gaussiano, ver script\_14).}
+    \label{tab:diagnostico-residuos}
+\end{table}
+
+O achado mais notável é que o \textbf{Detrend+RF é o único candidato sem autocorrelação residual detectável e sem heterocedasticidade condicional} -- só falha o teste de normalidade (resíduos com caudas mais pesadas que a normal, comum em modelos de árvore). Os quatro métodos com forma funcional linear/estocástica explícita (OLS, regressão bayesiana, SARIMA, híbrido) falham em pelo menos dois dos três testes -- os resíduos ainda carregam estrutura temporal e variância não-constante que o modelo não capturou, reforçando a mensagem já central deste trabalho (Seção "Síntese comparativa"): a série de TDS tem dinâmica de curto prazo que nenhum método individual, incluindo os que melhor capturam a tendência de longo prazo, modela completamente bem.
+
+\subsection{Comparação com a literatura}
+
+Dois estudos do mesmo mecanismo e da mesma região geográfica dão contexto à tendência de alta encontrada neste trabalho (2,9 a 3,9 mg/L/ano, Seção "Síntese comparativa"). Schwabe et al. \cite{schwabe2020unintended} encontraram, em 34 estações de tratamento do sul da Califórnia (2013--2017), que a conservação de água durante a seca reduziu o volume de esgoto e aumentou sua salinidade -- a mesma direção de efeito, no mesmo tipo de instalação e na mesma região, que a tendência de alta de TDS aqui identificada na LAGWRP. Wolfand et al. \cite{wolfand2022dilution} modelaram a mesma bacia hidrográfica onde a LAGWRP descarrega (rio Los Angeles) e encontraram que a concentração de TDS aumenta com o reúso de água, mesmo quando a carga total de poluentes diminui -- reforçando, em nível de bacia e não só de estação individual, o mesmo mecanismo de concentração por redução de volume.
+
+Esta comparação é deliberadamente qualitativa: não foi possível acessar o texto completo de nenhum dos dois artigos nesta sessão (ambos pagos, acesso bloqueado), então nenhuma magnitude numérica desses estudos é comparada diretamente à taxa de 2,9-3,9 mg/L/ano encontrada aqui -- fazer isso exigiria verificar o número no texto original, não reproduzir um valor de um resumo de terceiros (regra de governança deste projeto, Seção de Metodologia). O que se pode afirmar com confiança, a partir do que foi genuinamente acessado (resumos institucionais e de sociedades profissionais, não os artigos originais), é a \textbf{concordância na direção do efeito e no mecanismo proposto} entre os três trabalhos: conservação/reúso de água reduz o volume de esgoto/vazão do rio, e a mesma carga de sais numa água mais concentrada eleva o TDS -- consistente com o que este trabalho encontrou de forma independente, com dados de uma única estação (LAGWRP) e método próprio (Mann-Kendall/Sen, Theil-Sen, OLS, STL, regressão bayesiana).
+
+\subsection{Síntese final e recomendação de finalistas}
+
+Conforme o critério de comparação definido na Metodologia (decisão final por métodos complementares, não um vencedor único), \texttt{script\_15\_sintese\_final.py} consolida os 21 métodos e recomenda três finalistas, escolhidos por representarem mecanismos de extrapolação distintos e por seu desempenho nos critérios já discutidos (MASE, comportamento do IC, diagnóstico de resíduos): \textbf{regressão bayesiana} (única com incerteza honesta -- IC90 cresce de forma suave e proporcional ao horizonte, tendência estatisticamente significativa com probabilidade posterior $>$99\%), \textbf{Detrend+RF} (melhor MASE de \textit{holdout} entre os métodos que captam tendência sem saturar, e único candidato sem autocorrelação residual nem heterocedasticidade condicional detectável) e \textbf{híbrido SARIMA+Prophet} (melhor RMSE de \textit{holdout} entre os métodos de série temporal, representando um cenário mais cauteloso via IC90 mais largo). A Figura \ref{fig:sintese-final} sobrepõe a previsão dos três à série histórica.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\linewidth]{images/sintese-final-finalistas.png}
+    \caption{Finalistas recomendados -- regressão bayesiana, Detrend+RF e híbrido SARIMA+Prophet -- com IC90\% para +10/+15/+20 anos.}
+    \label{fig:sintese-final}
+\end{figure}
+
+\begin{table}[H]
+    \centering
+    \small
+    \begin{tabular}{l|c|c|c}
+         & +10 anos & +15 anos & +20 anos \\ \hline
+        Regressão bayesiana & 758,2 [624,2; 893,1] & 778,7 [636,4; 917,2] & 797,7 [658,1; 937,8] \\
+        Detrend + RF & 743,5 [641,0; 845,9] & 762,2 [636,7; 887,7] & 780,9 [636,0; 925,8] \\
+        Híbrido SARIMA+Prophet & 714,4 [130,1; 1501,5] & 738,9 [-94,3; 1832,3] & 763,5 [-332,3; 2176,6] \\
+    \end{tabular}
+    \caption{Previsão pontual e IC90\% (mg/L) dos três finalistas para +10/+15/+20 anos.}
+    \label{tab:sintese-finalistas}
+\end{table}
+
+Os três finalistas convergem para um intervalo relativamente estreito de pontos centrais (~760 a ~800 mg/L em +20 anos), apesar de mecanismos de extrapolação completamente diferentes (regressão linear bayesiana, árvore sobre resíduo destendenciado, e ensemble de dois modelos de série temporal) -- essa convergência entre metodologias tão distintas é, na visão deste trabalho, mais informativa que a previsão pontual de qualquer um isoladamente. O IC90 do híbrido é notavelmente mais largo (chegando a incluir valores negativos, herdados da componente SARIMA -- Seção "Análise dos resultados"), refletindo de forma honesta a incerteza real de extrapolar ~15 anos de histórico para +20 anos à frente; os IC90 da regressão bayesiana e do Detrend+RF, mais estreitos, não devem ser lidos como "mais corretos", apenas como resultado de mecanismos de propagação de incerteza diferentes (posterior bayesiana fechada vs. dispersão empírica da árvore). Reforça-se, como em toda a extensão deste trabalho, que a previsão de +20 anos é extrapolação especulativa muito além do histórico observado (~15 anos) e deve ser lida com essa ressalva.

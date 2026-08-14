@@ -1,0 +1,162 @@
+[
+  {
+    "par": "tds_amonia",
+    "n_meses": 182,
+    "bruta_pearson_r": 0.24736697611673286,
+    "bruta_pearson_p": 0.0007608814760376176,
+    "bruta_spearman_rho": 0.22958518340731618,
+    "bruta_spearman_p": 0.0018227714936166319,
+    "destend_pearson_r": 0.17468950418873905,
+    "destend_pearson_p": 0.018343118904936957,
+    "destend_spearman_rho": 0.1763686001526777,
+    "destend_spearman_p": 0.017235301696372513,
+    "defasagens": [
+      {
+        "lag_meses": 0,
+        "pearson_r": 0.17468950418873905,
+        "pearson_p": 0.018343118904936957,
+        "n": 182
+      },
+      {
+        "lag_meses": 1,
+        "pearson_r": 0.21507162171905175,
+        "pearson_p": 0.003642720278196744,
+        "n": 181
+      },
+      {
+        "lag_meses": 2,
+        "pearson_r": 0.19404409919639573,
+        "pearson_p": 0.009051726757077272,
+        "n": 180
+      },
+      {
+        "lag_meses": 3,
+        "pearson_r": 0.1880537638922755,
+        "pearson_p": 0.01170572114206699,
+        "n": 179
+      }
+    ],
+    "script": "script_06_correlacao_tds_amonia_bod",
+    "data_execucao": "2026-08-13T17:01:12"
+  },
+  {
+    "par": "tds_bod_mdl2",
+    "n_meses": 181,
+    "bruta_pearson_r": -0.05460211584894553,
+    "bruta_pearson_p": 0.46535850915578714,
+    "bruta_spearman_rho": -0.0506144095363001,
+    "bruta_spearman_p": 0.49861952001663196,
+    "destend_pearson_r": -0.0792240721030695,
+    "destend_pearson_p": 0.2890837244721483,
+    "destend_spearman_rho": -0.07658106166393458,
+    "destend_spearman_p": 0.30552345494533056,
+    "defasagens": [
+      {
+        "lag_meses": 0,
+        "pearson_r": -0.0792240721030695,
+        "pearson_p": 0.2890837244721483,
+        "n": 181
+      },
+      {
+        "lag_meses": 1,
+        "pearson_r": -0.11298941908375064,
+        "pearson_p": 0.1309945699407527,
+        "n": 180
+      },
+      {
+        "lag_meses": 2,
+        "pearson_r": -0.17640254467059815,
+        "pearson_p": 0.018170504526457177,
+        "n": 179
+      },
+      {
+        "lag_meses": 3,
+        "pearson_r": -0.1217204732319936,
+        "pearson_p": 0.10554704478603985,
+        "n": 178
+      }
+    ],
+    "script": "script_06_correlacao_tds_amonia_bod",
+    "data_execucao": "2026-08-13T17:01:12"
+  },
+  {
+    "par": "tds_bod_zero",
+    "n_meses": 181,
+    "bruta_pearson_r": -0.04460821162811787,
+    "bruta_pearson_p": 0.5509873992334926,
+    "bruta_spearman_rho": -0.0506144095363001,
+    "bruta_spearman_p": 0.49861952001663196,
+    "destend_pearson_r": -0.06848396618207435,
+    "destend_pearson_p": 0.3596405164404809,
+    "destend_spearman_rho": -0.07658106166393458,
+    "destend_spearman_p": 0.30552345494533056,
+    "defasagens": [
+      {
+        "lag_meses": 0,
+        "pearson_r": -0.06848396618207435,
+        "pearson_p": 0.3596405164404809,
+        "n": 181
+      },
+      {
+        "lag_meses": 1,
+        "pearson_r": -0.11090380574435915,
+        "pearson_p": 0.13830286120409752,
+        "n": 180
+      },
+      {
+        "lag_meses": 2,
+        "pearson_r": -0.17019301337185708,
+        "pearson_p": 0.022743371206594646,
+        "n": 179
+      },
+      {
+        "lag_meses": 3,
+        "pearson_r": -0.1304627513146866,
+        "pearson_p": 0.08260740688330535,
+        "n": 178
+      }
+    ],
+    "script": "script_06_correlacao_tds_amonia_bod",
+    "data_execucao": "2026-08-13T17:01:12"
+  },
+  {
+    "par": "tds_bod_ros",
+    "n_meses": 181,
+    "bruta_pearson_r": -0.082870910182023,
+    "bruta_pearson_p": 0.2673875998399131,
+    "bruta_spearman_rho": -0.0506144095363001,
+    "bruta_spearman_p": 0.49861952001663196,
+    "destend_pearson_r": -0.10810877125041306,
+    "destend_pearson_p": 0.14744169116019087,
+    "destend_spearman_rho": -0.07658106166393458,
+    "destend_spearman_p": 0.30552345494533056,
+    "defasagens": [
+      {
+        "lag_meses": 0,
+        "pearson_r": -0.10810877125041306,
+        "pearson_p": 0.14744169116019087,
+        "n": 181
+      },
+      {
+        "lag_meses": 1,
+        "pearson_r": -0.1117117789605404,
+        "pearson_p": 0.13543548981378442,
+        "n": 180
+      },
+      {
+        "lag_meses": 2,
+        "pearson_r": -0.18386474650654822,
+        "pearson_p": 0.01374918400367704,
+        "n": 179
+      },
+      {
+        "lag_meses": 3,
+        "pearson_r": -0.08508713901912857,
+        "pearson_p": 0.25879011320149775,
+        "n": 178
+      }
+    ],
+    "script": "script_06_correlacao_tds_amonia_bod",
+    "data_execucao": "2026-08-13T17:01:12"
+  }
+]
