@@ -1,0 +1,19 @@
+# torch: instalar a build CPU-only (o script_13 usa uma LSTM leve, nao precisa
+# de GPU) para evitar baixar o pacote CUDA (~2GB):
+#   pip install torch --index-url https://download.pytorch.org/whl/cpu
+# depois rodar este requirements.txt normalmente (pip nao reinstala o que ja
+# esta satisfeito).
+pandas
+numpy
+scipy
+statsmodels
+pymannkendall
+scikit-learn
+xgboost
+lightgbm
+prophet
+pymc
+matplotlib
+mlflow
+torch
+lifelines
