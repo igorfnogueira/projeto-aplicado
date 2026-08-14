@@ -1,0 +1,80 @@
+{
+  "fator_conversao": 8.34,
+  "capacidade_nominal_mgd": 20.0,
+  "plausibilidade_por_parametro": {
+    "TDS": {
+      "n": 182,
+      "media": 9.486256338219993,
+      "mediana": 9.27881835267683,
+      "min": 3.2100364724297736,
+      "max": 17.213437042573734,
+      "std": 2.7989602761786068,
+      "pct_capacidade_nominal": 47.43128169109997,
+      "n_fora_faixa_plausivel": 0,
+      "pct_fora_faixa_plausivel": 0.0
+    },
+    "Chloride": {
+      "n": 182,
+      "media": 9.487663703155887,
+      "mediana": 9.278772324743656,
+      "min": 3.210159145410944,
+      "max": 17.21361372440509,
+      "std": 2.779513007999986,
+      "pct_capacidade_nominal": 47.43831851577943,
+      "n_fora_faixa_plausivel": 0,
+      "pct_fora_faixa_plausivel": 0.0
+    },
+    "Ammonia": {
+      "n": 107,
+      "media": 8.368201691464789,
+      "mediana": 8.329699876462467,
+      "min": 3.2091973480039493,
+      "max": 15.349364344141128,
+      "std": 2.34498269790395,
+      "pct_capacidade_nominal": 41.841008457323944,
+      "n_fora_faixa_plausivel": 0,
+      "pct_fora_faixa_plausivel": 0.0
+    },
+    "BOD": {
+      "n": 63,
+      "media": 9.08955375382234,
+      "mediana": 8.792965627498003,
+      "min": 4.396482813749001,
+      "max": 15.987210231814549,
+      "std": 2.4427219507328575,
+      "pct_capacidade_nominal": 45.447768769111704,
+      "n_fora_faixa_plausivel": 0,
+      "pct_fora_faixa_plausivel": 0.0
+    }
+  },
+  "correlacao_cruzada": {
+    "vazao_mgd_TDS": {
+      "vazao_mgd_TDS": 1.0,
+      "vazao_mgd_Chloride": 0.9973,
+      "vazao_mgd_Ammonia": 0.9979,
+      "vazao_mgd_BOD": 0.8735
+    },
+    "vazao_mgd_Chloride": {
+      "vazao_mgd_TDS": 0.9973,
+      "vazao_mgd_Chloride": 1.0,
+      "vazao_mgd_Ammonia": 0.9999,
+      "vazao_mgd_BOD": 0.8714
+    },
+    "vazao_mgd_Ammonia": {
+      "vazao_mgd_TDS": 0.9979,
+      "vazao_mgd_Chloride": 0.9999,
+      "vazao_mgd_Ammonia": 1.0,
+      "vazao_mgd_BOD": 0.8159
+    },
+    "vazao_mgd_BOD": {
+      "vazao_mgd_TDS": 0.8735,
+      "vazao_mgd_Chloride": 0.8714,
+      "vazao_mgd_Ammonia": 0.8159,
+      "vazao_mgd_BOD": 1.0
+    }
+  },
+  "correlacao_media_tds_outros": 0.9562131050637239,
+  "identidade_sustenta": true,
+  "script": "script_16_reconstrucao_vazao",
+  "data_execucao": "2026-08-13T21:06:28"
+}

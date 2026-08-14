@@ -1,0 +1,18 @@
+mlruns/
+mlflow.db
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+
+# artefatos de compilacao LaTeX (Artigo/template.pdf fica versionado; so os intermediarios saem)
+Artigo/*.aux
+Artigo/*.log
+Artigo/*.bbl
+Artigo/*.blg
+Artigo/*.out
+Artigo/*.toc
+
+# scratch descartavel desta sessao
+scratch_update_notebook6.py
