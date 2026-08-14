@@ -335,7 +335,14 @@ Desempenho no holdout (RMSE/MAE/R²) sem ser o único critério; largura/comport
 [ ] A execução foi logada no MLflow (params, métricas, seed, artefatos) antes de virar linha no resultados_comparacao.csv (seção 4.3)?
 [ ] O resultado foi verificado contra a matriz de sensibilidade de tratamento (seção 1.4) — a conclusão se mantém sob as variantes testadas?
 [ ] Se a conclusão muda conforme o tratamento adotado, isso foi reportado explicitamente no artigo como limitação/robustez?
+[ ] A decisão tomada nesta execução foi registrada em `Artigo/DECISOES.md` com motivo e alternativa descartada?
 ```
+
+## 9. Controle de versão (Git/GitHub)
+
+**Git foi inicializado em 2026-08-14** (`prompt_decisoes_e_github.md`, Parte 2) — o projeto não tinha repositório antes disso. Branch padrão `main`, remoto em `https://github.com/igorfnogueira/projeto-aplicado`, primeiro commit com o pipeline completo (scripts 00-17, notebook, artigo, `Artigo/DECISOES.md`, READMEs). `.gitignore` exclui `.venv/`, `mlruns/`, `mlflow.db`, `__pycache__/`, artefatos de compilação LaTeX (`*.aux/.log/.bbl/.blg/.out/.toc`) e o scratch descartável da sessão; os CSVs brutos e de resultado são versionados (todos abaixo do limite de 100 MB do GitHub).
+
+**`Artigo/DECISOES.md`** passa a ser documento de manutenção contínua com o mesmo status do notebook, dos READMEs e do artigo (seção 2.C-2.G, 4.1, 4.2 já estabeleciam essa regra para os demais; agora estende-se explicitamente ao registro de decisões) — toda decisão metodológica relevante entra lá na mesma execução em que é tomada, com motivo e alternativa descartada, nunca só ao final.
 
 ## 8. Pontos ainda em aberto
 
