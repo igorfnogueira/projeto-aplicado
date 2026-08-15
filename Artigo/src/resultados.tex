@@ -368,6 +368,84 @@ Quatro linhas de evidência, todas na mesma direção: (1) a correlação bruta 
 
 \textbf{Ressalva que não deve ser omitida:} a correlação sobre as séries \textit{destendenciadas} (que isola a sincronia mês a mês, removendo o efeito de nível/regime comum) é bem mais fraca e \textbf{muda de sinal} ($r=+0{,}15$ a $+0{,}19$, $p$ entre 0,014 e 0,055). Isso indica que a seca explica principalmente o \textbf{nível médio de cada regime}, não a oscilação fina dentro dele -- uma leitura mais modesta e mais defensável do que "a seca prevê o TDS mês a mês". O desfecho declarado, entre os três definidos a priori no protocolo do teste, é que \textbf{o PDSI explica bem os ciclos observados}, corroborando o reenquadramento cíclico com uma variável externa ao próprio TDS -- mas o mecanismo provavelmente opera no nível de regime/período, não como resposta de alta frequência.
 
+\subsection{WRTDS: não há tendência de TDS depois de descontar a vazão}
+
+A tendência bruta de $\log(\mathrm{TDS})$ (Theil-Sen) é $+0{,}582\%$/ano ($p=0{,}0056$, significativa). Após a flow-normalização (\texttt{script\_19\_wrtds.py}), a tendência cai para $-0{,}133\%$/ano (\textbf{$p=0{,}064$, não significativa}) -- quase toda a tendência aparente na série bruta desaparece ao descontar o efeito da vazão. A checagem de circularidade obrigatória (vazão derivada de Cloreto, independente do TDS, em vez da vazão padrão derivada do próprio TDS) confirma o resultado: tendência flow-normalized de $-0{,}158\%$/ano ($p=0{,}033$), correlação de $r=0{,}998$ entre as duas versões flow-normalized, diferença de apenas $0{,}024$ pontos percentuais/ano. A Figura \ref{fig:wrtds} mostra a série ajustada e flow-normalized; a Figura \ref{fig:wrtds-circ} mostra a checagem de circularidade.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\linewidth]{images/wrtds-flow-normalized.png}
+    \caption{WRTDS: TDS ajustado e flow-normalized (efeito da vazão descontado).}
+    \label{fig:wrtds}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\linewidth]{images/wrtds-circularidade.png}
+    \caption{Checagem de circularidade: flow-normalização com vazão derivada de TDS vs.\ de Cloreto.}
+    \label{fig:wrtds-circ}
+\end{figure}
+
+\textbf{Leitura honesta:} a tendência de alta identificada na Seção "Síntese comparativa" é, majoritariamente, um efeito da variação de vazão (ciclos de seca/conservação), não uma tendência independente de aumento de carga de sal -- consistente com D-37 e reforçando que o enquadramento correto é cíclico, não monotônico.
+
+\subsection{Balanço de massa: diluição, não mais sal -- mas extrapolação linear é implausível}
+
+\texttt{script\_20\_balanco\_massa.py} modela carga de sal (lb/dia, observada diretamente) e vazão (MGD, via Cloreto) separadamente. A carga de sal caiu $-3{,}20\%$/ano ($p<0{,}0001$) e a vazão caiu $-3{,}85\%$/ano ($p<0{,}0001$) no mesmo período -- \textbf{confirma o mecanismo de diluição}: entra cada vez menos água carregando uma quantidade de sal que também está caindo, não subindo. A validação histórica ($\mathrm{TDS} = \mathrm{carga} \div (\mathrm{vazao}_{\text{Cloreto}} \times 8{,}34)$ vs.\ observado) tem RMSE$=19{,}1$~mg/L, $r=0{,}973$, $R^2=0{,}941$ (Figura \ref{fig:balanco-validacao}). A checagem de tautologia (repetindo com a vazão do próprio TDS) dá $R^2=1{,}000000$ exato -- confirma que essa versão é uma identidade algébrica, não uma validação real.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\linewidth]{images/balanco-massa-decomposicao.png}
+    \caption{Decomposição do balanço de massa: carga de sal, vazão e TDS derivado vs.\ observado.}
+    \label{fig:balanco-decomp}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{images/balanco-massa-validacao.png}
+    \caption{Validação histórica: TDS observado vs.\ TDS derivado (carga ÷ vazão de Cloreto).}
+    \label{fig:balanco-validacao}
+\end{figure}
+
+\textbf{Achado negativo, registrado e não escondido:} a extrapolação linear (Theil-Sen) de carga e vazão para +10/+15/+20 anos cruza valores fisicamente implausíveis -- a vazão projetada cai para 14\% da capacidade nominal em +10 anos, 5\% em +15 anos, e fica \textbf{negativa} em +20 anos. O TDS derivado dessa extrapolação (993 $\to$ 1.724 $\to$ 1.557~mg/L, não-monotônico) não deve ser lido como previsão confiável -- é reportado para expor a fragilidade, motivando diretamente a próxima subseção.
+
+\subsection{Projeção por cenários climáticos}
+
+\texttt{script\_21\_cenarios.py} substitui a extrapolação linear implausível por uma projeção condicionada a cenários de seca, usando o PDSI histórico (AR(1): $\mu=-0{,}31$, $\phi=0{,}894$) e a relação $\mathrm{TDS} \sim \mathrm{PDSI}(\text{lag}=4\text{m})$ (coeficiente $=-20{,}4$, $R^2=0{,}445$). A Tabela \ref{tab:cenarios} e a Figura \ref{fig:cenarios-horizontes} mostram a faixa de TDS por cenário e horizonte (2.000 simulações de Monte Carlo por cenário); a Figura \ref{fig:cenarios-fan} mostra o cenário normal como \textit{fan chart} ao longo do tempo.
+
+\begin{table}[H]
+    \centering
+    \small
+    \begin{tabular}{l|c|c|c}
+         Cenário & +10 anos & +15 anos & +20 anos \\ \hline
+        Seco & 721 [596, 852] & 720 [595, 848] & 718 [588, 846] \\
+        Agravamento climático & 682 [561, 808] & 697 [576, 826] & 714 [591, 842] \\
+        Normal & 663 [536, 788] & 659 [533, 784] & 658 [529, 783] \\
+        Úmido & 597 [470, 721] & 595 [470, 723] & 594 [462, 721] \\
+    \end{tabular}
+    \caption{Mediana [P5, P95] de TDS simulado (mg/L) por cenário climático e horizonte.}
+    \label{tab:cenarios}
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\linewidth]{images/cenarios-pdsi-fanchart.png}
+    \caption{Projeção condicional do cenário normal (mediana + IC90\%) -- não é previsão pontual.}
+    \label{fig:cenarios-fan}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\linewidth]{images/cenarios-pdsi-horizontes.png}
+    \caption{Faixa de TDS por cenário climático e horizonte (mediana + IC90\%).}
+    \label{fig:cenarios-horizontes}
+\end{figure}
+
+O cenário de agravamento climático converge para perto do cenário seco ao longo do horizonte, como esperado pelo desenho da rampa de média-alvo do PDSI. Todas as faixas são fisicamente plausíveis, ao contrário da extrapolação linear da subseção anterior. \textbf{Não se apresenta um valor único de TDS para 2046} -- a faixa de $\sim$590 a $\sim$850~mg/L, condicionada ao regime climático, é a resposta honesta que os dados permitem.
+
+\subsection{Reconciliação entre as famílias de método}
+
+Os métodos de tendência/ML de \texttt{script\_01}--\texttt{script\_15} (finalistas $\sim$760-800~mg/L em +20a, Seção "Síntese final") não são contraditados pelos resultados desta seção -- respondem a uma pergunta diferente (desempenho preditivo de curto prazo e magnitude da tendência bruta, sem descontar vazão). WRTDS responde se há tendência \textit{sob} os ciclos (não, uma vez descontada a vazão); balanço de massa responde se o mecanismo é diluição ou mais sal (diluição); cenários respondem qual a faixa plausível de longo prazo condicionada ao clima (594-721~mg/L em +20a, ante $\sim$760-800~mg/L da extrapolação de tendência bruta) -- a diferença entre as duas faixas é esperada e coerente: a extrapolação de tendência bruta carrega implicitamente o efeito de vazão continuando a cair, enquanto os cenários limitam essa vazão a valores fisicamente plausíveis (D-42).
+
 \subsection{Comparação com a literatura}
 
 Dois estudos do mesmo mecanismo e da mesma região geográfica dão contexto à tendência de alta encontrada neste trabalho (2,9 a 3,9 mg/L/ano, Seção "Síntese comparativa"). Schwabe et al. \cite{schwabe2020unintended} encontraram, em 34 estações de tratamento do sul da Califórnia (2013--2017), que a conservação de água durante a seca reduziu o volume de esgoto e aumentou sua salinidade -- a mesma direção de efeito, no mesmo tipo de instalação e na mesma região, que a tendência de alta de TDS aqui identificada na LAGWRP. Wolfand et al. \cite{wolfand2022dilution} modelaram a mesma bacia hidrográfica onde a LAGWRP descarrega (rio Los Angeles) e encontraram que a concentração de TDS aumenta com o reúso de água, mesmo quando a carga total de poluentes diminui -- reforçando, em nível de bacia e não só de estação individual, o mesmo mecanismo de concentração por redução de volume.

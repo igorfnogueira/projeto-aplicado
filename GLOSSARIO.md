@@ -275,12 +275,68 @@ Método padrão do USGS para tendência de qualidade de água. **Separa a mudan�
 de vazão da mudança "flow-normalized"** (o que resta depois de descontar a vazão). Responde
 diretamente à pergunta central: a subida do TDS é falta de diluição ou mais sal?
 
+**No projeto:** implementação própria (`script_19_wrtds.py`), não o pacote R `EGRET` (sem
+equivalente Python maduro) — regressão ponderada localmente (kernel tricúbico em tempo, log(vazão)
+e sazonalidade) com janelas fixas, não adaptativas como o EGRET real (simplificação declarada).
+Resultado: a tendência flow-normalized não é significativa (p=0,064) — quase toda a tendência
+bruta desaparece ao descontar a vazão. Ver D-39.
+
+### Flow-normalização (flow-normalization)
+O passo final do WRTDS: em vez de olhar a concentração ajustada no instante `t` com a vazão
+realmente observada em `t`, integra (calcula a média de) a predição do modelo sobre **toda a
+distribuição histórica de vazão**, mantendo fixos o tempo e a sazonalidade. O resultado é "que
+concentração se esperaria em `t` se a vazão tivesse seguido seu padrão histórico normal" — isola o
+efeito de tempo/regime do efeito puramente hidrológico.
+
+### Risco de circularidade (em variáveis derivadas)
+Quando uma variável explicativa foi calculada a partir da própria variável-alvo (aqui: a vazão
+reconstruída via `lb/dia ÷ (mg/L × 8,34)`, D-12, usa o próprio TDS), usá-la para "explicar" o alvo
+pode gerar uma relação artificial ou até tautológica (ver `script_20`, onde `TDS = carga_TDS ÷
+(vazão_TDS × 8,34)` dá R²=1,000000 exato, por identidade algébrica, não por poder explicativo real).
+**Mitigação usada no projeto:** repetir a análise com a vazão derivada de uma série independente
+(Cloreto) e comparar — se os resultados coincidirem, a circularidade não invalida o achado (D-39,
+D-40).
+
+### Balanço de massa (mass balance)
+Em vez de extrapolar a concentração (TDS) diretamente, modela separadamente os dois componentes
+físicos que a compõem — carga de sal (massa por tempo, lb/dia) e vazão (volume por tempo, MGD) — e
+deriva a concentração pela identidade `TDS = carga ÷ (vazão × 8,34)`. Mais defensável fisicamente
+que extrapolar TDS como caixa-preta, mas **herda a fragilidade de cada componente**: se a
+extrapolação da vazão ou da carga for instável, a razão entre elas também será (D-40 documenta um
+caso concreto: vazão extrapolada linearmente cruza valores negativos em +20 anos).
+
 ### LMG (Lindeman, Merenda & Gold) — importância relativa
 Método que decompõe o R² de uma regressão múltipla entre as variáveis explicativas, considerando
 efeitos diretos e as intercorrelações. Implementado no pacote R `relaimpo`.
 
 **No projeto:** é o método pelo qual o SCSC concluiu que TDS de origem responde por 88% e
-conservação por 12%.
+conservação por 12%. Reimplementado em Python via fórmula fechada (2 preditores) em `script_18` e
+usado de novo internamente em `script_19`/`script_20` para separar os efeitos de vazão e PDSI.
+
+### AR(1) — processo autorregressivo de ordem 1
+Modelo estatístico simples em que o valor de uma série no tempo `t` depende linearmente do valor em
+`t-1` mais ruído: `X_t = μ + φ(X_{t-1} - μ) + ε_t`. Um processo estacionário (`|φ|<1`) sempre reverte
+à média `μ` no longo prazo — é por isso que ele é apropriado para simular o PDSI (índice calibrado
+para ser aproximadamente estacionário), mas **não** seria apropriado para simular uma série com
+tendência real de longo prazo, que um AR(1) tende a "puxar" de volta à média artificialmente.
+
+**No projeto:** `script_21_cenarios.py` ajusta um único AR(1) no PDSI histórico (1895-2026) e simula
+os 4 cenários mudando só a média-alvo `μ` de cada um (não o processo em si).
+
+### Monte Carlo
+Técnica de estimar a distribuição de uma quantidade incerta simulando repetidamente o processo que
+a gera (aqui: milhares de trajetórias de PDSI + milhares de sorteios do coeficiente da regressão +
+ruído), em vez de calcular a distribuição analiticamente. Produz uma distribuição inteira de
+resultados possíveis (ex. TDS em +20 anos), da qual se extrai percentis (P5/P50/P95), não um único
+número.
+
+### Projeção condicional (vs. previsão)
+Uma projeção condicional responde "**se** o clima seguir o padrão do cenário X, o TDS ficaria em
+torno de Y" — não afirma qual cenário vai de fato acontecer. Diferente de uma previsão pontual (ex.
+"o TDS em 2046 será Z mg/L"), que implicitamente afirma saber o futuro do clima também.
+
+**No projeto:** `script_21` reporta 4 projeções condicionais (seco/normal/úmido/agravamento
+climático), nunca um valor único para +20 anos — ver D-41.
 
 ---
 

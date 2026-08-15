@@ -67,7 +67,10 @@ estimativa, não um medidor.
 
 ### 3.3 Dados populacionais da bacia de esgotamento
 Sem população, não é possível calcular consumo per capita (gpcd) nem replicar diretamente o modelo
-determinístico do SCSC (`TDS = origem + SML × pop / vazão`).
+determinístico do SCSC (`TDS = origem + SML × pop / vazão`). **Adaptação usada em vez disso**
+(`script_20_balanco_massa.py`, D-40): a identidade física direta `TDS = carga/(vazão×8,34)`, sem o
+termo per-capita — mais simples, mas não separa quanto da carga vem de água de origem vs. de uso
+doméstico.
 
 ### 3.4 Perris Valley WWTP como comparadora
 Estação sem outorga NPDES federal (`CAU001102`, "Unpermitted"), opera sob licença estadual por focar
@@ -154,6 +157,25 @@ resolve isso; a mitigação adotada é apresentar faixas de incerteza e cenário
 que modelos clássicos superem LSTM/N-BEATS — e um resultado negativo aqui deve ser reportado, não
 omitido.
 
+### 4.9 ⚠️ WRTDS: adaptação de contexto e implementação simplificada
+O WRTDS (Hirsch et al., 2010) foi desenhado para vazão **fluvial** (dirigida por hidrologia); aqui
+a "vazão" é vazão de **efluente** (dirigida por consumo/conservação) — a matemática se aplica, a
+interpretação é diferente. Além disso, a implementação usada (`script_19_wrtds.py`) é própria, não
+o pacote R `EGRET` (sem equivalente Python maduro): usa janelas de meia-largura **fixas**, sem a
+expansão adaptativa do EGRET real quando poucos pontos têm peso não-nulo. O risco de circularidade
+(a vazão padrão foi derivada do próprio TDS) foi testado explicitamente comparando com a vazão de
+Cloreto (independente) — as duas convergem (diferença de 0,024 pontos percentuais/ano), então a
+circularidade não invalida o achado, mas o teste precisa ser refeito se a vazão padrão do projeto
+mudar. → Ver D-39.
+
+### 4.10 ⚠️ Balanço de massa: extrapolação linear dos componentes é fisicamente implausível
+Extrapolar carga de sal e vazão linearmente (Theil-Sen) por 10-20 anos cruza valores fisicamente
+impossíveis: a vazão projetada cai para 14% da capacidade nominal em +10a, 5% em +15a, e **fica
+negativa** em +20a. O TDS derivado dessas projeções (993 → 1.724 → 1.557 mg/L) não é uma previsão
+confiável — é reportado para expor a fragilidade, não escondê-la. A mitigação adotada foi substituir
+a extrapolação linear por cenários condicionados a faixas historicamente observadas de PDSI
+(`script_21_cenarios.py`), não por um piso arbitrário na vazão. → Ver D-40.
+
 ---
 
 ## 5. Limitações do enquadramento causal
@@ -172,10 +194,15 @@ Mesmo que o PDSI se correlacione com os ciclos de TDS, isso é evidência de ass
 compatível com o mecanismo — não prova causal. O desenho é observacional, sem controle nem
 intervenção.
 
-### 5.3 O reenquadramento cíclico ainda não está confirmado
-O padrão por regime (2011 → 2015 → 2019 → 2022) foi identificado, mas a confirmação de que os
-ciclos acompanham a seca **ainda não foi executada**. Enquanto isso, D-14 permanece com status
-pendente e não deve ser tratado como resultado estabelecido.
+### 5.3 O reenquadramento cíclico está confirmado, mas com sincronia fina mais fraca do que o nível/regime
+**Atualização (2026-08-14):** o teste pendente foi executado (`script_18_pdsi_regimes.py`) e D-14
+está **confirmado** — o PDSI (independente, cego às datas do TDS) explica 68-79% da importância
+relativa na decomposição LMG, e seus *changepoints* coincidem com as 4 viradas de regime observadas
+dentro de poucos meses. A ressalva que permanece: a correlação sobre as séries destendenciadas
+(sincronia mês a mês) é mais fraca e muda de sinal — a seca explica principalmente o *nível* de cada
+regime, não sua oscilação fina. `script_19_wrtds.py` reforça essa leitura: a tendência
+flow-normalized (que descontaria justamente esse tipo de efeito de nível) não é significativa
+(p=0,064). → Ver D-14, D-37, D-39.
 
 ---
 
