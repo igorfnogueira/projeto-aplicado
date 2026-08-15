@@ -1,0 +1,24 @@
+{
+  "trend_bruta_pct_ano": 0.5824350485619023,
+  "trend_bruta_pvalor": 0.005586271589936704,
+  "trend_flow_normalized_vazao_tds_pct_ano": -0.13335776429982404,
+  "trend_flow_normalized_vazao_tds_pvalor": 0.0641874076529435,
+  "trend_flow_normalized_vazao_chloride_pct_ano": -0.15762405062251794,
+  "trend_flow_normalized_vazao_chloride_pvalor": 0.03290895582832919,
+  "correlacao_entre_flow_normalized_tds_vs_chloride": 0.9981111602223737,
+  "diferenca_absoluta_pct_ano": 0.024266286322693897,
+  "circularidade_preocupante": false,
+  "forecasts_flow_normalized_mgL": {
+    "forecast_10y": 680.6016662392121,
+    "ci90_low_10y": 662.4782669000607,
+    "ci90_high_10y": 700.7452622744895,
+    "forecast_15y": 676.0755782985547,
+    "ci90_low_15y": 654.5421169881155,
+    "ci90_high_15y": 700.1437273998876,
+    "forecast_20y": 671.5795894203338,
+    "ci90_low_20y": 646.701038082378,
+    "ci90_high_20y": 699.5427088958197
+  },
+  "script": "script_19_wrtds",
+  "data_execucao": "2026-08-14T20:49:01"
+}

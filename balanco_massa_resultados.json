@@ -1,0 +1,37 @@
+{
+  "trend_carga_lb_dia_ano": -1736.458361092605,
+  "trend_carga_pct_ano": -3.1973125929125357,
+  "trend_carga_pvalor": 1.9271470205281556e-12,
+  "trend_vazao_mgd_ano": -0.3648391770652932,
+  "trend_vazao_pct_ano": -3.845405871035843,
+  "trend_vazao_pvalor": 1.0123395832119366e-15,
+  "mecanismo_identificado": "diluicao",
+  "validacao_vazao_chloride": {
+    "rmse": 19.097905019213993,
+    "mae": 2.3914944393721744,
+    "correlacao_r": 0.9728989468497279,
+    "correlacao_p": 2.0591548373009567e-116,
+    "r2": 0.9409580693070152
+  },
+  "validacao_vazao_tds_tautologia": {
+    "rmse": 8.12673253756695e-14,
+    "mae": 5.0596889315664274e-14,
+    "correlacao_r": 1.0,
+    "correlacao_p": 0.0,
+    "r2": 1.0
+  },
+  "forecasts": {
+    "forecast_10y": 993.4457651769898,
+    "ci90_low_10y": 379.6749825905554,
+    "ci90_high_10y": 3537.3501914943554,
+    "forecast_15y": 1724.2431083313122,
+    "ci90_low_15y": 144.5059502929514,
+    "ci90_high_15y": 6279.745794895334,
+    "forecast_20y": 1557.0420678780074,
+    "ci90_low_20y": -1682.635110673782,
+    "ci90_high_20y": 4636.51308266707
+  },
+  "projecao_implausivel_a_partir_de_anos": 10,
+  "script": "script_20_balanco_massa",
+  "data_execucao": "2026-08-14T20:56:42"
+}
