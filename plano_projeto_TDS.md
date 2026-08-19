@@ -348,6 +348,10 @@ Desempenho no holdout (RMSE/MAE/R²) sem ser o único critério; largura/comport
 
 **`GLOSSARIO.md`** (criado em 2026-08-14, por exigência de `GOVERNANCA_DOCUMENTACAO_TEMPLATE.md`) e **`ESCOPO_E_LIMITACOES.md`** (mesma data) entram com o mesmo status de manutenção contínua do notebook/READMEs/artigo/`DECISOES.md`: todo termo técnico novo introduzido no projeto entra no glossário na mesma execução; toda fronteira ou fragilidade de resultado nova identificada entra em `ESCOPO_E_LIMITACOES.md`. Ver checklist §7.
 
+**`RESUMO_EXECUTIVO_DECISOES.md`** (criado em 2026-08-19, saída da Fase 1/2 do kickoff crítico do projeto) resume em 1 página só as decisões que **mudaram uma conclusão** do trabalho, com link para a entrada completa em `Artigo/DECISOES.md` — não substitui o ADR completo, é uma camada de navegação para quem (incluindo a banca) precisa entender o projeto rápido. Atualizar só quando uma decisão nova mudar o rumo do trabalho, não a cada entrada nova do ADR.
+
+**`Artigo/COMO_COMPILAR.md`** (mesma data) documenta os pré-requisitos de ambiente para compilar o artigo (TeX Live/`pdflatex`/`bibtex`, fora do `requirements.txt` Python) e o checklist de verificação pós-compilação — criado depois de uma sessão anterior ter concluído erroneamente que o LaTeX "não estava instalado" só porque não estava no `PATH` do shell (ver `Artigo/DECISOES.md`, nota de troubleshooting em D-38).
+
 ## 8. Pontos ainda em aberto
 
 Nenhuma pergunta bloqueante restante. O único item que volta a aparecer é a decisão de tratamento de ND (seção 1.3), mas só na hora em que o `script_00` for de fato construído — não bloqueia a aprovação deste plano.
