@@ -123,6 +123,7 @@ mlflow ui --backend-store-uri sqlite:///mlflow.db
 ├── GLOSSARIO.md                                       # todo termo técnico do projeto, explicado (domínios sanitário/regulatório/estatístico)
 ├── ESCOPO_E_LIMITACOES.md                             # fronteira explícita do estudo: dentro do escopo, fora por escolha, fora por indisponibilidade, fragilidades conhecidas
 ├── plano_projeto_TDS.md                               # plano de execução, fonte da verdade
+├── prompts/                                           # as instruções exatas usadas para conduzir cada fase do projeto (proveniência da sessão)
 ├── resultados_comparacao.csv / .json                  # resultados comparativos (21 métodos)
 ├── diagnostico_residuos_resultados.csv / .json         # saída do diagnóstico de resíduos do script_14 (gerado)
 └── tabela_sintese_final.csv                            # tabela consolidada do script_15 (gerado)
@@ -156,7 +157,7 @@ A bateria de 21 métodos, o diagnóstico estrutural, a análise de correlação,
 
 ## Tratamento de dados robusto e bateria ampliada (Etapa 3)
 
-Conforme `prompt_tratamento_e_metodos.md`, antes de estender ainda mais a bateria de métodos, dois passos de tratamento de dados foram executados:
+Conforme `prompts/prompt_tratamento_e_metodos.md`, antes de estender ainda mais a bateria de métodos, dois passos de tratamento de dados foram executados:
 
 **Reconstrução da vazão (`script_16_reconstrucao_vazao.py`):** o dataset traz o mesmo parâmetro em `mg/L` e `lb/day`, relacionados por `lb/day = mg/L × vazão(MGD) × 8,34`. Isso permite reconstruir a vazão do efluente, que não está explícita no dataset. Validado de duas formas: plausibilidade contra a capacidade nominal de 20 MGD da planta, e consistência cruzada entre parâmetros (a vazão derivada independentemente de TDS, Cloreto, Amônia e BOD — medidos na mesma amostra física — deve coincidir se o pareamento for real). **Resultado: a identidade se sustenta** — a vazão derivada de TDS correlaciona 0,997-0,998 com Cloreto/Amônia (0,87 com BOD, mais ruidoso mas ainda forte), com média de ~9,5 MGD (~47% da capacidade nominal), tudo plausível. Isso habilitou os métodos WRTDS, balanço de massa e cenários climáticos — todos implementados, ver abaixo.
 

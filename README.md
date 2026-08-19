@@ -123,6 +123,7 @@ mlflow ui --backend-store-uri sqlite:///mlflow.db
 ├── GLOSSARIO.md                                       # every technical term used in the project, explained (sanitary/regulatory/statistics domains)
 ├── ESCOPO_E_LIMITACOES.md                             # explicit study boundary: in scope, deliberately out, unavailable, known result fragilities
 ├── plano_projeto_TDS.md                               # source-of-truth execution plan
+├── prompts/                                           # the exact instructions used to drive each phase of the project (session provenance)
 ├── resultados_comparacao.csv / .json                  # method comparison results (21 methods)
 ├── diagnostico_residuos_resultados.csv / .json         # script_14 residual-diagnostics output (generated)
 └── tabela_sintese_final.csv                            # script_15 consolidated table (generated)
@@ -156,7 +157,7 @@ The method battery (21 methods), structural diagnostics, correlation analysis, r
 
 ## Robust data treatment and expanded battery (Etapa 3)
 
-Per `prompt_tratamento_e_metodos.md`, before extending the method battery further, two data-treatment steps were run:
+Per `prompts/prompt_tratamento_e_metodos.md`, before extending the method battery further, two data-treatment steps were run:
 
 **Flow reconstruction (`script_16_reconstrucao_vazao.py`):** the dataset reports the same parameter in both `mg/L` and `lb/day`, related by `lb/day = mg/L × flow(MGD) × 8.34`. This lets us reconstruct effluent flow, which isn't otherwise in the dataset. Validated two ways: plausibility against the plant's 20 MGD nominal capacity, and cross-parameter consistency (flow derived independently from TDS, Chloride, Ammonia and BOD — measured on the same physical samples — should agree if the pairing is real). **Result: the identity holds** — flow derived from TDS correlates 0.997–0.998 with Chloride/Ammonia (0.87 with BOD, noisier but still strong), averaging ~9.5 MGD (~47% of nominal capacity), all plausible. This unlocked the WRTDS, mass-balance and climate-scenario methods — all implemented, see below.
 
