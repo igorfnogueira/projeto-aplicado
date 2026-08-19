@@ -8,6 +8,13 @@
 > **Regra de manutenção:** atualizar só quando uma decisão nova muda o rumo do trabalho (não a
 > cada entrada nova do ADR — a maioria das entradas é detalhe de implementação, não guinada).
 
+**Classificação do projeto (Fase 1 do kickoff crítico, `inicio-de-projeto`):** **acadêmico** —
+2026-08-19. Não se encaixa em N0-N3 (que presumem produto de software com usuários/deploy): é um
+TCC de pós-graduação com dois entregáveis fixos (pipeline reprodutível + artigo científico), então
+os gatilhos de subida de nível N0→N1→N2→N3 não se aplicam a este projeto. Revisitar essa
+classificação só se o escopo mudar para além de um trabalho de defesa (ex. virar produto/serviço
+real).
+
 ---
 
 ## 1. A hipótese central mudou — e a mudança é o resultado mais importante do projeto
