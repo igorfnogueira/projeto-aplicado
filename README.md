@@ -108,8 +108,10 @@ mlflow ui --backend-store-uri sqlite:///mlflow.db
 ├── utils/experiment_tracking.py                       # MLflow tracking helpers, shared by all scripts
 ├── diagnostico_serie_resultados.csv / .json            # script_07 structural-diagnostics output (generated)
 ├── notebook.ipynb                                     # single project notebook (preprocessing, EDA, methods) — didactic, cites GLOSSARIO.md/DECISOES.md throughout
+├── RESUMO_EXECUTIVO_DECISOES.md                       # 1-page map of the decisions that changed the project's direction, links into DECISOES.md
 ├── Artigo/                                            # LaTeX scientific article (template.tex is the compilable root)
-│   └── DECISOES.md                                    # ADR-style decision log — the *why* behind every methodological choice
+│   ├── DECISOES.md                                    # ADR-style decision log — the *why* behind every methodological choice
+│   └── COMO_COMPILAR.md                               # environment prerequisites and compile checklist (separate from the Python requirements.txt)
 ├── GLOSSARIO.md                                       # every technical term used in the project, explained (sanitary/regulatory/statistics domains)
 ├── ESCOPO_E_LIMITACOES.md                             # explicit study boundary: in scope, deliberately out, unavailable, known result fragilities
 ├── plano_projeto_TDS.md                               # source-of-truth execution plan
