@@ -3,7 +3,7 @@
 Copie o texto abaixo e cole no Claude Code (terminal, dentro da pasta do projeto).
 
 Ordem recomendada de uso dos prompts do projeto:
-1. `prompt_setup_mlflow.md` (estruturar o rastreamento de experimentos primeiro)
+1. `prompts/prompt_setup_mlflow.md` (estruturar o rastreamento de experimentos primeiro)
 2. **este arquivo** (tratamento de dados + métodos ampliados)
 
 ---

@@ -301,6 +301,122 @@ Se as tendências de alta continuarem, mais agências vão se aproximar ou exced
 3. **Para a discussão dos resultados:** Tema 1 (mecanismo conservação→salinidade, com o número regional de +50 mg/L) e Tema 4 (mecanismo biológico, com limiares de inibição) são a espinha dorsal da interpretação.
 4. **Para a metodologia do artigo:** Temas 5, 6 e 7 fornecem os precedentes que justificam cada família de método da nossa bateria.
 
+---
+
+## Tema 10 — Comparação internacional: o mecanismo se repete fora da Califórnia?
+
+**Por que este tema existe (enquadramento, não acúmulo de referências):** o achado central do
+projeto se decompõe em duas partes de natureza diferente:
+
+- A **diluição** (carga de sal caindo, vazão caindo mais rápido → concentração sobe) é **física**.
+  Deveria valer em qualquer lugar onde haja conservação, independente de geografia.
+- O **efeito da água de origem** (88% segundo o SCSC, seca → qualidade da água importada) é
+  **regional**. Depende do portfólio californiano de SWP/Colorado.
+
+A comparação internacional serve para testar **qual parte do achado é universal e qual é local**.
+
+> **Estado de leitura:** todas as entradas abaixo vêm de **buscas e abstracts**, não de textos
+> completos. Nenhuma deve ser citada no artigo antes de leitura integral e verificação
+> bibliográfica (regra da §2 do plano).
+
+### 10.1 Austrália — Millennium Drought (1997-2010) ⭐ o análogo mais próximo
+
+**Contexto:** seca de ~13 anos, com restrições severas em todas as capitais continentais por volta
+de 2006. É o experimento natural mais parecido com o caso californiano — conservação forçada e
+prolongada, com dados institucionais.
+
+**Achado relevante encontrado na busca:** durante o período, a salinidade aumentou na **Western
+Treatment Plant** (Melbourne) como resultado de intrusão de sal **e redução do volume afluente** —
+exatamente o mecanismo de diluição do nosso projeto, num contexto geográfico e de fonte de água
+completamente diferente. Também relevante: Victoria estabeleceu meta de reúso de 20% do afluente
+até 2010, e superou (24,1% em 2009/10) — ou seja, houve **desvio para reúso simultâneo à
+conservação**, que é a mesma ambiguidade causal que temos em aberto no LAGWRP.
+
+**Referências a buscar na íntegra:**
+- *Adapting Urban Water Systems to a Changing Climate: Lessons from the Millennium Drought in
+  Southeast Australia* — Environmental Science & Technology:
+  https://pubs.acs.org/doi/10.1021/es400618z
+- *Water reuse and recycling in Australia — history, current situation and future perspectives*:
+  https://www.sciencedirect.com/science/article/pii/S2666445320300064
+- Australian Water Partnership — *Building Resilience to Drought: The Millennium Drought and Water
+  Reform* (PDF público): https://waterpartnership.org.au/wp-content/uploads/2024/03/AWN-Building-Resilience-to-Drought.pdf
+
+### 10.2 Israel — o caso mais maduro de regulação de salinidade em efluente
+
+Recicla ~85-86% do esgoto (maior taxa mundial). Desde 2010, as normas israelenses incluem, **pela
+primeira vez, padrões explícitos de salinidade** no efluente tratado — justamente por causa deste
+problema. Relevante para a seção de implicações: mostra um caminho regulatório que a Califórnia
+ainda não tomou.
+
+Nota conceitual confirmada na literatura israelense/espanhola, que reforça o nosso §1 do glossário:
+o tratamento convencional **remove matéria orgânica e sólidos suspensos, mas não sais** — por isso
+o efluente tratado tem condutividade elétrica alta, refletindo a carga total de eletrólitos.
+
+**Referências a buscar:**
+- *Reducing salinity of treated waste water with large scale desalination* (Water Research):
+  https://www.sciencedirect.com/science/article/abs/pii/S0043135420308587
+- *New Standards for Treated Wastewater Reuse in Israel*:
+  https://www.researchgate.net/publication/225262222
+- *Irrigation with water containing salts: macro-data national case study in Israel*:
+  https://www.sciencedirect.com/science/article/abs/pii/S0378377415301542
+
+### 10.3 Espanha — contexto mediterrâneo
+
+Reúsa 40-70% do efluente (variando por região). Estudos documentam aumento de condutividade
+elétrica em solos irrigados com efluente secundário, e concentrações de cloreto de **609-668 mg/L**
+em canais que recebem mistura de água subterrânea e efluente tratado.
+
+**Referências:**
+- *Salt accumulation in soils and plants under reclaimed water irrigation in urban parks of Madrid*:
+  https://www.sciencedirect.com/science/article/abs/pii/S0378377418307005
+- *Salinity effect of irrigation with treated wastewater in basal soil respiration, SE Spain*:
+  https://www.researchgate.net/publication/258614930
+
+### 10.4 Dados brutos baixáveis — o que existe e o que não existe
+
+**Achado honesto da busca: dados brutos de TDS/salinidade de efluente, em série temporal por planta,
+são raros fora da Califórnia.** O eSMR/CIWQS é excepcionalmente aberto. A maioria dos países publica
+apenas agregados nacionais ou os resultados já processados em artigos.
+
+**A melhor fonte encontrada — Melbourne Water (Austrália), com ressalvas importantes:**
+
+O governo de Victoria publica dados **diários** de qualidade de água da Eastern Treatment Plant,
+tanto de entrada quanto de saída, com licença **Creative Commons BY 4.0** (uso livre com atribuição):
+
+- Efluente tratado (saída): https://discover.data.vic.gov.au/dataset/wastewater-outlet-daily-treated-water-quality-eastern-treatment-plant-etp
+- Afluente bruto (entrada): https://discover.data.vic.gov.au/dataset/wastewater-inlet-daily-raw-water-quality-eastern-treatment-plant-etp
+- Download direto (CSV): `https://data-melbournewater.opendata.arcgis.com/api/download/v1/items/ccbcb0ba949b43dca75311aa1137e3fc/csv?layers=0`
+- Contato para dados adicionais: enquiry@melbournewater.com.au
+
+**⚠️ Duas limitações que reduzem muito o valor desse dataset para o nosso projeto:**
+
+1. **Não contém TDS, salinidade nem condutividade.** Os parâmetros publicados são: Amônia (mg/L),
+   BOD (mg/L), COD (mg/L), Nitrato+Nitrito (mg/L) e Nitrogênio total (mg/L). Sem a variável central
+   do trabalho, não é possível replicar a análise de TDS.
+2. **A série começa em 2014** (o serviço se chama `MWC_ETP_Daily_EffluentQuality_From2014`) —
+   portanto **não cobre a Millennium Drought** (1997-2010), que é justamente o período de interesse.
+
+**Uso residual possível:** os dados de BOD e amônia poderiam servir como comparador para a análise
+de correlação, mas sem TDS não há o que correlacionar. **Avaliação honesta: provavelmente não vale
+o esforço de integração.** Registrado aqui para que a decisão fique documentada, e para que ninguém
+refaça essa busca depois.
+
+**Outros portais verificados:** data.gov.au e o ArcGIS Hub da Melbourne Water espelham os mesmos
+datasets, sem parâmetros adicionais.
+
+### 10.5 Como usar este tema no artigo
+
+O caminho de maior valor é **discussão, não replicação de dados**:
+
+1. O caso da Western Treatment Plant (Austrália) mostra o **mesmo mecanismo de diluição** em outro
+   continente, com outra fonte de água — evidência de que essa parte do achado é universal.
+2. O caso israelense mostra o **desfecho regulatório** de longo prazo (padrões de salinidade no
+   efluente), útil para a seção de implicações.
+3. A ambiguidade australiana entre conservação e desvio para reúso é **a mesma que temos em aberto**
+   — citá-la mostra que a limitação do nosso trabalho é reconhecida na literatura, não um descuido.
+
+---
+
 ## Ressalvas
 
 - Vários links (ScienceDirect, Tandfonline, ResearchGate) têm só o abstract público — o texto completo pode exigir acesso institucional da UniSENAI.

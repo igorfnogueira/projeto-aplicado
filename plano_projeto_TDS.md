@@ -1,6 +1,6 @@
 # Plano de Execução — Tendência e Previsão de TDS (LAGWRP)
 
-> Elaborado a partir de `prompt_planejamento_TDS.md`, `AI_Project_Instructions` (instruções originais do professor), `GOVERNANCA_DOCUMENTACAO_TEMPLATE.md`, `Prompt — Manutenção contínua do artigo científico do Projeto Aplicado.md`, da análise estrutural real da pasta `Artigo/` e dos dados reais em `TDS.csv`/`Chloride.csv`/`BOD.csv`/`Ammonia.csv`. Nenhum código foi escrito e nenhum arquivo do artigo foi alterado — este é apenas o plano, para aprovação antes de gerar scripts/subagents ou tocar no `template.tex`.
+> Elaborado a partir de `prompts/prompt_planejamento_TDS.md`, `AI_Project_Instructions` (instruções originais do professor), `GOVERNANCA_DOCUMENTACAO_TEMPLATE.md`, `Prompt — Manutenção contínua do artigo científico do Projeto Aplicado.md`, da análise estrutural real da pasta `Artigo/` e dos dados reais em `TDS.csv`/`Chloride.csv`/`BOD.csv`/`Ammonia.csv`. Nenhum código foi escrito e nenhum arquivo do artigo foi alterado — este é apenas o plano, para aprovação antes de gerar scripts/subagents ou tocar no `template.tex`.
 
 ## 0. Nota sobre o que foi lido/decidido nesta sessão
 
@@ -342,7 +342,7 @@ Desempenho no holdout (RMSE/MAE/R²) sem ser o único critério; largura/comport
 
 ## 9. Controle de versão (Git/GitHub)
 
-**Git foi inicializado em 2026-08-14** (`prompt_decisoes_e_github.md`, Parte 2) — o projeto não tinha repositório antes disso. Branch padrão `main`, remoto em `https://github.com/igorfnogueira/projeto-aplicado`, primeiro commit com o pipeline completo (scripts 00-17, notebook, artigo, `Artigo/DECISOES.md`, READMEs). `.gitignore` exclui `.venv/`, `mlruns/`, `mlflow.db`, `__pycache__/`, artefatos de compilação LaTeX (`*.aux/.log/.bbl/.blg/.out/.toc`) e o scratch descartável da sessão; os CSVs brutos e de resultado são versionados (todos abaixo do limite de 100 MB do GitHub).
+**Git foi inicializado em 2026-08-14** (`prompts/prompt_decisoes_e_github.md`, Parte 2) — o projeto não tinha repositório antes disso. Branch padrão `main`, remoto em `https://github.com/igorfnogueira/projeto-aplicado`, primeiro commit com o pipeline completo (scripts 00-17, notebook, artigo, `Artigo/DECISOES.md`, READMEs). `.gitignore` exclui `.venv/`, `mlruns/`, `mlflow.db`, `__pycache__/`, artefatos de compilação LaTeX (`*.aux/.log/.bbl/.blg/.out/.toc`) e o scratch descartável da sessão; os CSVs brutos e de resultado são versionados (todos abaixo do limite de 100 MB do GitHub).
 
 **`Artigo/DECISOES.md`** passa a ser documento de manutenção contínua com o mesmo status do notebook, dos READMEs e do artigo (seção 2.C-2.G, 4.1, 4.2 já estabeleciam essa regra para os demais; agora estende-se explicitamente ao registro de decisões) — toda decisão metodológica relevante entra lá na mesma execução em que é tomada, com motivo e alternativa descartada, nunca só ao final.
 
@@ -351,6 +351,8 @@ Desempenho no holdout (RMSE/MAE/R²) sem ser o único critério; largura/comport
 **`RESUMO_EXECUTIVO_DECISOES.md`** (criado em 2026-08-19, saída da Fase 1/2 do kickoff crítico do projeto) resume em 1 página só as decisões que **mudaram uma conclusão** do trabalho, com link para a entrada completa em `Artigo/DECISOES.md` — não substitui o ADR completo, é uma camada de navegação para quem (incluindo a banca) precisa entender o projeto rápido. Atualizar só quando uma decisão nova mudar o rumo do trabalho, não a cada entrada nova do ADR.
 
 **`Artigo/COMO_COMPILAR.md`** (mesma data) documenta os pré-requisitos de ambiente para compilar o artigo (TeX Live/`pdflatex`/`bibtex`, fora do `requirements.txt` Python) e o checklist de verificação pós-compilação — criado depois de uma sessão anterior ter concluído erroneamente que o LaTeX "não estava instalado" só porque não estava no `PATH` do shell (ver `Artigo/DECISOES.md`, nota de troubleshooting em D-38).
+
+**Reorganização em 2026-08-19** (achado de auditoria de deriva, `auditoria-projeto`): os 10 arquivos `prompt_*.md` (as instruções exatas usadas em cada fase do projeto) foram movidos da raiz para `prompts/`, mantendo o nome de cada arquivo. Toda referência a esses arquivos em `Artigo/DECISOES.md`, nos READMEs, no `CLAUDE.md` e entre os próprios prompts foi atualizada para o caminho `prompts/prompt_xxx.md`. `solicitacao_dados_LASAN.md` **não** foi movido (é um modelo de e-mail, não um prompt de execução) — continua na raiz.
 
 ## 8. Pontos ainda em aberto
 

@@ -2,7 +2,7 @@
 
 Copie o texto abaixo e cole no Claude Code (terminal, dentro da pasta do projeto).
 
-**Rodar depois de** `prompt_compilar_artigo.md` (para o artigo estar compilável antes de receber
+**Rodar depois de** `prompts/prompt_compilar_artigo.md` (para o artigo estar compilável antes de receber
 resultados novos).
 
 ---
