@@ -20,3 +20,4 @@ lifelines
 pygam
 nbclient
 ipykernel
+chronos-forecasting
