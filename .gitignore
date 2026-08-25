@@ -13,6 +13,7 @@ Artigo/*.bbl
 Artigo/*.blg
 Artigo/*.out
 Artigo/*.toc
+Artigo/*.synctex.gz
 
 # scratch descartavel desta sessao
 scratch_update_notebook6.py

@@ -404,6 +404,43 @@ refaça essa busca depois.
 **Outros portais verificados:** data.gov.au e o ArcGIS Hub da Melbourne Water espelham os mesmos
 datasets, sem parâmetros adicionais.
 
+**Busca adicional (2026-08-20), incluindo download e inspeção real de um candidato:**
+
+- **UK Environment Agency — National Real Time Water Quality Data**
+  (`environment.data.gov.uk`): CSV/telemetria real, tem condutividade, 2019-2022. **Descartado**:
+  são estações de monitoramento ambiental genérico (rios), sem indicação de serem efluente de ETE.
+- **EEA Waterbase-UWWTD** (`eea.europa.eu`): CSV real, cobertura de toda a UE. **Descartado**: os
+  parâmetros de efluente reportados são só BOD/COD/SST/N/P — confirmado na lista de indicadores do
+  próprio dataset, sem condutividade/TDS.
+- **Sydney Water / SA Water / NSW / SA (Austrália)**: nenhum dataset de TDS/condutividade de
+  efluente em aberto encontrado — só água potável e descrições genéricas de programas de
+  monitoramento.
+- **Israel Water Authority**: existe um "banco de dados integrado" de monitoramento de
+  esgoto/água reciclada, mas nada publicamente baixável — consistente com o achado da seção 10.2
+  (há norma regulatória, não há dado aberto).
+- **ACA Catalunya**: API de sensores em tempo real (Sentilo) existe, mas sem confirmação de que
+  condutividade/TDS de esgoto esteja entre os parâmetros expostos.
+- **UNEP GEMS/Water — Global Freshwater Quality Archive** (Zenodo,
+  `zenodo.org/records/14230628`, `GFQA_v2.zip`, 108,7 MB) ⭐ único candidato baixado e
+  **efetivamente inspecionado**, não só triado por metadado de página. 20M+ medições, 608
+  parâmetros, 13.660 estações, 37 países, 1906-2023 — inclui `Electrical_Conductance.csv` (34 MB) e
+  `Salinity.csv`. **Resultado da inspeção: DESCARTADO, de forma definitiva.** A coluna `Water Type`
+  de `GEMStat_station_metadata.csv` tem só 5 categorias (River, Groundwater, Lake, Reservoir,
+  Wetland) — nenhuma é efluente de ETE. Busca textual por "wastewater/effluent/sewage/WWTP" nas
+  descrições das 13.660 estações retornou 56 ocorrências, todas rios/reservatórios **influenciados
+  por** ou **próximos a** descarga de esgoto, não pontos de monitoramento do próprio efluente — o
+  mesmo erro de categoria que este projeto já havia identificado e evitado com os pontos `R-4`/`R-7`
+  (D-07). Arquivo baixado, inspecionado e descartado do disco (não teria uso).
+
+**Conclusão honesta e final desta linha de busca:** dado bruto de TDS/condutividade
+especificamente de **efluente de ETE** (não rio, não água potável, não monitoramento ambiental
+genérico), aberto, baixável e com série temporal multi-ano, não foi localizado fora da Califórnia
+apesar de duas rodadas de busca (Tema 10 original + esta). O eSMR/CIWQS californiano continua sendo
+excepcional nesse aspecto, não a norma — isso é, em si, um achado relevante para a seção de
+limitações de generalização do artigo (§6 de `ESCOPO_E_LIMITACOES.md`): a comparação internacional
+deste trabalho é necessariamente qualitativa (literatura), não numérica (dados brutos), porque a
+segunda opção não existe de forma acessível.
+
 ### 10.5 Como usar este tema no artigo
 
 O caminho de maior valor é **discussão, não replicação de dados**:

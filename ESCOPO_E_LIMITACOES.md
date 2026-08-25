@@ -216,6 +216,14 @@ flow-normalized (que descontaria justamente esse tipo de efeito de nível) não 
   o que só pode ser suposto, não confirmado — nem das 26 do SCSC (confirmado: a cidade de LA não
   participa daquele estudo). As comparações com a literatura são, portanto, entre plantas
   diferentes da mesma região.
+- **Comparação internacional é necessariamente qualitativa, não numérica.** Duas buscas dedicadas
+  (`material_apoio_referencias.md` Tema 10, incluindo download e inspeção real do arquivo UNEP
+  GEMS/Water) não localizaram nenhum dataset aberto e baixável de TDS/condutividade especificamente
+  de **efluente de ETE** (não rio, não água potável) fora da Califórnia, com série temporal
+  multi-ano. O eSMR/CIWQS californiano é excepcional nesse aspecto, não a norma — então qualquer
+  afirmação sobre o mecanismo de diluição valer "internacionalmente" só pode se apoiar em literatura
+  publicada (com suas próprias magnitudes, não replicadas aqui), nunca em replicação direta dos
+  dados.
 
 ---
 
