@@ -93,6 +93,14 @@ verificado e não será usado** no artigo.
   parcial:* o estudo SCSC mostra R²=0,98 entre influente e efluente nessa planta, então os dados
   servem para comparar **forma temporal**, não nível absoluto (D-28).
 
+### 3.8 TimeGPT e TimesFM como modelos fundacionais adicionais
+`plano_projeto_TDS.md` §3.f.9 sugeria testar múltiplos modelos fundacionais. **TimeGPT (Nixtla)**
+não foi testado — é um serviço de API paga, sem chave de acesso disponível nesta sessão.
+**TimesFM (Google)** não foi testado — decisão de escopo, não indisponibilidade: seria redundante
+com o Chronos-Bolt já testado para responder à mesma pergunta de pesquisa (um modelo zero-shot
+generalista supera os métodos clássicos aqui?), sem ganho de informação proporcional ao custo. →
+Ver D-49.
+
 ---
 
 ## 4. Fragilidades conhecidas dos resultados
@@ -175,6 +183,38 @@ negativa** em +20a. O TDS derivado dessas projeções (993 → 1.724 → 1.557 m
 confiável — é reportado para expor a fragilidade, não escondê-la. A mitigação adotada foi substituir
 a extrapolação linear por cenários condicionados a faixas historicamente observadas de PDSI
 (`script_21_cenarios.py`), não por um piso arbitrário na vazão. → Ver D-40.
+
+### 4.11 Espaço de estados: sem evidência de tendência genuinamente variável no tempo
+A promessa teórica do modelo (`UnobservedComponents`) é uma tendência que pode mudar ao longo da
+série. Na prática, a variância estimada do estado de tendência ficou ~0 — o modelo convergiu para
+uma inclinação efetivamente constante, não encontrando evidência de que a tendência realmente varie
+além do que uma reta já captura. Resultado negativo, reportado como tal. → Ver D-45.
+
+### 4.12 ⚠️ GAM: extrapolação explosiva sob o critério de ajuste padrão (GCV irrestrito)
+Minimizar GCV sem restrição no termo de tendência escolhe uma spline pouco suavizada que prevê
+1.910 mg/L em +10 anos (quase 3× o último valor observado). Corrigido com um piso na suavização do
+termo de tendência (λ≥1,0, ainda escolhido por GCV dentro dessa faixa) — decisão declarada, não uma
+correção invisível. Sem esse piso, o método não seria utilizável para extrapolação de longo prazo.
+→ Ver D-46.
+
+### 4.13 Regressão quantílica: cruzamento de quantis ao extrapolar
+Q10, Q50 e Q90 são ajustados de forma independente. Como a inclinação do Q90 é negativa e a do
+Q10/Q50 é positiva, a extrapolação **cruza** nos três horizontes testados (ex. Q90 previsto abaixo
+de Q50 em +20a) — violação da ordem Q10≤Q50≤Q90 que só vale por definição no período histórico. Não
+foi corrigido reordenando os valores (isso esconderia o problema, não o resolveria). → Ver D-47.
+
+### 4.14 Análise de intervenção: instabilidade na componente sazonal MA do SARIMAX
+O termo `ma.S.L12` do modelo convergiu para o limite do espaço admissível (−1,0000, quase
+não-invertível) com erro-padrão de 404 — sinal de instabilidade de estimação nessa componente
+específica. Os coeficientes dos regressores de evento (seca, ordem de conservação) continuam
+interpretáveis, mas a incerteza dessa componente sazonal deve ser lida com cautela. → Ver D-48.
+
+### 4.15 Modelo fundacional zero-shot: incerteza que não cresce com o horizonte
+O IC80 (não IC90 — limite nativo do Chronos-Bolt) do Chronos-Bolt-Small **diminui** com o
+horizonte (216,7 mg/L de largura em +10a → 137,8 em +20a) — o oposto do comportamento de todos os
+outros métodos da bateria. Característica de cabeças de previsão diretas/multi-horizonte, não um
+bug: os quantis de cada horizonte são preditos conjuntamente a partir do mesmo contexto fixo, sem
+composição autorregressiva de incerteza. → Ver D-49.
 
 ---
 

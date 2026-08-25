@@ -338,6 +338,57 @@ torno de Y" — não afirma qual cenário vai de fato acontecer. Diferente de um
 **No projeto:** `script_21` reporta 4 projeções condicionais (seco/normal/úmido/agravamento
 climático), nunca um valor único para +20 anos — ver D-41.
 
+### Espaço de estados / DLM (Dynamic Linear Model) e filtro de Kalman
+Família de modelos em que a tendência e a sazonalidade são tratadas como **estados** que evoluem
+no tempo (com ruído próprio), não como parâmetros fixos de uma reta ou como diferenciação (como no
+ARIMA). O filtro de Kalman é o algoritmo que estima esses estados a cada instante, dada a
+observação até ali. Vantagem teórica: a incerteza da previsão é nativa do modelo, e a tendência
+pode variar ao longo da série em vez de ser uma inclinação única.
+
+**No projeto:** `script_22_espaco_estados.py` (`statsmodels.UnobservedComponents`) testou se a
+tendência do TDS realmente varia no tempo — a variância estimada do estado de tendência ficou
+praticamente zero, ou seja, mesmo com liberdade para variar, o modelo não encontrou evidência de
+que ela varie (D-45).
+
+### GAM — Modelo Aditivo Generalizado (Generalized Additive Model)
+Modelo em que a resposta é a soma de funções suaves (splines) de cada variável explicativa, em vez
+de uma combinação linear simples: `y = s(x1) + s(x2) + ...`. Permite capturar relações não-lineares
+sem especificar sua forma exata a priori — a "forma" da tendência é aprendida dos dados, não
+assumida como reta.
+
+**No projeto:** `script_23_gam.py` (`TDS ~ s(tempo) + s(mês)`, via `pyGAM`) revelou uma patologia
+conhecida de P-splines — minimizar o critério de ajuste (GCV) sem restrição escolhe uma spline
+pouco suavizada que extrapola de forma explosiva fora do intervalo observado. Corrigido com um
+piso na suavização, declarado como decisão, não escondido (D-46).
+
+### Regressão quantílica
+Em vez de estimar a média condicional (como OLS), estima um **quantil** condicional específico (ex.
+a mediana, ou o percentil 90) — permite perguntar se o *pico* de uma série muda de forma diferente
+do seu *centro*.
+
+**No projeto:** `script_24_regressao_quantilica.py` testou se os picos de TDS (Q90, relevantes para
+conformidade regulatória) sobem mais rápido que a mediana (Q50) — encontrou o oposto: a inclinação
+do Q90 é negativa e a do Q10/Q50 é positiva (D-47).
+
+### Cruzamento de quantis (quantile crossing)
+Problema que ocorre quando quantis diferentes (ex. Q10, Q50, Q90) são ajustados de forma
+**independente** e, ao extrapolar, produzem previsões fora de ordem (ex. Q90 previsto menor que
+Q50) — fisicamente/estatisticamente incoerente, já que por definição Q10≤Q50≤Q90 sempre.
+
+**No projeto:** ocorre nos 3 horizontes de previsão de `script_24` (D-47), porque as inclinações de
+Q50 e Q90 têm sinais opostos — reportado como limitação da extrapolação, não corrigido
+artificialmente (ex. reordenando os valores).
+
+### Modelo fundacional de séries temporais / previsão zero-shot
+Modelo de aprendizado profundo pré-treinado numa quantidade massiva de séries temporais públicas
+(de domínios variados), capaz de gerar previsões para uma série nova **sem re-treinar** nela
+("zero-shot") — análogo a um LLM generalista aplicado a números em vez de texto.
+
+**No projeto:** `script_26_modelos_fundacionais.py` testa o Chronos-Bolt-Small (Amazon, pesos
+abertos) como representante dessa categoria — não superou o baseline naive (MASE 0,59 > 0,44),
+resultado esperado e declarado antes de rodar, dado o tamanho pequeno da nossa série (~180 pontos)
+frente ao volume de dados que motiva esse tipo de modelo (D-49).
+
 ---
 
 ## 7. Conceitos do estudo SCSC

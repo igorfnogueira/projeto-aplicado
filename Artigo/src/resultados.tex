@@ -442,6 +442,57 @@ A tendência bruta de $\log(\mathrm{TDS})$ (Theil-Sen) é $+0{,}582\%$/ano ($p=0
 
 O cenário de agravamento climático converge para perto do cenário seco ao longo do horizonte, como esperado pelo desenho da rampa de média-alvo do PDSI. Todas as faixas são fisicamente plausíveis, ao contrário da extrapolação linear da subseção anterior. \textbf{Não se apresenta um valor único de TDS para 2046} -- a faixa de $\sim$590 a $\sim$850~mg/L, condicionada ao regime climático, é a resposta honesta que os dados permitem.
 
+\subsection{Espaço de estados, GAM, regressão quantílica, análise de intervenção e modelo fundacional}
+
+Completando os 9 métodos da seção 3.f do plano original, cinco métodos adicionais foram implementados (\texttt{script\_22} a \texttt{script\_26}), elevando a bateria de 27 para 34 métodos.
+
+\textbf{Espaço de estados (\texttt{local linear trend} + sazonal, escolhido por AIC):} a variância estimada do estado de tendência ficou praticamente zero ($2\times10^{-9}$, $p=1{,}000$) -- mesmo com liberdade para variar, o modelo não encontrou evidência de uma tendência genuinamente variável no tempo, resultado consistente com D-39 (WRTDS). Tendência média do estado: $+8{,}33$~mg/L/ano. \textit{Holdout}: RMSE$=50{,}16$, MASE$=0{,}52$ (não supera o \textit{naive}, $0{,}44$). Previsão $+20$a: $868{,}4$~mg/L, IC90 $[-36{,}8, 1773{,}6]$ -- o mais largo de toda a bateria.
+
+\textbf{GAM:} minimizar o critério de ajuste (GCV) sem restrição no termo de tendência produziu extrapolação explosiva ($1.910$~mg/L em $+10$a, quase $3\times$ o último valor observado) -- patologia conhecida de \textit{P-splines}. Corrigido com um piso declarado no $\lambda$ da tendência ($\lambda\geq1{,}0$, ainda escolhido por GCV dentro dessa faixa), a previsão $+10$a passa a $576{,}5$~mg/L, com leve tendência de queda no longo prazo ($+20$a: $465{,}1$~mg/L, IC90 $[173{,}2, 756{,}9]$). \textit{Holdout}: RMSE$=61{,}87$, MASE$=0{,}68$.
+
+\textbf{Regressão quantílica:} resultado na direção \textbf{oposta} à hipótese de trabalho -- a inclinação do percentil 10 é $+4{,}36$~mg/L/ano ($p=0{,}016$), a da mediana é $+3{,}49$ ($p=0{,}077$), e a do percentil 90 é $\mathbf{-3{,}05}$~mg/L/ano ($p=0{,}026$, significativa e negativa). Os picos de TDS não sobem mais rápido que a mediana -- pelo contrário, caem. Como os três quantis são ajustados de forma independente, a extrapolação \textbf{cruza} nos três horizontes (em $+20$a, o Q90 previsto, $709{,}1$~mg/L, fica abaixo do Q50, $794{,}8$~mg/L) -- limitação reportada, não corrigida por reordenação artificial dos valores.
+
+\textbf{Análise de intervenção (SARIMAX com regressores de evento):} controlando pela ordem de conservação de 2015, o coeficiente da seca de 2012--2016 não atinge significância isoladamente ($+48{,}58$~mg/L, $p=0{,}206$); o coeficiente da ordem de conservação fica no limiar ($+92{,}82$~mg/L, $p=0{,}051$). A componente sazonal MA do modelo apresentou instabilidade de estimação (convergiu para o limite do espaço admissível, $\mathrm{ma.S.L12}=-1{,}0000$, erro-padrão $404$) -- registrado como limitação técnica, não escondido.
+
+\textbf{Modelo fundacional \textit{zero-shot} (Chronos-Bolt-Small):} confirmando a expectativa declarada antes de rodar, o modelo pré-treinado não supera o \textit{baseline naive} (MASE$=0{,}59$ vs.\ $0{,}44$). Achado técnico adicional: a largura do intervalo (Q10--Q90, não IC90 -- limite nativo do modelo) \textbf{diminui} com o horizonte ($216{,}7$~mg/L em $+10$a $\to$ $137{,}8$ em $+20$a), o oposto do comportamento de todos os demais métodos -- característica conhecida de cabeças de previsão diretas/multi-horizonte, não um erro de implementação.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{images/espaco-estados-tds.png}
+    \caption{Espaço de estados (UnobservedComponents) -- TDS observado, ajuste e previsão com IC90 nativo.}
+    \label{fig:espaco-estados}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{images/gam-tds.png}
+    \caption{GAM ($s$(tempo) + $s$(mês)) -- ajuste e previsão com o piso de suavização declarado (D-46).}
+    \label{fig:gam}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{images/regressao-quantilica-tds.png}
+    \caption{Regressão quantílica: mediana (Q50) vs.\ picos (Q90) vs.\ mínimos (Q10).}
+    \label{fig:reg-quantilica}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{images/intervencao-arimax-tds.png}
+    \caption{ARIMAX com regressores de evento (seca 2012-2016, ordem de conservação de 2015).}
+    \label{fig:intervencao}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{images/modelos-fundacionais-tds.png}
+    \caption{Modelo fundacional zero-shot (Chronos-Bolt-Small) -- sem treino nos dados do projeto.}
+    \label{fig:fundacionais}
+\end{figure}
+
+\textbf{Síntese dos cinco métodos novos:} nenhum contradiz D-14/D-37/D-39/D-40 -- pelo contrário, reforçam de ângulos independentes que não há tendência residual clara além do efeito de vazão/regime, e que a extrapolação de longo prazo é estruturalmente frágil em múltiplas famílias de método (não só nas já conhecidas). Detalhes completos em \texttt{Artigo/DECISOES.md} (D-45 a D-50).
+
 \subsection{Reconciliação entre as famílias de método}
 
 Os métodos de tendência/ML de \texttt{script\_01}--\texttt{script\_15} (finalistas $\sim$760-800~mg/L em +20a, Seção "Síntese final") não são contraditados pelos resultados desta seção -- respondem a uma pergunta diferente (desempenho preditivo de curto prazo e magnitude da tendência bruta, sem descontar vazão). WRTDS responde se há tendência \textit{sob} os ciclos (não, uma vez descontada a vazão); balanço de massa responde se o mecanismo é diluição ou mais sal (diluição); cenários respondem qual a faixa plausível de longo prazo condicionada ao clima (594-721~mg/L em +20a, ante $\sim$760-800~mg/L da extrapolação de tendência bruta) -- a diferença entre as duas faixas é esperada e coerente: a extrapolação de tendência bruta carrega implicitamente o efeito de vazão continuando a cair, enquanto os cenários limitam essa vazão a valores fisicamente plausíveis (D-42).
