@@ -429,6 +429,22 @@ As duas principais fontes de água importada para o sul da Califórnia. **A qual
 a seca**: o TDS do CRA oscila ~300 mg/L e o do SWP ~200 mg/L entre anos secos e úmidos — amplitude
 suficiente para explicar os ciclos observados no LAGWRP.
 
+### Cal-Adapt / LOCA (Localized Constructed Analogs)
+Cal-Adapt (`cal-adapt.org`) é a plataforma pública oficial do estado da Califórnia com projeções
+climáticas regionalizadas ("downscaled"). LOCA é o método estatístico de *downscaling* usado —
+ajusta a resolução grosseira de modelos climáticos globais (CMIP5) para uma grade fina (~6 km) mais
+útil em nível regional/local. Tem uma API pública real, sem necessidade de chave de acesso.
+
+**RCP (Representative Concentration Pathway):** cenário de trajetória de emissões de gases-estufa
+usado pelos modelos climáticos — RCP 8.5 é o mais severo dos padrões (emissões continuam subindo),
+RCP 4.5 é um cenário intermediário (emissões estabilizam). Este projeto usou só RCP 8.5.
+
+**No projeto:** `script_27_cenario_climatico_caladapt.py` usa médias de 30 anos de precipitação
+projetada (ensemble de 32 modelos LOCA, RCP 8.5) como um 5º cenário climático, complementando os 4
+cenários históricos de `script_21` — ver D-51. A mudança projetada na precipitação (-2,3% entre
+1961-1990 e 2035-2064 no ponto da LAGWRP) foi convertida num "PDSI-alvo implícito" via uma
+calibração empírica própria (regressão real precipitação↔PDSI, não um PDSI oficial projetado).
+
 ---
 
 ## 8. Instituições e siglas

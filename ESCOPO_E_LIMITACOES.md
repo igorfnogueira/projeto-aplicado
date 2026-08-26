@@ -216,6 +216,13 @@ outros métodos da bateria. Característica de cabeças de previsão diretas/mul
 bug: os quantis de cada horizonte são preditos conjuntamente a partir do mesmo contexto fixo, sem
 composição autorregressiva de incerteza. → Ver D-49.
 
+### 4.16 ⚠️ Cenário Cal-Adapt: "PDSI-alvo" é uma calibração, não uma projeção oficial de seca
+O 5º cenário (`script_27`, D-51) converte uma mudança de precipitação projetada (Cal-Adapt, RCP 8.5)
+num "PDSI-alvo implícito" via regressão empírica própria (R²=0,64) — **não** é uma previsão oficial
+de PDSI. O índice PDSI real depende também de temperatura e balanço hídrico do solo, não só de
+precipitação, e reconstruí-lo formalmente estava fora do escopo deste projeto. Além disso, só o
+cenário RCP 8.5 (o mais severo) foi testado — RCP 4.5 não foi avaliado. → Ver D-51.
+
 ---
 
 ## 5. Limitações do enquadramento causal

@@ -493,6 +493,17 @@ Completando os 9 métodos da seção 3.f do plano original, cinco métodos adici
 
 \textbf{Síntese dos cinco métodos novos:} nenhum contradiz D-14/D-37/D-39/D-40 -- pelo contrário, reforçam de ângulos independentes que não há tendência residual clara além do efeito de vazão/regime, e que a extrapolação de longo prazo é estruturalmente frágil em múltiplas famílias de método (não só nas já conhecidas). Detalhes completos em \texttt{Artigo/DECISOES.md} (D-45 a D-50).
 
+\subsection{Cenário climático fundamentado em projeção real (Cal-Adapt, RCP 8.5)}
+
+A precipitação média projetada para 2035--2064 sob RCP~8.5, extraída no ponto da LAGWRP a partir de rasters reais do Cal-Adapt (ensemble de 32 modelos climáticos LOCA-\textit{downscaled}), cai apenas $2{,}3\%$ frente à média histórica de 1961--1990 ($1{,}244 \to 1{,}216$~mm/dia) -- mudança modesta, consistente com a incerteza conhecida das projeções de precipitação para a Califórnia (ao contrário de temperatura, cujas projeções são mais consensuais). Convertida num ``PDSI-alvo implícito'' via calibração empírica própria ($-0{,}69$, entre os cenários ``normal'' e ``seco''), a simulação de Monte Carlo produz uma faixa de $662$ a $670$~mg/L nos três horizontes (Figura \ref{fig:cenario-caladapt}) -- \textbf{entre} os cenários ``normal'' ($658$~mg/L em $+20$a) e ``seco''/``agravamento'' ($714$--$718$~mg/L), sem contradizer nem repetir os 4 cenários já existentes.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\linewidth]{images/cenario-caladapt-rcp85.png}
+    \caption{Cenários históricos (\texttt{script\_21}) vs.\ cenário fundamentado em projeção climática real (Cal-Adapt, RCP 8.5) em +20 anos.}
+    \label{fig:cenario-caladapt}
+\end{figure}
+
 \subsection{Reconciliação entre as famílias de método}
 
 Os métodos de tendência/ML de \texttt{script\_01}--\texttt{script\_15} (finalistas $\sim$760-800~mg/L em +20a, Seção "Síntese final") não são contraditados pelos resultados desta seção -- respondem a uma pergunta diferente (desempenho preditivo de curto prazo e magnitude da tendência bruta, sem descontar vazão). WRTDS responde se há tendência \textit{sob} os ciclos (não, uma vez descontada a vazão); balanço de massa responde se o mecanismo é diluição ou mais sal (diluição); cenários respondem qual a faixa plausível de longo prazo condicionada ao clima (594-721~mg/L em +20a, ante $\sim$760-800~mg/L da extrapolação de tendência bruta) -- a diferença entre as duas faixas é esperada e coerente: a extrapolação de tendência bruta carrega implicitamente o efeito de vazão continuando a cair, enquanto os cenários limitam essa vazão a valores fisicamente plausíveis (D-42).
