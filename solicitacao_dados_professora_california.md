@@ -23,21 +23,39 @@ começa agradecendo e situando o que já foi feito com os dados anteriores, ante
       Se a professora não lê português, traduza antes de enviar — a versão anterior em inglês fica
       registrada no histórico do arquivo (`git log` ou peça para eu recriá-la, se precisar).
 
+## Atualização importante (2026-09-01/02): conseguimos parte do pedido 1 sozinhos
+
+Depois da versão original deste e-mail, encontramos e lemos **21 relatórios públicos anuais de
+qualidade da água da LADWP (2004-2024)**, que trazem o TDS médio por fonte (LA Aqueduct, poços
+locais, e as três estações da MWD — Weymouth, Diemer, Jensen) e o percentual de mistura de cada
+ano. Construímos uma série de TDS de origem ponderado e comparamos com o TDS de efluente da
+LAGWRP: **correlação forte e significativa (r=0,912, p=0,000005)**, mais forte que a que já
+tínhamos com o PDSI. Isso já é um resultado real, citável no artigo (D-54 em `Artigo/DECISOES.md`).
+
+**O que isso muda no pedido:** não precisamos mais pedir o dado anual do lado Los Angeles — já o
+temos, publicado. O pedido 1 abaixo foi reformulado para focar no que **ainda falta e não
+conseguimos sozinhos**: (a) a mesma coisa só que **mensal**, se existir (os relatórios públicos só
+trazem médias/faixas anuais); (b) o **peso de cada uma das 3 estações da MWD dentro do total
+importado** (hoje assumimos uma média simples das três, por falta desse detalhe); (c) o equivalente
+anual/mensal para o **lado Glendale**, que continua sem nenhum dado real. Os três são dados que
+temos motivo para acreditar que são internos/não-públicos (não achamos nada com buscas nem tentando
+baixar diretamente dos sites oficiais) — por isso a via institucional dela continua sendo o caminho
+mais viável.
+
 ## Os dois pedidos, em ordem de valor (por que essa ordem)
 
-1. **TDS/condutividade da água de origem** — é o item de maior valor. A literatura de referência do
-   projeto (relatório da Southern California Salinity Coalition, 2018) mostra que a qualidade da
-   água de origem explica ~88% da variabilidade do TDS de efluente nas estações estudadas, contra
-   ~12% de conservação local — e essa variável está **ausente** do nosso dataset. Hoje usamos o
-   índice de seca PDSI como *proxy* indireto; ter o dado real substituiria uma aproximação por uma
-   medida direta. **Pesquisa adicional (2026-08-27)** confirmou, via fontes oficiais (LADWP,
-   Glendale Water & Power, MWD), que a LAGWRP atende **duas cidades com portfólios diferentes**: o
-   lado Los Angeles (LADWP) mistura LA Aqueduct (41%), água importada da MWD (50%), subterrânea
-   local (7%) e reciclada (2%); o lado Glendale depende de MWD (60-70%, mistura Colorado River
-   Aqueduct + State Water Project) e água subterrânea local (30-40%), sem aqueduto próprio. A água
-   importada da MWD para essa região passa pelas ETAs **Jensen** (Granada Hills) e **Weymouth** (La
-   Verne) — por isso o e-mail já pede TDS dessas duas estações nominalmente, em vez de "MWDSC"
-   genérico.
+1. **Refinamento do TDS/condutividade da água de origem** — três pedaços específicos, cada um
+   provavelmente exigindo contato direto com LADWP/MWD/Glendale Water & Power (não achamos nada
+   assim publicado):
+   - **(a) Granularidade mensal**, se existir, para o que já temos anual (LA Aqueduct, poços,
+     Weymouth/Diemer/Jensen) — permitiria testar defasagem (quanto tempo a água leva para "chegar"
+     no sistema), do jeito que já fizemos com o PDSI.
+   - **(b) Peso de cada estação da MWD (Weymouth/Diemer/Jensen) dentro do total importado**, por
+     ano — hoje aproximamos por uma média simples das três, o que pode estar distorcendo o
+     resultado, já que elas têm TDS bem diferentes entre si (Jensen ~300 mg/L vs. Diemer/Weymouth
+     ~600+ mg/L).
+   - **(c) O equivalente (anual já ajudaria, mensal seria ideal) para o lado Glendale** — TDS por
+     fonte, entregue pela Glendale Water & Power, que ainda não temos em nenhuma granularidade.
 2. **TDS de efluente de uma estação comparadora** (Donald C. Tillman WRP ou La Cañada WRP) — testa
    se o padrão cíclico ligado a seca encontrado na LAGWRP se replica em outra estação da região, ou
    é específico dela. Hoje a conclusão do projeto se apoia em dados de uma única estação.
@@ -82,37 +100,43 @@ Um estudo regional (Southern California Salinity Coalition, 2018, 26 estações 
 que a **qualidade da água de origem explica ~88% da variabilidade do TDS de efluente**, contra
 apenas ~12% da conservação local de água. Esse estudo, porém, **não incluiu a cidade de Los
 Angeles** — então esse achado é um padrão regional, ainda não confirmado especificamente para a
-LAGWRP. Nós não temos nenhuma série de TDS da água de origem; hoje usamos o índice de seca (PDSI)
-como um substituto indireto para essa variável, que a literatura aponta como o principal fator —
-mais importante até que a conservação de água, hipótese original que motivou este projeto.
+LAGWRP. Para testar isso com dado real (não só o PDSI como substituto indireto), fomos atrás de
+publicações da própria LADWP e encontramos algo bom: **21 relatórios anuais públicos de qualidade da
+água (2004-2024)** trazem o TDS médio de cada fonte que abastece Los Angeles — LA Aqueduct, poços
+locais, e as três estações de tratamento da MWD (Weymouth, Diemer, Jensen). Construímos uma série de
+TDS de origem ponderada por essas fontes e comparamos com o TDS de efluente da LAGWRP: a correlação
+é forte e estatisticamente muito significativa (r=0,912, p=0,000005) — mais forte até que a que já
+tínhamos com o PDSI.
 
-Também descobrimos que a área atendida pela LAGWRP recebe água de **dois portfólios diferentes**:
-o lado Los Angeles (LADWP) mistura água do LA Aqueduct (~41%), água importada da MWD (~50%), água
-subterrânea local (~7%) e água reciclada (~2%); o lado Glendale (Glendale Water & Power) depende de
-MWD (~60-70%, mistura entre Colorado River Aqueduct e State Water Project) e água subterrânea local
-(~30-40%), sem aqueduto próprio. A água importada da MWD para essa região é tratada nas estações
-**Jensen** (Granada Hills) e **Weymouth** (La Verne).
+Esse achado já resolve, sozinho, boa parte do que eu ia pedir. O que sobra, e que não conseguimos
+sem ajuda, é mais específico:
 
-Não temos como conseguir esses dados sozinhos — são registros de agências (LADWP, MWD, Glendale
-Water & Power, LASAN) que, pelo que já tentamos, não têm um portal de download público equivalente
-ao eSMR que usamos para os dados de efluente. É exatamente aqui que sua ajuda faria a diferença: um
-contato institucional ou um caminho de solicitação que você já conheça encurtaria muito esse
-processo, que como estudante estrangeiro eu não tenho como percorrer sozinho.
+1. **Granularidade mensal**, se existir — os relatórios que achamos só publicam médias/faixas
+   anuais. Com uma série mensal, daria para testar o tempo de trânsito da água (quantos meses ela
+   leva do reservatório até virar esgoto), do jeito que já fizemos com o índice de seca.
+2. **O peso de cada uma das 3 estações da MWD (Weymouth/Diemer/Jensen) dentro do total de água
+   importada, por ano** — hoje aproximamos isso por uma média simples das três, mas elas têm TDS bem
+   diferentes entre si (Jensen ~300 mg/L vs. Diemer/Weymouth ~600+ mg/L), então o peso real
+   melhoraria bastante a precisão.
+3. **O equivalente para o lado Glendale** (Glendale Water & Power) — a LAGWRP atende tanto Los
+   Angeles quanto Glendale, e para o lado Glendale ainda não temos nenhum dado real, nem anual.
+
+Tentamos achar essas três coisas sozinhos (busca online, tentativa de acessar os sites oficiais da
+LADWP/Glendale diretamente) e não encontramos nada publicado — acho que são dados mais internos, que
+só saem por um contato direto. É exatamente aqui que sua ajuda faria diferença: um contato
+institucional ou um caminho de solicitação que você já conheça encurtaria muito esse processo, que
+como estudante estrangeiro eu não tenho como percorrer sozinho.
 
 **O que ajudaria, em ordem de valor**
 
-1. **TDS ou condutividade elétrica mensal da água de origem que abastece a área da LAGWRP** —
-   idealmente das estações de tratamento Jensen e/ou Weymouth (as instalações da MWD que atendem
-   essa região), e/ou dados de qualidade da água do LA Aqueduct via LADWP, pelo maior período
-   disponível. É o item de maior valor — substituiria nosso substituto indireto (PDSI) pelo driver
-   real identificado na literatura, específico da mistura que de fato abastece a LAGWRP, não uma
-   cifra regional genérica.
+1. **Qualquer um dos três itens acima** (mensal, peso por estação da MWD, ou dado da Glendale) —
+   qualquer um já ajudaria; não precisa ser os três.
 2. **TDS mensal de efluente de uma estação de tratamento comparável** — idealmente o Donald C.
    Tillman WRP ou o La Cañada WRP — para testar se o padrão cíclico ligado à seca que encontramos na
    LAGWRP se repete em outro lugar, ou é específico dela.
 
-Qualquer formato legível por máquina (CSV, Excel) funciona bem, e qualquer parte deste pedido já é
-genuinamente útil — só o item 1 já representaria uma melhoria significativa no projeto.
+Qualquer formato legível por máquina (CSV, Excel) funciona bem, e sei que são pedidos difíceis —
+qualquer parte que você conseguir já ajuda.
 
 **Compartilhando os resultados**
 
@@ -149,22 +173,25 @@ avançou bastante desde então, e agora esbarrei numa limitação que só resolv
 
 Descobrimos que o TDS do efluente segue um padrão cíclico ligado às secas da Califórnia (confirmado
 com o índice PDSI), causado por diluição — menos vazão de efluente, não mais sal entrando no
-sistema. Só que a literatura da região mostra que o fator que mais explica o TDS não é isso, é a
-**qualidade da água de origem** que abastece a estação (~88% da variação, contra ~12% de conservação
-local) — e esse dado não existe no nosso dataset.
+sistema. A literatura da região mostra que o fator que mais explica o TDS é a **qualidade da água de
+origem** (~88% da variação, contra ~12% de conservação local) — e fomos atrás disso sozinhos: achamos
+21 relatórios anuais públicos da LADWP (2004-2024) com o TDS por fonte de abastecimento, e a
+correlação com o efluente da LAGWRP é forte (r=0,912, p=0,000005).
 
-Não tenho como conseguir isso sozinho: são registros de agências (LADWP, MWD, Glendale Water &
-Power) sem portal público de download, diferente do eSMR que usamos para os dados de efluente. Por
-isso peço sua ajuda com dois pedidos, em ordem de valor:
+O que sobra, e que não consigo sozinho, é mais específico: (a) essa mesma série **mensal**, se
+existir, em vez de só anual; (b) o **peso de cada estação da MWD** (Weymouth/Diemer/Jensen) dentro do
+total importado, que hoje aproximo por média simples; (c) o mesmo dado para o **lado Glendale**, que
+ainda não tenho de forma nenhuma. São registros que parecem internos (não achei nada publicado,
+mesmo tentando os sites oficiais diretamente) — por isso peço sua ajuda, em ordem de valor:
 
-1. **TDS/condutividade mensal da água de origem** que abastece a LAGWRP — idealmente das estações de
-   tratamento Jensen e/ou Weymouth (MWD), e/ou dados do LA Aqueduct via LADWP.
+1. **Qualquer um dos três itens acima** (mensal, peso por estação da MWD, ou dado da Glendale) — não
+   precisa ser todos.
 2. **TDS mensal de efluente de outra estação comparável** — Donald C. Tillman WRP ou La Cañada WRP —
    para testar se o padrão que achamos na LAGWRP se repete em outro lugar.
 
-Qualquer parte disso já ajuda muito — o item 1 sozinho já seria uma melhoria grande. Posso
-compartilhar o artigo, o notebook ou um resumo dos achados, o que for mais útil. É pesquisa
-acadêmica sem fins comerciais, e qualquer dado recebido será devidamente creditado.
+Sei que são pedidos difíceis — qualquer parte que você conseguir já ajuda. Posso compartilhar o
+artigo, o notebook ou um resumo dos achados, o que for mais útil. É pesquisa acadêmica sem fins
+comerciais, e qualquer dado recebido será devidamente creditado.
 
 Muito obrigado pelo apoio — me avise se houver um caminho melhor para pedir isso.
 
@@ -197,7 +224,8 @@ decisões metodológicas, em formato ADR).
 | Lista das agências participantes (8 membros oficiais da SCSC) | Mesmo relatório, página de rosto/missão — **p. 1 do PDF** (EMWD, IEUA, MWDSC, OCSD, OCWD, SDCWA, LACSD, SAWPA) | `material_apoio_referencias.md` Tema 9, nota |
 | San Bernardino e Riverside Public Utilities como estudos de caso adicionais (não membros oficiais) | Mesmo relatório, Seção 2.7 e 2.8 — **p. 21-22 do relatório impresso = p. 36-37 do PDF** | `material_apoio_referencias.md` Tema 9, nota |
 | Esse estudo (SCSC 2018) não incluiu a cidade de Los Angeles | Conclusão própria, cruzando a lista de agências acima (nenhuma delas é LASAN/cidade de Los Angeles) — não é uma frase textual do relatório, é uma inferência nossa a partir da lista | `material_apoio_referencias.md` Tema 9, nota |
-| Portfólio de abastecimento de Los Angeles (LADWP: LA Aqueduct 41%, MWD 50%, subterrânea 7%, reciclada 2%) | LADWP — Sources of Supply: https://www.ladwp.com/who-we-are/water-system/sources-supply · MWD subpágina: https://www.ladwp.com/who-we-are/water-system/sources-supply/metropolitan-water-district-southern-california — páginas web institucionais, sem numeração de página aplicável | `Artigo/DECISOES.md`, D-30 (atualização 2026-08-27) |
+| Portfólio de abastecimento de Los Angeles (LADWP: LA Aqueduct 41%, MWD 50%, subterrânea 7%, reciclada 2%) | LADWP — Sources of Supply: https://www.ladwp.com/who-we-are/water-system/sources-supply · MWD subpágina: https://www.ladwp.com/who-we-are/water-system/sources-supply/metropolitan-water-district-southern-california — páginas web institucionais, sem numeração de página aplicável. **Nota:** esse percentual é a média FY2020-2024; o relatório de 2024 específico tem 59%/36%/2%/3% — o mix varia ano a ano (ver linha seguinte). | `Artigo/DECISOES.md`, D-30 (atualização 2026-08-27) |
+| **TDS de origem ponderado (LADWP) × TDS de efluente LAGWRP: r=0,912 (p=0,000005, n=14 anos)** | 21 relatórios anuais de qualidade da água da LADWP (2004-2024), pasta local `ladwp las drinking water quality report/`, Tabela II ("Aesthetic-based Secondary Standards") de cada um — TDS médio por fonte (LA Aqueduct, poços, Weymouth/Diemer/Jensen) e % de mistura anual. Todos os 21 anos conferidos célula a célula contra o PDF original (auditoria de 100%, zero discrepâncias). Cálculo em `script_28_ladwp_tds_origem.py`, saída em `ladwp_tds_por_fonte_historico.csv`/`ladwp_tds_origem_vs_efluente.csv`. | `Artigo/DECISOES.md`, D-54; `Artigo/src/resultados.tex` |
 | Portfólio de abastecimento de Glendale (MWD 60-70%, subterrânea 30-40%) | City of Glendale — Water Quality Reports: https://www.glendaleca.gov/government/departments/glendale-water-and-power/reports-plans/water-quality-reports · WQR.20: https://www.glendaleca.gov/home/showpublisheddocument/57795/637285835714100000 — o WQR.20 é um PDF, mas a página exata do trecho citado **ainda não foi verificada** (só o resumo do texto foi lido via busca web, não o PDF completo) | `Artigo/DECISOES.md`, D-30 (atualização 2026-08-27) |
 | Jensen e Weymouth como ETAs que abastecem a região/Glendale | ARCS LA Chapter — Water Treatment Plants Fact Sheet: https://orange-county.arcsfoundation.org/files/civicrm/persist/contribute/images/ARCS%20LA%20Chapter%20FT%20Water%20Treatment%20Plants%20Fact%20Sheet%20FINAL_web.pdf — é um PDF curto (fact sheet, 1-2 páginas), mas a página exata **ainda não foi verificada** (mesmo motivo acima) | `Artigo/DECISOES.md`, D-30 (atualização 2026-08-27) |
 | Tillman WRP e La Cañada WRP como comparadoras recomendadas | Análise própria (mesma operadora/bacia que a LAGWRP para o Tillman; série mais longa da região para o La Cañada) — ainda **não obtidos**, é o pedido 2 do e-mail | `Artigo/DECISOES.md`, D-22 |
