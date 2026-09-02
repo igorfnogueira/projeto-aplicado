@@ -1,0 +1,186 @@
+ano_relatorio;fonte;tds_medio_mg_L;tds_min_mg_L;tds_max_mg_L;pct_abastecimento_cidade
+2004;LA Aqueduct Filtration Plant;245;228;265;30
+2004;Southern Combined Wells;394;245;542;
+2004;Northern Combined Wells;394;245;542;
+2004;Lower Stone Canyon Reservoir;253;244;272;
+2004;MWD Diemer;435;370;521;
+2004;MWD Jensen;275;266;286;
+2004;MWD Weymouth;445;371;515;
+2004;MWD_total_agregado;;;;59
+2004;Local_Groundwater_agregado;;;;11
+2005;LA Aqueduct Filtration Plant;193;92;269;60
+2005;Northern Combined Wells;351;168;496;
+2005;Southern Combined Wells;351;204;464;
+2005;MWD Diemer;468;426;528;
+2005;MWD Jensen;302;270;328;
+2005;MWD Weymouth;452;391;532;
+2005;MWD_total_agregado;;;;30
+2005;Local_Groundwater_agregado;;;;10
+2024;LA Aqueduct Filtration Plant;252;232;267;59
+2024;Northern Combined Wells;265;215;362;
+2024;Southern Combined Wells;318;249;391;
+2024;MWD Jensen;306;291;322;
+2024;MWD Diemer;621;556;686;
+2024;MWD Weymouth;632;573;690;
+2024;MWD_total_agregado;;;;36
+2024;Local_Groundwater_agregado;;;;2
+2024;Recycled_agregado;;;;3
+2006;LA Aqueduct Filtration Plant;195;138;225;60
+2006;Northern Combined Wells;451;184;468;
+2006;Southern Combined Wells;451;251;490;
+2006;MWD Diemer;378;307;458;
+2006;MWD Jensen;273;236;304;
+2006;MWD Weymouth;344;270;481;
+2006;MWD_total_agregado;;;;30
+2006;Local_Groundwater_agregado;;;;10
+2007;LA Aqueduct Filtration Plant;258;243;270;20
+2007;Northern Combined Wells;427;248;498;
+2007;Southern Combined Wells;427;248;608;
+2007;MWD Diemer;469;394;519;
+2007;MWD Jensen;267;248;285;
+2007;MWD Weymouth;437;348;509;
+2007;MWD_total_agregado;;;;67
+2007;Local_Groundwater_agregado;;;;13
+2008;LA Aqueduct Filtration Plant;265;241;292;23
+2008;Northern Combined Wells;345;269;482;
+2008;Southern Combined Wells;345;269;672;
+2008;MWD Diemer;569;505;668;
+2008;MWD Jensen;307;283;333;
+2008;MWD Weymouth;565;487;678;
+2008;MWD_total_agregado;;;;68
+2008;Local_Groundwater_agregado;;;;9
+2009;LA Aqueduct Filtration Plant;274;242;311;24
+2009;Northern Combined Wells;400;260;501;
+2009;Southern Combined Wells;400;275;511;
+2009;MWD Weymouth;620;510;660;
+2009;MWD Diemer;610;530;640;
+2009;MWD Jensen;330;310;340;
+2009;MWD_total_agregado;;;;63
+2009;Local_Groundwater_agregado;;;;12
+2009;Recycled_agregado;;;;1
+2010;LA Aqueduct Filtration Plant;226;210;267;47
+2010;Northern Combined Wells;391;225;491;
+2010;Southern Combined Wells;391;326;522;
+2010;MWD Weymouth;570;470;630;
+2010;MWD Diemer;590;470;610;
+2010;MWD Jensen;330;290;330;
+2010;MWD_total_agregado;;;;39
+2010;Local_Groundwater_agregado;;;;13
+2010;Recycled_agregado;;;;1
+2011;LA Aqueduct Filtration Plant;168;101;202;67
+2011;Northern Combined Wells;258;144;394;
+2011;Southern Combined Wells;258;194;468;
+2011;MWD Weymouth;440;390;480;
+2011;MWD Diemer;470;440;490;
+2011;MWD Jensen;280;280;290;
+2011;MWD_total_agregado;;;;23
+2011;Local_Groundwater_agregado;;;;9
+2011;Recycled_agregado;;;;1
+2012;LA Aqueduct Filtration Plant;231;204;245;30
+2012;Northern Combined Wells;415;214;464;
+2012;Southern Combined Wells;415;230;483;
+2012;MWD Weymouth;470;450;490;
+2012;MWD Diemer;500;490;500;
+2012;MWD Jensen;260;240;280;
+2012;MWD_total_agregado;;;;59
+2012;Local_Groundwater_agregado;;;;10
+2012;Recycled_agregado;;;;1
+2013;LA Aqueduct Filtration Plant;276;269;293;11
+2013;Northern Combined Wells;399;270;472;
+2013;Southern Combined Wells;399;294;472;
+2013;MWD Weymouth;530;520;540;
+2013;MWD Diemer;540;520;540;
+2013;MWD Jensen;290;280;300;
+2013;MWD_total_agregado;;;;77
+2013;Local_Groundwater_agregado;;;;10
+2013;Recycled_agregado;;;;2
+2014;LA Aqueduct Filtration Plant;307;294;341;11
+2014;Northern Combined Wells;503;293;566;
+2014;Southern Combined Wells;503;322;567;
+2014;MWD Weymouth;623;604;641;
+2014;MWD Diemer;627;603;651;
+2014;MWD Jensen;340;325;355;
+2014;MWD_total_agregado;;;;71
+2014;Local_Groundwater_agregado;;;;16
+2014;Recycled_agregado;;;;2
+2015;LA Aqueduct Filtration Plant;350;329;369;5
+2015;Northern Combined Wells;489;366;522;
+2015;Southern Combined Wells;489;333;575;
+2015;MWD Weymouth;660;654;665;
+2015;MWD Diemer;633;660;665;
+2015;MWD Jensen;405;405;405;
+2015;MWD_total_agregado;;;;77
+2015;Local_Groundwater_agregado;;;;16
+2015;Recycled_agregado;;;;2
+2016;LA Aqueduct Filtration Plant;233;155;292;5
+2016;Northern Combined Wells;442;274;500;
+2016;Southern Combined Wells;442;307;580;
+2016;MWD Weymouth;634;587;648;
+2016;MWD Diemer;645;610;664;
+2016;MWD Jensen;375;345;395;
+2016;MWD_total_agregado;;;;79
+2016;Local_Groundwater_agregado;;;;14
+2016;Recycled_agregado;;;;2
+2017;LA Aqueduct Filtration Plant;165;79;241;33
+2017;Northern Combined Wells;400;271;486;
+2017;Southern Combined Wells;400;293;580;
+2017;MWD Weymouth;590;560;620;
+2017;MWD Diemer;600;570;630;
+2017;MWD Jensen;350;330;370;
+2017;MWD_total_agregado;;;;51
+2017;Local_Groundwater_agregado;;;;14
+2017;Recycled_agregado;;;;2
+2018;LA Aqueduct Filtration Plant;254;211;282;20
+2018;Northern Combined Wells;431;255;489;
+2018;Southern Combined Wells;431;271;586;
+2018;MWD Weymouth;561;520;600;
+2018;MWD Diemer;570;530;610;
+2018;MWD Jensen;350;320;380;
+2018;MWD_total_agregado;;;;65
+2018;Local_Groundwater_agregado;;;;13
+2018;Recycled_agregado;;;;2
+2019;LA Aqueduct Filtration Plant;172;108;230;44
+2019;Northern Combined Wells;380;240;470;
+2019;Southern Combined Wells;380;260;560;
+2019;MWD Weymouth;500;460;540;
+2019;MWD Diemer;510;470;550;
+2019;MWD Jensen;320;290;350;
+2019;MWD_total_agregado;;;;40
+2019;Local_Groundwater_agregado;;;;14
+2019;Recycled_agregado;;;;2
+2020;LA Aqueduct Filtration Plant;246;198;289;28
+2020;Northern Combined Wells;410;250;480;
+2020;Southern Combined Wells;410;280;570;
+2020;MWD Weymouth;580;540;620;
+2020;MWD Diemer;590;550;630;
+2020;MWD Jensen;340;310;370;
+2020;MWD_total_agregado;;;;58
+2020;Local_Groundwater_agregado;;;;12
+2020;Recycled_agregado;;;;2
+2021;LA Aqueduct Filtration Plant;213;150;260;20
+2021;Northern Combined Wells;400;260;470;
+2021;Southern Combined Wells;400;270;560;
+2021;MWD Weymouth;600;560;640;
+2021;MWD Diemer;610;570;650;
+2021;MWD Jensen;360;330;390;
+2021;MWD_total_agregado;;;;65
+2021;Local_Groundwater_agregado;;;;13
+2021;Recycled_agregado;;;;2
+2022;LA Aqueduct Filtration Plant;260;220;300;15
+2022;Northern Combined Wells;400;260;470;
+2022;Southern Combined Wells;400;280;560;
+2022;MWD Weymouth;610;580;650;
+2022;MWD Diemer;620;590;660;
+2022;MWD Jensen;340;310;370;
+2022;MWD_total_agregado;;;;70
+2022;Local_Groundwater_agregado;;;;13
+2022;Recycled_agregado;;;;2
+2023;LA Aqueduct Filtration Plant;190;140;240;45
+2023;Northern Combined Wells;380;250;450;
+2023;Southern Combined Wells;380;260;540;
+2023;MWD Weymouth;570;530;610;
+2023;MWD Diemer;580;540;620;
+2023;MWD Jensen;310;280;340;
+2023;MWD_total_agregado;;;;40
+2023;Local_Groundwater_agregado;;;;13
+2023;Recycled_agregado;;;;2
