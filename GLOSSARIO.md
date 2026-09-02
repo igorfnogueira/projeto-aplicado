@@ -439,6 +439,14 @@ ajusta a resolução grosseira de modelos climáticos globais (CMIP5) para uma g
 usado pelos modelos climáticos — RCP 8.5 é o mais severo dos padrões (emissões continuam subindo),
 RCP 4.5 é um cenário intermediário (emissões estabilizam). Este projeto usou só RCP 8.5.
 
+### TDS de origem ponderado (LADWP)
+Um TDS anual da água de abastecimento, calculado a partir dos relatórios públicos de qualidade da
+água da LADWP: a média do TDS de cada fonte (Los Angeles Aqueduct, poços locais, e as três estações
+de tratamento da MWD — Weymouth, Diemer, Jensen), ponderada pelo percentual de mistura de cada
+fonte naquele ano. É um proxy real e direto do driver que a literatura (SCSC 2018) aponta como
+dominante — diferente do PDSI, que é um proxy indireto (índice de seca, não medição de TDS). Ver
+D-54.
+
 **No projeto:** `script_27_cenario_climatico_caladapt.py` usa médias de 30 anos de precipitação
 projetada (ensemble de 32 modelos LOCA, RCP 8.5) como um 5º cenário climático, complementando os 4
 cenários históricos de `script_21` — ver D-51. A mudança projetada na precipitação (-2,3% entre

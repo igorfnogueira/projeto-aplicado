@@ -354,6 +354,10 @@ Desempenho no holdout (RMSE/MAE/R²) sem ser o único critério; largura/comport
 
 **Reorganização em 2026-08-19** (achado de auditoria de deriva, `auditoria-projeto`): os 10 arquivos `prompt_*.md` (as instruções exatas usadas em cada fase do projeto) foram movidos da raiz para `prompts/`, mantendo o nome de cada arquivo. Toda referência a esses arquivos em `Artigo/DECISOES.md`, nos READMEs, no `CLAUDE.md` e entre os próprios prompts foi atualizada para o caminho `prompts/prompt_xxx.md`. `solicitacao_dados_LASAN.md` **não** foi movido (é um modelo de e-mail, não um prompt de execução) — continua na raiz.
 
+**`solicitacao_dados_professora_california.md`** (criado em 2026-08-25) é o modelo de e-mail para pedir à professora da Califórnia que forneceu os dados originais: (1) TDS/condutividade mensal da água de origem (SWP/CRA via MWDSC) e (2) TDS/cloreto/condutividade mensal de uma estação comparadora (Tillman WRP ou La Cañada WRP) — mesmo padrão de `solicitacao_dados_LASAN.md`, com placeholders para nome/e-mail do usuário e da professora, ainda não enviado.
+
+**`fontes_acesso_limitado_e_emails.md`** (criado em 2026-08-25) é o recorte prático de `material_apoio_referencias.md` com todas as fontes de literatura sem acesso ao texto completo (paywalled) ou fontes de dados investigadas, cada uma com link, referência, motivação e status de prioridade (alta/média/baixa conforme o quanto sustenta as conclusões centrais do artigo), mais um modelo de e-mail pronto (com placeholders, sem inventar nome/e-mail de autor) para as de prioridade alta e média — para o usuário perseguir acesso por conta própria.
+
 ## 8. Pontos ainda em aberto
 
 Nenhuma pergunta bloqueante restante. O único item que volta a aparecer é a decisão de tratamento de ND (seção 1.3), mas só na hora em que o `script_00` for de fato construído — não bloqueia a aprovação deste plano.

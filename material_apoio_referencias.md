@@ -29,10 +29,16 @@ Estes são os artigos que estudam exatamente o mesmo fenômeno do projeto, em pl
 - **Métodos:** modelagem de cenários de redução de vazão (5%, 10%, 20%) e balanço de massa de constituintes.
 - **Por que importa:** fornece um número regional concreto (+50 mg/L) para confrontar com a nossa taxa de tendência estimada; mesma água receptora dos pontos R-4/R-7/RSW do nosso dataset.
 
-### 1.4 Tandfonline (2023) — *Adapting wastewater management systems in California for water conservation and climate change*
-- **Link:** https://www.tandfonline.com/doi/full/10.1080/23789689.2023.2180251
-- **O que estuda:** adaptação de sistemas de esgoto da Califórnia à conservação e mudanças climáticas (já estava na lista original do projeto).
-- **Por que importa:** seção de recomendações/implicações do artigo.
+### 1.4 Porse, Leo, Eschker, Leverenz, Kaplan, Johnston, Keene & Babchanik (2023) — *Adapting wastewater management systems in California for water conservation and climate change*
+- **Link:** https://www.tandfonline.com/doi/full/10.1080/23789689.2023.2180251 (DOI: 10.1080/23789689.2023.2180251)
+- **Revista:** Sustainable and Resilient Infrastructure, 8:4, 437-450.
+- **✅ Acesso confirmado em 26/08/2026:** texto completo obtido — artigo é **Open Access** (CC BY-NC-ND 4.0), o usuário conseguiu o PDF diretamente. Lido na íntegra. Já adicionado a `Artigo/refs.bib` como `porse2023adapting`.
+- **O que estuda:** levantamento de literatura histórica + pesquisa/entrevistas com gestores de sistemas de coleta, tratamento e reúso de esgoto em toda a Califórnia (não só um caso), sobre os efeitos da conservação de água/seca na vazão afluente e nas ações de adaptação em curso. Financiado pelo California State Water Resources Control Board.
+- **Achado quantitativo mais relevante para este projeto** (Seção 3.1, citando Schwabe et al. 2020 e Tran, Jassby & Schwabe 2017): para **45 estações de tratamento no sul urbano da Califórnia**, as exigências de conservação de água ligadas à seca de 2014-2016 resultaram em **queda de 6-10% na vazão de efluente** (controlando por outros fatores), e essas mesmas ações de conservação **aumentaram o TDS do efluente em 5-12%**. Este é um número **independente e verificado** (diferente do "+50 mg/L" do item 1.3/Wolfand, que segue não-confirmado) — resolve parcialmente a pendência do D-27: agora há uma cifra estadual comparável (percentual, não valor absoluto) para confrontar com a tendência de TDS observada na LAGWRP.
+- **Achado complementar (Tabela 2, mecanismo de diluição por menor uso indoor):** conforme o uso de água indoor per capita caiu de 125 gpcd (anos 1970) → 50 gpcd (anos 1990) → 37 gpcd (anos 2010), a concentração de DBO no afluente subiu de 161 → 402 → 543 mg/L, e de SST de 156 → 391 → 528 mg/L — ilustração direta (embora para DBO/SST, não TDS) do mesmo mecanismo de diluição/concentração que o projeto usa para explicar o TDS.
+- **Achado de generalização:** pesquisa estadual (n=81 respostas de tratamento, 65 agências, 84 instalações distintas) mostra que 63% das estações de tratamento relatam desafios ligados a baixa vazão desde 2011 (mesmo ano de início da nossa série LAGWRP) — confirma que o fenômeno de queda de vazão pós-2011 não é uma particularidade da LAGWRP, é um padrão estadual.
+- **Limitação declarada pelos próprios autores:** amostra voluntária, sujeita a viés de quem respondeu; não é possível calcular taxa de resposta; achados sobre TDS vêm por citação de Schwabe/Tran, não é medição própria deste artigo.
+- **Por que importa para o nosso projeto:** (1) fornece o número estadual mais diretamente comparável e citável de "quanto a conservação aumenta o TDS" que conseguimos confirmar até agora; (2) mostra que o mecanismo de diluição é um padrão reconhecido pela própria indústria de saneamento californiana, não uma hipótese isolada nossa; (3) contextualiza a LAGWRP dentro de um universo de ~442 estações de tratamento afetadas pelo mesmo fenômeno estadual.
 
 ### 1.5 Complementares de contexto (não acadêmicos, mas úteis)
 - CWEA — *Dealing With Declining Wastewater Flows*: https://www.cwea.org/news/dealing-with-declining-flows/ (visão operacional das plantas californianas)
@@ -43,10 +49,15 @@ Estes são os artigos que estudam exatamente o mesmo fenômeno do projeto, em pl
 
 ## Tema 2 — Previsão de TDS com machine learning (métodos para testar e comparar)
 
-### 2.1 Springer (2025) — *TDS Prediction with Wavelet Analysis and Trend-Seasonal Decomposition and Machine Learning Algorithms* — Rio Karkheh, Irã
-- **Link:** https://link.springer.com/article/10.1007/s41101-025-00390-z
-- **Métodos:** transformada wavelet contínua (CWT) para decompor as séries (Ca, HCO3, SO4, Cl) em tendência/sazonalidade/resíduo, usando essas componentes como features para modelos de ML.
-- **Ideia testável no nosso projeto:** decompor a série de TDS (STL) e alimentar as componentes como features para os modelos de árvore — variante direta do nosso item "árvores sobre série destendenciada".
+### 2.1 Amini, Fakheri, Dar, Shakeri, Nejati, Lam, Zahraie & Ahmadian (2025) — *TDS Prediction with Wavelet Analysis and Trend-Seasonal Decomposition and Machine Learning Algorithms, Case Study: Karkheh River, Iran*
+- **Link:** https://link.springer.com/article/10.1007/s41101-025-00390-z (DOI: 10.1007/s41101-025-00390-z)
+- **Revista:** Water Conservation Science and Engineering (2025) 10:63.
+- **✅ Acesso confirmado em 26/08/2026:** texto completo obtido — artigo é **Open Access** (CC BY 4.0), PDF fornecido pelo usuário. Lido na íntegra.
+- **O que estuda:** predição de TDS no rio Karkheh (Irã, 950 km, semiárido), usando dado mensal de 3 estações hidrométricas ao longo de **50 anos** (1968-2018) fornecido pela Iran Water Resources Management Company. Estatísticas descritivas do próprio TDS na região: média 857,2 mg/L, min 344,3, máx 1601, desvio-padrão 231,5 (Tabela 1) — valores na mesma ordem de grandeza do TDS observado na LAGWRP, mas de um rio, não de efluente tratado (contexto diferente do nosso).
+- **Método:** transformada wavelet contínua (CWT) decompõe cada série (TDS, EC, Ca, SO4, HCO3, etc.) em tendência/sazonalidade/resíduo e extrai features (potência média, potência máxima, escala dominante) de cada uma. Três cenários de dataset são comparados: (i) só dado bruto; (ii) dado bruto + features CWT de **todas** as variáveis; (iii) dado bruto + features CWT só do **próprio TDS**. Modelos testados: XGBoost, Random Forest, Decision Tree (split treino/teste 70/30).
+- **Resultado quantitativo:** XGBoost com features CWT só do TDS teve o melhor desempenho — R² subiu de 0,93 (dado bruto) para 0,97, com **redução de ~30% no RMSE** (61,96 → 48,01). Achado central dos autores: adicionar apenas as features extraídas do próprio sinal-alvo (TDS) melhora mais a predição do que adicionar features de todas as variáveis — e é computacionalmente mais barato.
+- **Limitação declarada pelos próprios autores:** não avaliaram importância de features (sugerem SHAP/LIME como trabalho futuro); dados com gaps preenchidos por interpolação linear; custo computacional da CWT pode ser proibitivo para monitoramento em tempo real.
+- **Ideia testável no nosso projeto:** decompor a série de TDS (já fazemos STL em `script_02`) e alimentar as componentes wavelet/STL como features adicionais só para o próprio TDS (não para PDSI/vazão) nos modelos de árvore (`script_03`/`script_04`) — variante direta e de baixo custo computacional do padrão validado por este artigo, mas não implementada neste projeto até o momento (decisão de escopo, não testada).
 
 ### 2.2 MDPI Sustainability (2023) — *Optimization of Fuzzy-Based Machine Learning Techniques for TDS Prediction* (NF-GMDH-GOA)
 - **Link:** https://doi.org/10.3390/su15087016
@@ -58,10 +69,15 @@ Estes são os artigos que estudam exatamente o mesmo fenômeno do projeto, em pl
 - **Métodos:** SVM híbrido com otimizadores metaheurísticos para TDS.
 - **Ideia testável:** SVR (Support Vector Regression) é um candidato legítimo que ainda não está na nossa bateria — barato de adicionar como método extra de comparação.
 
-### 2.4 Tandfonline (2021) — *An integrated machine learning, noise suppression, and population-based algorithm to improve TDS prediction*
-- **Link:** https://www.tandfonline.com/doi/full/10.1080/19942060.2020.1861987
-- **Métodos:** ML + supressão de ruído (denoising) + algoritmo populacional; série longa de TDS (1975–2016) com cloreto, temperatura e dureza como preditores.
-- **Ideia testável:** usa **cloreto como preditor do TDS** — exatamente o que propusemos no VAR/regressão dinâmica (nosso dataset tem série densa de cloreto).
+### 2.4 Sun, Rajabtabar, Samadi, Rezaie-Balf, Ghaemi, Band & Mosavi (2021) — *An integrated machine learning, noise suppression, and population-based algorithm to improve total dissolved solids prediction*
+- **Link:** https://www.tandfonline.com/doi/full/10.1080/19942060.2020.1861987 (DOI: 10.1080/19942060.2020.1861987)
+- **Revista:** Engineering Applications of Computational Fluid Mechanics, 15:1, 251-271 (2021).
+- **✅ Acesso confirmado em 26/08/2026:** texto completo obtido — artigo é **Open Access** (CC BY 4.0, financiado pelo fundo de acesso aberto da TU Dresden). Lido na íntegra. **Correção em relação ao resumo anterior** (baseado só em abstract): os preditores usados **não são** cloreto/temperatura/dureza — são Bicarbonato (HCO3), Cálcio (Ca), Sódio (Na) e Magnésio (Mg), medidos mensalmente em 2 estações hidrométricas do rio Tajan, Irã (Rig-Cheshmeh, 1974-2016, n=505; Soleyman-Tangeh, 1984-2016, n=390), dados da Regional Water Organization/Meteorological Organization of Mazandaran Province.
+- **Método (MSMLEA — Multi-Step Supervised Machine Learning Evolutionary Algorithm):** decompõe a série de TDS e dos preditores via ITD (Intrinsic Time-scale Decomposition, uma alternativa à EMD/wavelet) em componentes de rotação (PRCs) + resíduo; treina um modelo MARS (Multivariate Adaptive Regression Splines) sobre cada componente separadamente; otimiza os 3 hiperparâmetros do MARS (número máx. de funções-base, penalidade, interação) via Crow Search Algorithm (CSA, metaheurística populacional inspirada em corvos); soma as previsões de cada componente para reconstruir o TDS previsto.
+- **Resultado quantitativo:** o modelo híbrido completo (ITD-MARS-CSA) superou MARS isolado, MARS-CSA, ITD-MARS e a equação empírica de Ghavidel & Montaseri (2014) nas duas estações. Em Rig-Cheshmeh (validação): NSE 0,95 (vs. 0,88 do MARS isolado), RMSE 13,45 mg/L (vs. 21,26), WI 0,988. Em Soleyman-Tangeh (validação): NSE 0,94 (vs. 0,51 do MARS isolado), RMSE 9,72 mg/L (vs. 29,81), WI 0,98. A equação empírica de Ghavidel & Montaseri teve desempenho muito pior nas duas estações (NSE 0,26 e 0,15, respectivamente) — reforça que abordagens de ML/decomposição superam fórmulas empíricas fixas para TDS.
+- **Achado de importância de variáveis (ANOVA):** em Rig-Cheshmeh, Na (84,16%) e HCO3 (78,59%) foram os maiores contribuintes; em Soleyman-Tangeh, Mg (81,55%) foi o maior contribuinte — mostrando que a variável dominante muda de uma estação para outra, mesmo dentro da mesma bacia.
+- **Limitação declarada pelos próprios autores:** não avaliaram importância de features com SHAP/LIME; sugerem testar VMD/CEEMD como decomposições alternativas; recomendam dados diários/horários e mais variáveis (chuva, temperatura, vazão) para melhorar a acurácia; o alto custo computacional da decomposição é mencionado como limitação prática.
+- **Ideia testável no nosso projeto:** o padrão "decompor a série-alvo (ITD/wavelet/STL) + treinar modelo sobre os componentes + otimizar hiperparâmetros via metaheurística" aparece de forma quase idêntica neste artigo e no de Amini et al. (2025, item 2.1) — mesma família de ideia (usar decomposição do próprio TDS como feature), reforçando que é um padrão validado na literatura de predição de TDS em rios, não implementado neste projeto até o momento (decisão de escopo, não testada).
 
 ### 2.5 IWA Water Quality Research Journal (2025) — *ML-driven surface water quality prediction: forecasting TDS and DO levels*
 - **Link:** https://iwaponline.com/wqrj/article/60/4/514/109508/
@@ -101,6 +117,7 @@ Estes são os artigos que estudam exatamente o mesmo fenômeno do projeto, em pl
 - **Link:** https://www.researchgate.net/publication/355439776
 - **Métodos:** KNN, SVM, RF, MLP e LSTM comparados para desempenho de ETE.
 - **Por que importa:** mais um template de "bateria comparativa" igual à nossa.
+- **🕓 Status de acesso (26/08/2026):** solicitação de texto completo enviada via botão "Request full-text" do ResearchGate, e-mail usado: igor_nogueira@estudante.sesisenai.org.br. Aguardando resposta do(s) autor(es) — ver `fontes_acesso_limitado_e_emails.md` §3.5. Atualizar este resumo se/quando o texto completo for obtido.
 
 ---
 
@@ -129,10 +146,14 @@ Estes são os artigos que estudam exatamente o mesmo fenômeno do projeto, em pl
 
 ## Tema 5 — Métodos estatísticos de tendência (Mann-Kendall/Sen) aplicados a qualidade de água
 
-### 5.1 Journal of Pollution (2021) — *Analysis of Water Quality Trends Using the Mann-Kendall Test and Sen's Estimator of Slope in a Tropical River Basin*
-- **Link:** https://jpoll.ut.ac.ir/article_84045.html
-- **Métodos:** MK + Sen em séries 2001–2010 de parâmetros físico-químicos (incluindo salinidade).
-- **Por que importa:** template metodológico direto do nosso `script_01` — mesma aplicação, contexto diferente.
+### 5.1 Hashim, Nayan, Setyowati, Mat Said, Mahat & Saleh (2021) — *Analysis of Water Quality Trends Using the Mann-Kendall Test and Sen's Estimator of Slope in a Tropical River Basin*
+- **Link:** https://jpoll.ut.ac.ir/article_84045.html (DOI: 10.22059/POLL.2021.325794.1118)
+- **Revista:** Pollution 7(4): 933-942 (2021), Universidade de Teerã.
+- **✅ Acesso confirmado em 26/08/2026:** texto completo obtido — PDF fornecido pelo usuário, lido na íntegra. **Correção em relação ao resumo anterior** (baseado só em metadados): o período real é **1998-2018** (21 anos), não "2001-2010"; os parâmetros analisados são DO, BOD, COD, amônia (NH3-N), sólidos suspensos totais (TSS) e pH — **não inclui salinidade/TDS diretamente**, é sobre o Índice de Qualidade da Água (WQI) como um todo.
+- **O que estuda:** tendências de longo prazo de qualidade da água em 8 estações no trecho a montante da bacia do rio Bernam (Malásia), usando dados de 1998-2018 do Department of Environment da Malásia. Aplica exatamente a mesma dupla de métodos do nosso `script_01`: teste de Mann-Kendall (estatística Z) + estimador de inclinação de Sen (Q), via o software MAKESENS (Mann-Kendall-Sen's), de uso consolidado na literatura de qualidade de água.
+- **Resultado quantitativo (Tabela 1, médias de todas as estações, 1998-2018):** WQI com tendência de queda significativa (Z=-2,19, |Z|>1,96 → significativo a 95%); BOD com tendência de alta fortemente significativa (Z=3,28, Q=+0,431 mg/L/ano); amônia (NH3-N) com alta significativa (Z=2,41, Q=+0,00469 mg/L/ano); COD, TSS e DO com tendências de queda **não significativas** (|Z|<1,96); pH com alta não significativa (Z=1,09). Ou seja, dos 6 parâmetros, só BOD e NH3-N tiveram tendência estatisticamente significativa — os autores atribuem isso a esgoto doméstico e atividade agropecuária na bacia.
+- **Por que importa para o nosso projeto:** é o template metodológico mais direto e comparável ao nosso `script_01` (mesma dupla MK+Sen, mesmo tipo de significância a 95%) — mas aplicado a um rio, não a efluente tratado, e sem TDS/salinidade entre os parâmetros. Serve como referência de como reportar significância estatística de tendências de qualidade de água (ex.: destacar quais parâmetros passam do limiar |Z|>1,96 e quais não passam), e como um exemplo de que BOD pode ter tendência de alta clara mesmo quando outros parâmetros (como DO) não mostram tendência significativa — situação análoga à nossa própria descoberta de que nem todo parâmetro de qualidade de água se move junto.
+- **Limitação:** não usa nenhum modelo de ML/previsão (só MK+Sen clássico), não trata de TDS/salinidade, e o "trend" aqui é anual, não mensal como o nosso dataset.
 
 ### 5.2 Academia/ResearchGate — *Detecting Surface Water Quality Trends Using Mann-Kendall Tests and Sen's Slope Estimates*
 - **Links:** https://www.academia.edu/2783560/ | https://www.researchgate.net/publication/235752471
@@ -150,24 +171,40 @@ Estes são os artigos que estudam exatamente o mesmo fenômeno do projeto, em pl
 - **Link:** https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12894405/
 - **Por que importa:** exemplo de desenho experimental "bateria de 4 famílias em série mensal de ~10 anos" — estrutura quase idêntica à nossa, em outro domínio. Bom modelo de como reportar a comparação.
 
-### 6.2 ScienceDirect (2025) — *A hybrid approach to time series forecasting: Integrating ARIMA and Prophet for improved accuracy*
-- **Link:** https://www.sciencedirect.com/science/article/pii/S2590123025017748
-- **Métodos:** híbrido ARIMA+Prophet.
-- **Ideia testável:** híbrido/ensemble entre os nossos métodos — já contemplado no item de ensemble do prompt de aprofundamento.
+### 6.2 Sherly, Mary Subaja Christo & Jesi V Elizabeth (2025) — *A hybrid approach to time series forecasting: Integrating ARIMA and Prophet for improved accuracy*
+- **Link:** https://www.sciencedirect.com/science/article/pii/S2590123025017748 (DOI: 10.1016/j.rineng.2025.105703)
+- **Revista:** Results in Engineering 27 (2025), 105703.
+- **✅ Acesso confirmado em 26/08/2026:** texto completo obtido — artigo é **Open Access** (CC BY-NC-ND 4.0), PDF fornecido pelo usuário, lido na íntegra.
+- **⚠️ Contexto diferente do nosso projeto:** este artigo **não é sobre qualidade de água/TDS** — é sobre previsão de tráfego veicular em cenários de *edge computing* (dataset do Department of Transportation de Manhattan, 2015-2018, resolução de 15 min/hora). É relevante aqui apenas como **precedente metodológico direto do nosso `script_12_hibrido_arima_prophet.py`** (mesma combinação ARIMA+Prophet), não como evidência sobre o fenômeno de salinidade.
+- **Método:** combina previsões de ARIMA e Prophet via **média ponderada**, `y_combined(t) = α·y_ARIMA(t) + β·y_Prophet(t)` com `α+β=1`; os pesos ótimos (α*, β*) são obtidos por **grid search** (α de 0,0 a 1,0 em passos de 0,05) minimizando o MAPE num conjunto de validação — não são fixos nem assumidos a priori. Também testam um VARIMA multivariado como alternativa ao univariado.
+- **Resultado quantitativo:** o híbrido ARIMA-Prophet superou os modelos isolados com **MAPE ~10% menor e RMSE ~8% menor**, em média, entre os datasets testados (MAPE de 5,2% no cenário principal de tráfego). O VARIMA multivariado teve RMSE/MAE ~5% menores que o univariado, mostrando o ganho de capturar interdependências entre variáveis.
+- **Limitação declarada pelos próprios autores:** desempenho sensível à escolha da janela de treino ótima (exige tuning cuidadoso); custo computacional pode ser proibitivo para dispositivos de borda muito restritos; generalização para séries financeiras muito voláteis ou não periódicas não foi testada.
+- **Ideia testável no nosso projeto:** o nosso `script_12` já implementa um híbrido ARIMA+Prophet, mas vale conferir se ele usa uma combinação por **média simples** ou por **pesos otimizados via grid search em validação** (como este artigo) — se for a primeira, é uma melhoria de baixo custo a considerar. Não implementado/verificado nesta sessão (decisão de escopo, não testada).
 
 ### 6.3 PMC (2025) — *Forecasting monthly runoff in a glacierized catchment: XGBoost vs deep learning*
 - **Link:** https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12101857/
 - **Resultado-chave:** XGBoost venceu LSTM e RF em série hidrológica mensal (R²≈0,90) — evidência de que em séries ambientais mensais curtas, boosting costuma bater deep learning.
 - **Por que importa:** fundamenta a expectativa (que devemos verificar, não assumir) de que LSTM/N-BEATS provavelmente não vencerão os clássicos nos nossos ~180 pontos.
 
-### 6.4 ResearchGate (2024) — *Comparative Analysis of ARIMA, SARIMA and Prophet Model in Forecasting*
-- **Link:** https://www.researchgate.net/publication/385157901
-- **Por que importa:** referência genérica de comparação entre os três — útil para a metodologia do artigo.
+### 6.4 Kwarteng & Poguda Aleksey Andreevich (2024) — *Comparative Analysis of ARIMA, SARIMA and Prophet Model in Forecasting*
+- **Link:** https://www.researchgate.net/publication/385157901 (também: https://doi.org/10.11648/j.rd.20240504.13)
+- **Revista:** Research & Development 5(4): 110-120 (2024), Science Publishing Group.
+- **✅ Acesso confirmado em 26/08/2026:** texto completo obtido — artigo é **Open Access** (CC BY 4.0), PDF fornecido pelo usuário, lido na íntegra.
+- **⚠️ Contexto diferente do nosso projeto:** não é sobre qualidade de água — é sobre previsão de vendas de medicamento antidiabético na Austrália (dados do Medicare Australia/Australian Health Insurance Commission, 1991-2008, mensal, 204 observações). Relevante aqui só como **precedente metodológico de comparação ARIMA vs. SARIMA vs. Prophet**, mesma comparação central do nosso `script_01`/`script_02`/`script_06_prophet.py` (ou equivalente).
+- **Método:** ARIMA(12,2,10) e SARIMA(3,1,3)(3,1,3,12) selecionados por menor AIC (busca em grade via `itertools.product`); Prophet com decomposição aditiva trend+sazonalidade+feriados. Avaliação em holdout (168 treino / 36 teste) via MAE, RMSE e MAPE.
+- **Resultado quantitativo:** Prophet superou claramente ARIMA e SARIMA nas três métricas — MAPE: Prophet 8,2% vs. SARIMA 10,04% vs. ARIMA 13,62%; MAE: Prophet 0,74 vs. SARIMA 2,18 vs. ARIMA 3,02. SARIMA ficou em segundo lugar, à frente do ARIMA puro — os autores atribuem isso à sazonalidade forte e ao componente de tendência estocástica do dataset, que o SARIMA capta melhor que o ARIMA simples.
+- **Limitação:** dataset pequeno (204 pontos mensais) e univariado, sem variáveis exógenas; não testam XGBoost/LSTM/híbridos, só os três métodos citados; os autores citam trabalhos anteriores (Yenidogan et al. 2018 para Bitcoin, Wang et al. 2022 para COVID-19) em que o resultado "Prophet vence" nem sempre se repete — ou seja, mesmo neste artigo os autores alertam que a superioridade do Prophet não é universal, depende do dataset.
+- **Por que importa para o nosso projeto:** é mais um caso documentado (soma-se ao de Hashim et al. 2021 e ao de Sherly et al. 2025) em que a comparação ARIMA/SARIMA/Prophet aparece com holdout e métricas de erro claras — o padrão de reportar AIC para seleção de ordem e MAE/RMSE/MAPE para holdout já é o que fazemos em `resultados_comparacao.csv`, mas vale conferir se o texto de metodologia do nosso artigo já cita esse tipo de precedente de comparação de três métodos como ele.
 
-### 6.5 RESCON (2025) — *Comparative forecasting of Water Quality Index using LSTM and XGBoost* (rio Tâmisa)
+### 6.5 Dissanayake & Punchi-Manage (2025) — *Comparative Forecasting of Water Quality Index Using Long Short-Term Memory and Extreme Gradient Boosting*
 - **Link:** https://www.researchgate.net/publication/397522798
-- **Métodos:** LSTM vs XGBoost, com SARIMA e Prophet como baselines, em índice de qualidade de água.
-- **Por que importa:** desenho experimental idêntico ao nosso aplicado a qualidade de água.
+- **Publicação:** RESCON 2025 CMS 43 — Proceedings of the Postgraduate Institute of Science Research Congress, Sri Lanka, 7-8 nov. 2025, p. 89. University of Peradeniya, Sri Lanka.
+- **✅ Acesso confirmado em 26/08/2026:** PDF fornecido pelo usuário lido na íntegra — **é um resumo de congresso de 1 página** (RESCON, não um artigo completo), então o conteúdo abaixo é o resumo estendido oficial, não um recorte de abstract de terceiros. Não há acesso a metodologia/resultados detalhados além do que está aqui, porque o "artigo completo" **é** este resumo.
+- **O que estuda:** previsão do WAWQI (Weighted Arithmetic Water Quality Index) em **20 estações de monitoramento ao longo do rio Tâmisa** (Reino Unido), usando pH, temperatura, sólidos suspensos totais (TSS) e nitratos, 2009-2017 (dados com falhas preenchidas por interpolação linear). LSTM treinado com sequência de entrada de 8 meses; XGBoost usando WAWQI defasado (lags 1-3) e features temporais. Ambos desenvolvidos independentemente por estação, split treino/teste 80:20. SARIMA e Prophet usados como baseline clássico.
+- **Resultado quantitativo:** LSTM e XGBoost superaram os modelos clássicos (SARIMA/Prophet) em todas as estações. Entre LSTM e XGBoost, **LSTM venceu na maioria das 20 estações** — RMSE menor em 12 estações, MAE e MAPE menores em 13 estações — mas a melhoria de MAPE foi pequena (1,0 pp) ainda que consistente entre estações. Em estações com dados irregulares/ruidosos, o **XGBoost foi mais robusto** que o LSTM (LSTM piora mais com ruído). XGBoost também foi significativamente mais rápido para treinar/retreinar que o LSTM.
+- **Achado central (para nós):** a escolha do melhor modelo é **específica de cada estação**, não universal — reforça a mesma lição que já documentamos no `resultados_comparacao.csv`, onde nenhum método único vence em todos os horizontes/métricas para a LAGWRP.
+- **Limitação:** é um resumo de congresso curto — não há tabelas numéricas completas de RMSE/MAE/MAPE por estação disponíveis (só o resumo qualitativo acima), nem discussão de hiperparâmetros específicos do LSTM/XGBoost.
+- **Por que importa para o nosso projeto:** desenho experimental muito próximo do nosso (LSTM vs. XGBoost vs. SARIMA/Prophet, com holdout e RMSE/MAE/MAPE, aplicado a índice de qualidade de água por estação de monitoramento) — mais um precedente real de que "depende da estação/série" é um resultado esperado e publicável, não uma falha de análise.
 
 ---
 

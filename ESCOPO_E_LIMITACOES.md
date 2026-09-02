@@ -50,15 +50,27 @@ monitoramento regulatório de saída, não de processo.
 
 ## 3. Fora do escopo por indisponibilidade (não foi escolha)
 
-### 3.1 ⚠️ TDS da água de origem — a lacuna mais importante
+### 3.1 ⚠️ TDS da água de origem — parcialmente resolvida para o lado Los Angeles (D-54)
 A literatura (SCSC/DBS&A 2018) identifica o **TDS da água de abastecimento como responsável por
 ~88% da variabilidade** do TDS do esgoto — mais que qualquer outro fator, incluindo conservação.
-**Essa variável não existe no nosso dataset.**
+**Essa variável não existe no nosso dataset de efluente**, mas uma série real (não mais só proxy)
+foi reconstruída a partir de 21 relatórios públicos da LADWP (2004-2024) — ver D-54. Correlação
+anual forte e verificada: r=0,912 (p=0,000005) entre TDS de origem ponderado e TDS de efluente da
+LAGWRP. **Ainda não resolvido:** o lado Glendale da área de serviço (sem dado equivalente), e a
+granularidade mensal (a série do LADWP é só anual).
 
 **Impacto:** o modelo explica a série sem acesso ao seu principal determinante. Qualquer conclusão
-causal precisa registrar essa ausência.
-**Mitigação possível:** buscar séries da MWDSC/LADWP, ou usar o PDSI como proxy climático.
-→ Ver D-30.
+causal precisa registrar essa ausência. Agrava o problema: a LAGWRP atende **duas cidades com
+portfólios de abastecimento diferentes** (Los Angeles via LADWP: LA Aqueduct 41% + MWD 50% +
+subterrânea 7% + reciclada 2%; Glendale via Glendale Water & Power: 60-70% MWD + 30-40% água
+subterrânea local, sem aqueduto próprio) — o estudo SCSC (2018) só modelou o padrão CRA/SWP puro
+de água importada, então a mistura real da LAGWRP pode ser mais complexa que esse padrão.
+**Mitigação já implementada:** TDS real por fonte extraído de 21 relatórios anuais da LADWP
+(Los Angeles Aqueduct, poços locais, ETAs Weymouth/Diemer/Jensen da MWD) — `script_28`, D-54.
+**Mitigação pendente:** o mesmo para o lado Glendale (Glendale Water & Power) — tentativa de
+download automático bloqueada (ver D-30, atualização 2026-09-01), depende do pedido em
+`solicitacao_dados_professora_california.md` ou de novo download manual da fonte certa.
+→ Ver D-30, D-54.
 
 ### 3.2 Vazão medida diretamente
 Só temos vazão **derivada** por identidade algébrica, não medida. A derivação foi validada de forma
