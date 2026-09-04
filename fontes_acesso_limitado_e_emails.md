@@ -275,7 +275,9 @@ aqui:
 | Alta — pendentes                                       | 3                     | Enviar e-mail — modelos prontos acima                          |
 | Alta — resolvida (26/08/2026)                          | 1 (Porse et al. 2023) | Nenhuma ação — já lido, citado e no `refs.bib`                 |
 | Média (mecanismo biológico + comparação internacional) | 7                     | Enviar e-mail se tiver tempo — modelos prontos acima           |
-| Baixa (precedente metodológico)                        | ~16                   | Opcional — verificar se abre antes, e-mail genérico disponível; 1 (ResearchGate, Tema 3.5) com solicitação em andamento |
-| Já aberto/lido/acessível                               | ~17                   | Nenhuma ação — já citável ou já usado                          |
+| Baixa — pendente                                       | 6                     | Opcional — verificar se abre antes, e-mail genérico disponível |
+| Baixa — solicitação em andamento                       | 1 (ResearchGate, Tema 3.5) | Aguardando resposta (26/08/2026)                          |
+| Baixa — resolvida nesta sessão (26/08/2026)             | 6 (Amini, Sun, Hashim, Sherly, Kwarteng, Dissanayake) | Nenhuma ação — já lidos na íntegra   |
+| Baixa — já aberto desde o levantamento original (nunca precisou de e-mail) | 11     | Nenhuma ação — já citável ou já usado                          |
 
 

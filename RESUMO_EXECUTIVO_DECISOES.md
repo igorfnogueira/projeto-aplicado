@@ -64,14 +64,28 @@ A correlação TDS↔BOD saiu **negativa e não significativa** em todos os trat
 orgânica). Isso está escrito com todas as letras no artigo, não suavizado —
 [D-16](Artigo/DECISOES.md#d-16--tratamento-dos-valores-nd-do-bod-65-da-série).
 
-## 5. O que ainda está em aberto
+## 5. Um proxy indireto foi substituído por dado real, com a correlação mais forte do projeto
 
-- GAM e os demais métodos da seção 3.f do plano original não foram implementados —
-  <!-- PENDENTE: existe uma decisão explícita de não implementar (e por quê), ou é só falta de
-  tempo? Ver entrada nova em Artigo/DECISOES.md para registrar a resposta real. -->
+O PDSI (índice de seca) era, até aqui, o único substituto disponível para a variável que a
+literatura aponta como o driver dominante (qualidade da água de origem, ~88% da variação segundo
+SCSC/DBS&A 2018 — [D-29](Artigo/DECISOES.md#d-29--o-driver-dominante-do-tds-é-a-água-de-origem-não-a-conservação)).
+Essa lacuna foi parcialmente fechada com **dado primário real**: 21 relatórios anuais públicos da
+LADWP (2004-2024), auditados célula a célula (100%, zero discrepâncias), deram uma série de TDS de
+origem ponderado que correlaciona com o efluente da LAGWRP em **r=0,912 (p=0,000005)** — mais forte
+que a correlação já obtida com o PDSI —
+[D-54](Artigo/DECISOES.md#d-54--correlação-forte-entre-tds-de-origem-ladwp-e-tds-de-efluente-da-lagwrp).
+Um 5º cenário de previsão, fundamentado em projeção climática real do Cal-Adapt (RCP 8.5) em vez de
+reamostragem histórica do PDSI, também foi adicionado —
+[D-51](Artigo/DECISOES.md#d-51--cenário-climático-fundamentado-em-projeção-real-cal-adapt-rcp-85-complementando-os-4-cenários-históricos).
+
+## 6. O que ainda está em aberto
+
 - A página de título do artigo (`Artigo/template.tex`) ainda tem os placeholders `Título do
   documento` / `Autor A, Autor B, Autor C` —
   <!-- PENDENTE: título real do trabalho e nomes reais dos autores, para preencher antes da entrega. -->
+- O lado Glendale da área de serviço da LAGWRP ainda não tem nenhum dado real de TDS de origem
+  (só o lado Los Angeles/LADWP foi resolvido em D-54) — pedido em andamento, ver
+  `solicitacao_dados_professora_california.md`.
 
 ---
 
