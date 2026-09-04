@@ -503,3 +503,22 @@
 - **Efeito sobre o projeto:** fortalece a seção de trabalhos relacionados com um número estadual real e citável, sem substituir nem inventar o número de Wolfand et al. (que segue como pendência separada, D-27). Não muda nenhuma conclusão do trabalho — é evidência de apoio à generalização do mecanismo de diluição já estabelecido nas seções de metodologia/resultados.
 - **Alternativas descartadas:** nenhuma — é incorporação direta de uma fonte primária agora acessível, sem decisão metodológica alternativa envolvida.
 - **Evidência:** `Adapting wastewater management systems in California for water conservation and climate change.pdf` (fornecido pelo usuário); `Artigo/refs.bib` (`porse2023adapting`); `Artigo/src/trabalhos-relacionados.tex`; `material_apoio_referencias.md` §1.4.
+
+### D-55 — Padrão recorrente: prosa de status desatualizada ("ainda não implementado") sobrevivendo à conclusão do trabalho
+- **Data:** 2026-09-03 · **Status:** Decidida (achado de `/auditoria-projeto` + `/varredura-de-padrao`)
+- **Contexto:** a auditoria de projeto encontrou README.md/README.pt-br.md se autocontradizendo (uma frase dizia "100% implementado", outra 6 linhas depois dizia "ainda não implementado, decisão de escopo em aberto") e o mesmo em `RESUMO_EXECUTIVO_DECISOES.md`. A varredura de padrão generalizou isso e buscou no projeto inteiro.
+- **Padrão generalizado:** texto narrativo afirmando que um item ("pipeline", "método X", "git repo", "N placeholders no refs.bib") "ainda não foi implementado/escrito/inicializado", escrito no início do projeto ou antes de uma etapa ser concluída, e nunca atualizado depois.
+- **Assinatura de busca usada:** `grep -riP "ainda não fo(i|ram) implementad|not (yet )?implemented|decisão de escopo.*em aberto|scope decision still open|not yet written|no build/lint/test|not present in the repo" -- *.md *.tex`
+- **Instâncias encontradas e status:**
+  - `README.md`/`README.pt-br.md` linha 189 — corrigido (removida a frase obsoleta)
+  - `RESUMO_EXECUTIVO_DECISOES.md` §5 antiga — corrigido (substituída por achado real D-51/D-54)
+  - `README.md`/`README.pt-br.md` "34 métodos" — corrigido para 35 (D-51 adicionou uma linha)
+  - `CLAUDE.md` linha 7 ("no build/lint/test", "pipeline not yet written", "no git repository") — corrigido
+  - `CLAUDE.md` linha 20 ("TDS.csv... not present in the repo yet") — corrigido
+  - `CLAUDE.md` linha 28 (lista de pipeline com só `script_00`-`05`, rotulada "not yet implemented") — corrigido, lista completa dos 29 scripts
+  - `CLAUDE.md` linha 72 ("3 placeholder entries" no refs.bib) — corrigido, tem 5 entradas reais
+  - `CLAUDE.md` linha 75 ("100% do artigo é placeholder") — corrigido
+  - `Artigo/src/*.tex` — busca não encontrou o padrão, nenhuma ação necessária
+- **Por que isso importa mais que um typo comum:** `CLAUDE.md` é injetado como contexto em toda sessão futura — diferente de um README que um leitor humano lê com juízo crítico, esse arquivo é tratado como verdade de partida por qualquer agente. As três afirmações erradas ali (sem pipeline, sem git, sem os 4 CSVs) poderiam levar uma sessão futura a `git init` por engano ou a gastar tempo verificando arquivos que obviamente existem.
+- **Decisão de não criar `docs/PADROES_DE_RISCO.md`:** o projeto já usa este arquivo (`DECISOES.md`) como log único de decisões/achados — introduzir um segundo arquivo só para rastrear este padrão específico duplicaria estrutura num projeto pequeno (mesmo princípio do item "Excesso" da skill `auditoria-projeto`). Esta entrada cumpre o mesmo papel.
+- **Evidência:** `CLAUDE.md`, `README.md`, `README.pt-br.md`, `RESUMO_EXECUTIVO_DECISOES.md` (todos editados nesta entrada).
