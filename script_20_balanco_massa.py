@@ -270,7 +270,17 @@ def main():
                 - d["tds_previsto_vazao_chloride"].iloc[-1]
             ),
             "tendencia_pvalor": min(trend_carga["pvalor"], trend_vazao["pvalor"]),
-            "rmse_holdout": val_chloride["rmse"], "mae_holdout": val_chloride["mae"], "r2_holdout": val_chloride["r2"],
+            # rmse_holdout/mae_holdout/r2_holdout ficam NaN de proposito (mesmo
+            # padrao de script_19_wrtds.py/script_21_cenarios.py): val_chloride
+            # e uma checagem de consistencia interna do balanco de massa sobre a
+            # serie INTEIRA (TDS observado vs. TDS=carga/vazao com vazao do
+            # Cloreto, para evitar circularidade), nao um RMSE de previsao de
+            # TDS fora da amostra -- nao e comparavel aos demais metodos da
+            # bateria, que reportam holdout de 24 meses genuino. O numero real
+            # fica preservado nos campos proprios abaixo.
+            "rmse_holdout": float("nan"), "mae_holdout": float("nan"), "r2_holdout": float("nan"),
+            "validacao_chloride_rmse": val_chloride["rmse"], "validacao_chloride_mae": val_chloride["mae"],
+            "validacao_chloride_r2": val_chloride["r2"],
             **forecasts,
         }
         gravar_resultados_comparacao(linha_comparacao)
