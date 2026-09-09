@@ -6,14 +6,29 @@ __pycache__/
 venv/
 *.egg-info/
 
-# artefatos de compilacao LaTeX (Artigo/template.pdf fica versionado; so os intermediarios saem)
-Artigo/*.aux
-Artigo/*.log
-Artigo/*.bbl
-Artigo/*.blg
-Artigo/*.out
-Artigo/*.toc
-Artigo/*.synctex.gz
-
 # scratch descartavel desta sessao
 scratch_update_notebook6.py
+
+# logs de execucao locais (saida de terminal, nao codigo/resultado)
+*_run.log
+
+# material de apoio interno -- nao fazem parte dos entregaveis do projeto.
+# Artigo/ sera reconstruido do zero; a versao atual (tex/pdf/imagens/DECISOES.md)
+# fica de fora ate a reconstrucao. Retirado do rastreamento em 2026-09-09;
+# o historico de commits anteriores ainda contem essas versoes.
+Artigo/
+Artigo.zip
+prompts/
+ladwp las drinking water quality report/
+plano_projeto_TDS.md
+RESUMO_EXECUTIVO_DECISOES.md
+ESCOPO_E_LIMITACOES.md
+GLOSSARIO.md
+GOVERNANCA_DOCUMENTACAO_TEMPLATE.md
+solicitacao_dados_LASAN.md
+solicitacao_dados_professora_california.md
+fontes_acesso_limitado_e_emails.md
+material_apoio_referencias.md
+SCSC-TDS-Trends-Study.docx
+SCSC-TDS-Trends-Study.txt
+/*.pdf
