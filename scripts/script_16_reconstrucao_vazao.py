@@ -1,6 +1,5 @@
 """
-Reconstrucao da vazao do efluente da LAGWRP (prompt_tratamento_e_metodos.md,
-Etapa 1 -- plano_projeto_TDS.md secao 1.5): o dataset traz o MESMO parametro
+Reconstrucao da vazao do efluente da LAGWRP (Etapa 1 do tratamento de dados / secao 1.5 da metodologia): o dataset traz o MESMO parametro
 em mg/L (concentracao) e lb/day (carga massica), que se relacionam pela
 identidade padrao do setor:
 
@@ -8,7 +7,7 @@ identidade padrao do setor:
 
 Isso permite reconstruir a vazao do efluente, que nao aparece explicitamente
 no dataset -- peca central para os metodos WRTDS/balanco de massa/cenarios
-(plano_projeto_TDS.md secao 3.f.1-3.f.3), MAS SO SE a identidade se sustentar
+(secoes 3.f.1-3.f.3 da metodologia), MAS SO SE a identidade se sustentar
 nos dados reais. Este script so valida; nao roda nenhum metodo novo.
 
 Validacao em duas frentes:

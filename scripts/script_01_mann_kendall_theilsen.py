@@ -1,5 +1,5 @@
 """
-Estatística clássica de tendência para o TDS (plano_projeto_TDS.md secao 3.a):
+Estatística clássica de tendência para o TDS (secao 3.a da metodologia):
   - Mann-Kendall + inclinação de Sen (teste não-parametrico de tendência monotona)
   - Theil-Sen (estimador robusto de inclinação, pareado com o teste de Kendall's tau)
   - OLS (regressão linear classica)

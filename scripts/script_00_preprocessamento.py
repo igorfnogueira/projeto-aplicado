@@ -2,7 +2,7 @@
 Pré-processamento: constrói o dataset mensal canônico (TDS, Chloride, Ammonia, BOD)
 a partir dos 4 CSVs brutos do eSMR (TDS.csv, Chloride.csv, Ammonia.csv, BOD.csv).
 
-Ver plano_projeto_TDS.md secoes 1.2/1.3/4 para o raciocínio completo por tras de
+Ver secoes 1.2/1.3/4 da metodologia para o raciocínio completo por tras de
 cada filtro, e script_00b_analise_censura_bod.py para os numeros reais que
 embasaram a decisao de tratamento de ND do BOD (aprovada pelo usuario:
 rodar a bateria em 3 datasets em paralelo, nao escolher um unico tratamento).

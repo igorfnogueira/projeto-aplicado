@@ -3,7 +3,7 @@ Compara o TDS de efluente da LAGWRP com um TDS medio ponderado da agua de
 origem (LADWP), reconstruido a partir de 21 relatorios anuais de qualidade
 da agua (2004-2024) extraidos manualmente (ladwp_tds_por_fonte_historico.csv).
 
-Por que: D-30 (Artigo/DECISOES.md) aponta a lacuna critica -- falta a serie
+Por que: D-30 aponta a lacuna critica -- falta a serie
 de TDS da agua de origem. Este script testa se um proxy real (nao mais o
 PDSI indireto) construido a partir de dados publicos da LADWP correlaciona
 com o TDS de efluente observado.

@@ -1,6 +1,6 @@
 """
 Segunda rodada da bateria original com o PDSI como covariavel climatica
-(Artigo/DECISOES.md D-56): re-treina os 10 metodos da bateria de
+(D-56): re-treina os 10 metodos da bateria de
 script_01-script_15 que aceitam regressor exogeno, agora com o PDSI
 (defasagem de 4 meses, mesmo lag de D-37/D-41) como covariavel adicional,
 para comparar diretamente -- metodo a metodo -- o quanto cada um muda em

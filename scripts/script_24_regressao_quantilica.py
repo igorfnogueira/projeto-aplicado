@@ -1,5 +1,5 @@
 """
-Regressao quantilica (plano_projeto_TDS.md secao 3.f.6): a tendencia da
+Regressao quantilica (secao 3.f.6 da metodologia): a tendencia da
 MEDIANA do TDS pode ser diferente da tendencia do PERCENTIL 90. Como
 limites regulatorios incidem sobre valores maximos (nao medias), saber se
 os picos de TDS sobem mais rapido que a media tem valor pratico real.

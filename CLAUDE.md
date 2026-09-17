@@ -8,7 +8,7 @@ This is a graduate research project (Pós-Graduação em IA Aplicada, UniSENAI) 
 
 **Public deliverables on GitHub** are only: (1) the data-science pipeline (`scripts/script_00` through `scripts/script_30`, plus `script_00b`) with `data/` and `results/`; (2) the Streamlit dashboard in `huggingface_space/`; and (3) the didactic notebook under `notebooks/`. Remote: `github.com/igorfnogueira/projeto-aplicado`.
 
-LaTeX article drafts, execution plans, decision logs (ADRs), process prompts, and related support files may exist on the local disk under gitignored paths (`Artigo/`, `prompts/`, `plano_projeto_TDS.md`, etc.). They are **not** part of the public repository. Agents working against the public tree must **not** treat filling or maintaining the article as a repository obligation.
+Draft manuscripts, execution plans, decision logs, and process prompts may exist only on the local disk (gitignored). They are **not** part of the public repository. Agents working against the public tree must **not** treat maintaining private drafts as a repository obligation.
 
 ## Repository layout
 
@@ -31,7 +31,7 @@ python scripts/script_00_preprocessamento.py
 
 ## Local-only support material
 
-When present locally (gitignored / not on GitHub), files such as `Artigo/`, `plano_projeto_TDS.md`, `prompts/`, glossaries, and decision logs can inform pipeline work. Prefer public sources of truth for anything cited in commits or READMEs: `scripts/`, `results/`, `results/figures/`, and `notebooks/notebook.ipynb`. Never invent results, metrics, references, or conclusions.
+When present locally (gitignored / not on GitHub), private drafts may inform pipeline work. Prefer public sources of truth for anything cited in commits or READMEs: `scripts/`, `results/`, `results/figures/`, and `notebooks/notebook.ipynb`. Never invent results, metrics, references, or conclusions.
 
 ## Data
 

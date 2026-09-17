@@ -1,5 +1,5 @@
 """
-Random Forest para o TDS (plano_projeto_TDS.md secao 3.c), construido do zero
+Random Forest para o TDS (secao 3.c da metodologia), construido do zero
 (notebook antigo nao reaproveitado). CPU apenas — RF so ganha GPU com cuML/
 RAPIDS (nao disponivel nesta maquina Windows), entao roda via scikit-learn.
 

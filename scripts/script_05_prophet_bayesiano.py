@@ -1,5 +1,5 @@
 """
-Prophet e regressao bayesiana para o TDS (plano_projeto_TDS.md secao 3.d) —
+Prophet e regressao bayesiana para o TDS (secao 3.d da metodologia) —
 os dois metodos escolhidos por exporem explicitamente a incerteza crescente
 com o horizonte, mais honestos para extrapolar ~15 anos de historico para
 +20 anos (ao contrario dos metodos baseados em arvore dos scripts 03/04, que

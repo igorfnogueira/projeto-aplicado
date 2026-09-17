@@ -1,5 +1,5 @@
 """
-Modelo estrutural de espaco de estados / DLM (plano_projeto_TDS.md secao 3.f.4):
+Modelo estrutural de espaco de estados / DLM (secao 3.f.4 da metodologia):
 tendencia local + componente sazonal, ajustados via filtro de Kalman
 (statsmodels.tsa.statespace.structural.UnobservedComponents). A tendencia e
 um ESTADO que evolui no tempo (nao uma diferenciacao como no SARIMA), o que

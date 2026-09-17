@@ -1,7 +1,7 @@
 """
 Analise dos valores nao detectados (ND) do BOD -- apresenta, com numeros reais,
-as opcoes A-F de tratamento (plano_projeto_TDS.md secao 1.3 + opcao F pedida
-no aprofundamento da bateria, material_apoio_referencias.md Tema 8) para
+as opcoes A-F de tratamento (secao 1.3 da metodologia + opcao F pedida
+no aprofundamento da bateria, referencias de apoio Tema 8) para
 DECISAO DO USUARIO. Nao decide sozinho, nao altera script_00_preprocessamento.py
 ate a decisao.
 

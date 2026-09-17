@@ -1,6 +1,6 @@
 """
 Analise de intervencao / ARIMAX com regressores de evento
-(plano_projeto_TDS.md secao 3.f.7): usa eventos conhecidos como variaveis
+(secao 3.f.7 da metodologia): usa eventos conhecidos como variaveis
 exogenas -- a seca da California 2012-2016 e a ordem estadual de reducao
 obrigatoria de 25% no consumo (abril de 2015) -- para ligar a estatistica
 diretamente a causa hipotetizada, em vez de deixar a associacao implicita
