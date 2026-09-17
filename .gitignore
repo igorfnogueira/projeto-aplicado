@@ -12,14 +12,17 @@ scratch_update_notebook6.py
 # logs de execucao locais (saida de terminal, nao codigo/resultado)
 *_run.log
 
-# material de apoio interno -- nao fazem parte dos entregaveis do projeto.
-# Artigo/ sera reconstruido do zero; a versao atual (tex/pdf/imagens/DECISOES.md)
-# fica de fora ate a reconstrucao. Retirado do rastreamento em 2026-09-09;
-# o historico de commits anteriores ainda contem essas versoes.
+# material de apoio interno -- nao fazem parte dos entregaveis publicos.
+# Artigo/, prompts/, PDFs e docs de decisao ficam so no disco local (e foram
+# removidos do historico publico via git filter-repo em 2026-09-17).
 Artigo/
+Artigo_Resumido/
 Artigo.zip
 prompts/
+docs/
+.claude/
 ladwp las drinking water quality report/
+glendale water quality report/
 plano_projeto_TDS.md
 RESUMO_EXECUTIVO_DECISOES.md
 ESCOPO_E_LIMITACOES.md
