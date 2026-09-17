@@ -1,6 +1,6 @@
 """
 Matriz de 9 testes de sensibilidade no tratamento de dados
-(prompt_tratamento_e_metodos.md Etapa 2; plano_projeto_TDS.md secao 1.4) --
+(Etapa 2 do tratamento de dados / secao 1.4 da metodologia) --
 roda ANTES de fixar qualquer tratamento padrao. Cada variante e uma run
 MLflow separada; a saida e uma tabela consolidada "decisao x efeito na
 tendencia" (ou na correlacao TDS-BOD, no item 1) para o USUARIO decidir --

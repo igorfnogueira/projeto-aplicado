@@ -1,6 +1,6 @@
 """
 Utilitario de rastreamento de experimentos via MLflow (tracking store local,
-sem servidor remoto -- plano_projeto_TDS.md secao 4.3).
+sem servidor remoto -- rastreamento local de experimentos).
 
 Cada execucao de um metodo (dentro de um script_0X) abre uma run com
 `iniciar_run`, loga hiperparametros/seed/janela de treino como params e tags,
@@ -9,7 +9,7 @@ mede o tempo de execucao do bloco automaticamente, e permite logar metricas
 dentro do context.
 
 O resultados_comparacao.csv continua sendo a fonte enxuta usada pelo notebook
-e pelo artigo -- nao e substituido pelo MLflow, e alimentado por ele via
+e pelo notebook/dashboard -- nao e substituido pelo MLflow, e alimentado por ele via
 `exportar_para_resultados_csv`.
 """
 

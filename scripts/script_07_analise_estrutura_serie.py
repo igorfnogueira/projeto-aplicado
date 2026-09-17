@@ -17,7 +17,7 @@ redundante, nao um metodo a mais.
 Saida: diagnostico_serie_resultados.csv/json (arquivo proprio, mesmo padrao
 de correlacao_resultados.csv -- e diagnostico, nao previsao, nao vai para
 resultados_comparacao.csv) + figura
-Artigo/images/diagnostico-sazonalidade-quebras.png. Rastreado numa run MLflow
+results/figures/diagnostico-sazonalidade-quebras.png. Rastreado numa run MLflow
 (utils/experiment_tracking.py).
 """
 

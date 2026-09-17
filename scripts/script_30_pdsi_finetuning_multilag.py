@@ -1,6 +1,6 @@
 """
 Fine-tuning da representacao do PDSI para os 4 metodos que melhoraram em
-D-56 (Artigo/DECISOES.md D-57): Random Forest, XGBoost, LightGBM e
+D-56/D-57: Random Forest, XGBoost, LightGBM e
 regressao quantilica Q50 -- os unicos, entre os 12 re-treinados em
 script_29, cujo RMSE de holdout melhorou ao adicionar o PDSI (lag unico
 fixo de 4 meses, herdado de D-37/D-41) como covariavel.

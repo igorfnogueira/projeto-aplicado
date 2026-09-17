@@ -1,10 +1,10 @@
 """
-Passo 1 da nova etapa (prompt_pdsi_regimes.md): testa se os ciclos de TDS do
-LAGWRP (D-14, Artigo/DECISOES.md) sao explicados por ciclos de seca (PDSI),
+Passo 1 da etapa de regimes climaticos: testa se os ciclos de TDS do
+LAGWRP (D-14) sao explicados por ciclos de seca (PDSI),
 antes de investir em WRTDS/balanco de massa/busca de estacao comparadora.
 
 Fonte dos dados de seca: NOAA NCEI nClimDiv (mesmo indice PMDI/PDSI usado
-pelo estudo SCSC/DBS&A 2018, ver material_apoio_referencias.md Tema 9).
+pelo estudo SCSC/DBS&A 2018).
 Arquivos brutos baixados desta sessao:
   - pdsi_raw_climdiv.txt        (climdiv-pdsidv, divisional)
   - pdsi_raw_climdiv_state.txt  (climdiv-pdsist, estadual)

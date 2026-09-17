@@ -4,7 +4,7 @@ projetos, sem precisar rodar o pipeline completo (que depende de PyMC,
 Prophet, XGBoost, LightGBM etc.). Consome apenas os CSVs/figuras ja
 gerados pelo pipeline (pasta data/ e images/), bundlados junto com o Space.
 
-Repositorio completo (codigo, artigo, log de decisoes): ver link na aba
+Repositorio completo (codigo, dados e resultados): ver link na aba
 "Sobre o projeto".
 """
 
@@ -167,7 +167,7 @@ with aba_serie:
         st.line_chart(serie, x="Data", y="TDS_mgL")
 
     with st.container(border=True):
-        st.markdown("**Figura de síntese do artigo** (script_15 — 3 finalistas sobre a série completa)")
+        st.markdown("**Figura de síntese** (script_15 — 3 finalistas sobre a série completa)")
         st.image(str(IMAGES_DIR / "sintese-final-finalistas.png"))
 
 with aba_metodos:
@@ -303,8 +303,7 @@ duas rodadas testando o PDSI (índice de seca) como covariável — pensado para
 mesmo tema comparar contra seus próprios resultados, sem precisar reproduzir o pipeline completo
 (que depende de PyMC, Prophet, XGBoost, LightGBM, entre outros pacotes pesados).
 
-**Reprodutibilidade:** código-fonte completo, artigo científico (LaTeX) e o log de decisões
-metodológicas (formato ADR, com alternativas descartadas e motivo) estão no repositório público:
+**Reprodutibilidade:** código-fonte completo, dados e resultados do pipeline estão no repositório público:
 
 [{REPO_URL}]({REPO_URL})
 
@@ -315,6 +314,6 @@ diferentes convergem para uma faixa semelhante em +20 anos, e essa convergência
 evidência mais forte, não o ponto de previsão de nenhum modelo isolado.
 
 **Licença dos dados:** os dados brutos são públicos (California Water Boards, portal eSMR). Este
-Space não republica os arquivos brutos — apenas resultados agregados já publicados no artigo.
+Space não republica os arquivos brutos — apenas resultados agregados já computados pelo pipeline.
         """
     )

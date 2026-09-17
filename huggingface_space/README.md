@@ -23,5 +23,5 @@ os próprios resultados sem precisar reproduzir o pipeline completo (que depende
 XGBoost, LightGBM, entre outros pacotes pesados). Este Space só consome os resultados já computados
 (CSVs/figuras em `data/`/`images/`), não roda o pipeline de treinamento.
 
-Código-fonte completo, artigo científico (LaTeX) e log de decisões metodológicas (formato ADR):
+Código-fonte completo, dados e resultados do pipeline:
 **https://github.com/igorfnogueira/projeto-aplicado**

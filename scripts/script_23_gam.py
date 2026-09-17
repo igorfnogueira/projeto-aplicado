@@ -1,5 +1,5 @@
 """
-GAM -- Modelo Aditivo Generalizado (plano_projeto_TDS.md secao 3.f.5):
+GAM -- Modelo Aditivo Generalizado (secao 3.f.5 da metodologia):
 TDS ~ s(tempo) + s(mes-do-ano), via pyGAM. Tendencia suave (spline, nao uma
 reta), com banda de confianca nativa -- diferente do espaco de estados
 (script_22), aqui a "forma" da tendencia e livre (nao linear nem

@@ -1,5 +1,5 @@
 """
-Modelos fundacionais de series temporais (plano_projeto_TDS.md secao 3.f.9):
+Modelos fundacionais de series temporais (secao 3.f.9 da metodologia):
 previsao ZERO-SHOT (sem treinar nada nos nossos dados) com um modelo
 pre-treinado em milhoes de series temporais publicas.
 
@@ -132,7 +132,7 @@ def main():
         ponto = float(q_full[idx, 1])
         lo, hi = float(q_full[idx, 0]), float(q_full[idx, 2])
         linha[f"forecast_{h}y"] = ponto
-        linha[f"ci90_low_{h}y"] = lo  # rotulado ci90_* por convencao da tabela, mas E IC80 -- ver nota no docstring/DECISOES
+        linha[f"ci90_low_{h}y"] = lo  # rotulado ci90_* por convencao da tabela, mas E IC80 -- ver nota no docstring
         linha[f"ci90_high_{h}y"] = hi
         larguras.append(hi - lo)
         print(f"  +{h}a: {ponto:.1f} mg/L  IC80% [{lo:.1f}, {hi:.1f}] (largura={hi-lo:.1f})  (nao IC90 -- limite nativo do modelo)")

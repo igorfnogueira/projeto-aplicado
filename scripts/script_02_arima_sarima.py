@@ -1,5 +1,5 @@
 """
-Series temporais classicas para o TDS (plano_projeto_TDS.md secao 3.b):
+Series temporais classicas para o TDS (secao 3.b da metodologia):
   - Decomposicao STL (tendencia dessazonalizada) + extrapolacao linear da tendencia
   - SARIMA (com drift, ordem escolhida por busca em grade por AIC)
 

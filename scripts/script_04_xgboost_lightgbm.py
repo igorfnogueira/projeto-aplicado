@@ -1,5 +1,5 @@
 """
-XGBoost e LightGBM para o TDS (plano_projeto_TDS.md secao 3.c/3.e).
+XGBoost e LightGBM para o TDS (secoes 3.c/3.e da metodologia).
 
 GPU: testado nesta maquina (RTX 4060 Ti, driver CUDA 13.3) —
   - XGBoost: `tree_method='hist', device='cuda'` funciona nativamente, usado aqui.
