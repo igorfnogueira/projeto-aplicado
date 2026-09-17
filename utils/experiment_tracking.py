@@ -24,11 +24,13 @@ from pathlib import Path
 import mlflow
 import pandas as pd
 
-RAIZ_PROJETO = Path(__file__).resolve().parent.parent
+from utils.paths import ROOT, RESULTADOS_COMPARACAO_CSV, RESULTADOS_COMPARACAO_JSON
+
+RAIZ_PROJETO = ROOT
 MLRUNS_DIR = RAIZ_PROJETO / "mlruns"
 MLFLOW_DB = RAIZ_PROJETO / "mlflow.db"
-RESULTADOS_CSV_PADRAO = RAIZ_PROJETO / "resultados_comparacao.csv"
-RESULTADOS_JSON_PADRAO = RAIZ_PROJETO / "resultados_comparacao.json"
+RESULTADOS_CSV_PADRAO = RESULTADOS_COMPARACAO_CSV
+RESULTADOS_JSON_PADRAO = RESULTADOS_COMPARACAO_JSON
 EXPERIMENTO_PADRAO = "tds_lagwrp"
 
 # Backend de tracking local em SQLite (o backend de arquivos puro, "./mlruns",
