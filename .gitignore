@@ -12,29 +12,13 @@ scratch_update_notebook6.py
 # logs de execucao locais (saida de terminal, nao codigo/resultado)
 *_run.log
 
-# material de apoio interno -- nao fazem parte dos entregaveis publicos.
-# Artigo/, prompts/, PDFs e docs de decisao ficam so no disco local (e foram
-# removidos do historico publico via git filter-repo em 2026-09-17).
-Artigo/
-Artigo_Resumido/
-Artigo.zip
-prompts/
-docs/
+# documentos locais -- nao fazem parte dos entregaveis publicos.
+# Foram removidos do historico publico via git filter-repo em 2026-09-17
+# e reunidos em docs_local/ em 2026-10-03:
+#   01_manuscrito, 02_governanca, 03_prompts, 04_literatura,
+#   05_relatorios_qualidade, 06_aula_e_apoio
+docs_local/
 .claude/
-ladwp las drinking water quality report/
-glendale water quality report/
-plano_projeto_TDS.md
-RESUMO_EXECUTIVO_DECISOES.md
-ESCOPO_E_LIMITACOES.md
-GLOSSARIO.md
-GOVERNANCA_DOCUMENTACAO_TEMPLATE.md
-solicitacao_dados_LASAN.md
-solicitacao_dados_professora_california.md
-fontes_acesso_limitado_e_emails.md
-material_apoio_referencias.md
-SCSC-TDS-Trends-Study.docx
-SCSC-TDS-Trends-Study.txt
-/*.pdf
 
-# aula/narrativa pessoal da jornada do projeto -- material de estudo, nao entregavel
-AULA_JORNADA_DO_PROJETO.md
+# PDF solto na raiz fica de fora ate ser arquivado em docs_local/04_literatura
+/*.pdf

@@ -23,5 +23,7 @@ os próprios resultados sem precisar reproduzir o pipeline completo (que depende
 XGBoost, LightGBM, entre outros pacotes pesados). Este Space só consome os resultados já computados
 (CSVs/figuras em `data/`/`images/`), não roda o pipeline de treinamento.
 
+Três CSVs de `data/` são cópia do pipeline e precisam ser recopados quando `results/` mudar, senão o Space mostra número velho: `resultados_comparacao.csv`, `comparacao_pdsi_antes_depois.csv` e `comparacao_pdsi_finetuning_multilag.csv`. `serie_tds_mensal.csv` existe só neste pacote.
+
 Código-fonte completo, dados e resultados do pipeline:
 **https://github.com/igorfnogueira/projeto-aplicado**

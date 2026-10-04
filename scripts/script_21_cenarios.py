@@ -1,5 +1,5 @@
 """
-Projecao por cenarios climaticos (prompt_wrtds_balanco_cenarios.md, Tarefa 3):
+Projecao por cenarios climaticos (docs_local/03_prompts/prompt_wrtds_balanco_cenarios.md, Tarefa 3):
 substitui a previsao pontual de longo prazo por uma FAIXA condicionada ao
 regime de seca, usando o PDSI ja baixado em script_18 e a relacao PDSI->TDS
 de D-37.

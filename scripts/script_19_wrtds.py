@@ -1,5 +1,5 @@
 """
-WRTDS / normalizacao por vazao (prompt_wrtds_balanco_cenarios.md, Tarefa 1):
+WRTDS / normalizacao por vazao (docs_local/03_prompts/prompt_wrtds_balanco_cenarios.md, Tarefa 1):
 separa a variacao de TDS causada por variacao de vazao daquela que resta
 depois de descontar a vazao ("flow-normalized"), respondendo a pergunta que
 D-37 tornou central: ha tendencia de TDS POR BAIXO dos ciclos de seca/vazao?
