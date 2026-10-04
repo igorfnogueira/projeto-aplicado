@@ -3,6 +3,8 @@ outros pesquisadores do mesmo tema explorarem e comparar com seus proprios
 projetos, sem precisar rodar o pipeline completo (que depende de PyMC,
 Prophet, XGBoost, LightGBM etc.). Consome apenas os CSVs/figuras ja
 gerados pelo pipeline (pasta data/ e images/), bundlados junto com o Space.
+Os CSVs de comparacao em data/ sao copia de results/ e ficam velhos se
+results/ mudar sem recopiar. serie_tds_mensal.csv existe so neste pacote.
 
 Repositorio completo (codigo, dados e resultados): ver link na aba
 "Sobre o projeto".
@@ -26,12 +28,12 @@ FINALISTAS = {
 }
 
 # Métodos cujo rmse_holdout NÃO é um RMSE de previsão de TDS out-of-sample
-# comparável aos demais -- são análises mecanísticas/de cenário com objetivo
-# diferente (WRTDS e os cenários já reportam NaN corretamente nessa coluna;
-# balanco_massa é o único caso que reporta um número, mas é o RMSE da
-# validação de circularidade do Cloreto, script_20_balanco_massa.py:273 --
-# não o holdout de TDS). Excluídos do ranking por padrão para não enganar
-# quem for comparar contra o próprio trabalho.
+# comparável aos demais. São análises mecanísticas ou de cenário. WRTDS,
+# balanço de massa e os cenários gravam NaN nessa coluna
+# (script_20_balanco_massa.py:294 no balanço). O RMSE da checagem de
+# cloreto fica em validacao_chloride_rmse (script_20_balanco_massa.py:295),
+# não em rmse_holdout. Excluídos do ranking por padrão para não misturar
+# com o holdout de 24 meses dos métodos de previsão.
 METODOS_NAO_COMPARAVEIS = {
     "wrtds_flow_normalized", "balanco_massa",
     "cenario_pdsi_agravamento_climatico", "cenario_pdsi_normal",

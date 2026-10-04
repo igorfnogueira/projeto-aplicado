@@ -1,5 +1,5 @@
 """
-Modelo de balanco de massa (prompt_wrtds_balanco_cenarios.md, Tarefa 2):
+Modelo de balanco de massa (docs_local/03_prompts/prompt_wrtds_balanco_cenarios.md, Tarefa 2):
 em vez de extrapolar TDS diretamente, modela carga de sal (lb/day) e vazao
 (MGD) SEPARADAMENTE e deriva TDS = carga / (vazao * 8,34).
 

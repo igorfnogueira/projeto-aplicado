@@ -31,11 +31,11 @@ python scripts/script_00_preprocessamento.py
 
 ## Local-only support material
 
-When present locally (gitignored / not on GitHub), private drafts may inform pipeline work. Prefer public sources of truth for anything cited in commits or READMEs: `scripts/`, `results/`, `results/figures/`, and `notebooks/notebook.ipynb`. Never invent results, metrics, references, or conclusions.
+When present locally (gitignored / not on GitHub), private drafts live under `docs_local/` and may inform pipeline work. The folders are `01_manuscrito`, `02_governanca`, `03_prompts`, `04_literatura`, `05_relatorios_qualidade`, and `06_aula_e_apoio`. Prefer public sources of truth for anything cited in commits or READMEs: `scripts/`, `results/`, `results/figures/`, and `notebooks/notebook.ipynb`. Never invent results, metrics, references, or conclusions.
 
 ## Data
 
-- Raw data source: `data/raw/Los_Angeles_Reclamation_Plant_2026_additional_data2.xlsx`, an eSMR export. Split into `data/raw/TDS.csv`, `Chloride.csv`, `BOD.csv`, `Ammonia.csv`.
+- Pipeline inputs are the four eSMR CSVs in `data/raw/`: `TDS.csv`, `Chloride.csv`, `BOD.csv`, `Ammonia.csv` (`scripts/script_00_preprocessamento.py`). They were split from an eSMR export named `Los_Angeles_Reclamation_Plant_2026_additional_data2.xlsx`, which is not in this repository.
 - CSV format: separator `;`, decimal `,` — read with `sep=';', decimal=','`.
 - Key columns: `Location; Parameter; Analytical Method; Calculated Method; Qual; Result; Units; MDL; ML; RL; Sampling Date; ...; Latitude; Longitude; Receiving Water Body`.
 - `Location` values `EFF-001` (pre-2012) and `EFF-001A` (after) are the **same physical point** — must be unified. `R-4`, `R-7`, `RSW-650`, `RSW-654` are receiving-water points (context only).
@@ -86,4 +86,4 @@ GPU (RTX 4060 Ti 16GB, CUDA) is mainly useful for XGBoost/LightGBM; other method
 
 ## Reference materials
 
-Assignment/literature PDFs may exist locally (gitignored via `/*.pdf`). Nature Sustainability (2020) remains the professor-mandated anchor reference for interpreting rising TDS.
+Assignment and literature PDFs, when present, live in `docs_local/04_literatura/` (gitignored with the rest of `docs_local/`). A PDF dropped at the repository root is also ignored by `/*.pdf`. Nature Sustainability (2020) remains the professor-mandated anchor reference for interpreting rising TDS.
