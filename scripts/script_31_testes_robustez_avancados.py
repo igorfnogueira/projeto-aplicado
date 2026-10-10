@@ -9,8 +9,11 @@ padrao de `script_17_matriz_sensibilidade.py`:
   1. Cobertura empirica de IC90 (via `largura_e_cobertura_ic`, ja existia em
      utils/validacao_utils.py mas nunca tinha sido ligada a CV/backtest) para
      os metodos com incerteza nativa: Mann-Kendall/Theil-Sen/OLS, SARIMA e o
-     hibrido SARIMA+Prophet. `detrend_rf` fica explicitamente de fora (sem IC
-     nativo calibravel) -- isso e um achado documentado, nao um bug.
+     hibrido SARIMA+Prophet, nativa, e `detrend_rf` via bootstrap de residuo
+     (issue #11 -- mesma tecnica ja usada em script_09/SVR). Achado: a
+     cobertura empirica do IC90 do `detrend_rf` ficou em ~27% (pior ate que
+     MK/Theil-Sen/OLS, ~37%), confirmando quantitativamente a limitacao ja
+     registrada no manuscrito ("IC subestima a incerteza total").
   2. Teste de Diebold-Mariano (correcao HLN de amostra pequena) entre os 3
      finalistas de script_15 + o runner-up imediato do ranking por
      mase_holdout entre os candidatos de script_14.
@@ -194,6 +197,41 @@ def rodar_item5_leave_one_year_out(d: pd.DataFrame) -> list:
     return linhas
 
 
+def rodar_item5b_remover_primeiros_n_anos(d: pd.DataFrame, max_n: int = 5) -> list:
+    """Extensao do item 5 (issue #12): em vez de remover um unico ano
+    isolado, remove cumulativamente os N primeiros anos (N=1..max_n) para
+    delimitar com mais precisao quantos anos iniciais sao necessarios para a
+    tendencia voltar a ser significativa -- mesma logica de MK/Theil-Sen do
+    item 5, so troca o criterio de remocao."""
+    anos = sorted(d["Data"].dt.year.unique())
+    linhas = []
+    for n in range(1, max_n + 1):
+        if n >= len(anos):
+            break
+        anos_removidos = set(anos[:n])
+        sub = d[~d["Data"].dt.year.isin(anos_removidos)].reset_index(drop=True)
+        if len(sub) < 24:
+            continue
+        x, y = sub["t_anos"].values, sub["TDS_mgL"].values
+
+        res_mk = mk.original_test(y)
+        slope_mk, _, _ = sens_slope_estimate(x, y)
+        linhas.append({
+            "item": "5b_remover_primeiros_n_anos", "variante": f"sem_primeiros_{n}_anos",
+            "metrica": "mann_kendall_sen_slope_mgL_ano",
+            "valor_metrica": slope_mk, "pvalor": float(res_mk.p), "n": len(sub),
+        })
+
+        slope_ts, _, _, _ = stats.theilslopes(y, x, alpha=1 - ALPHA)
+        _, p_tau = stats.kendalltau(x, y)
+        linhas.append({
+            "item": "5b_remover_primeiros_n_anos", "variante": f"sem_primeiros_{n}_anos",
+            "metrica": "theil_sen_slope_mgL_ano",
+            "valor_metrica": float(slope_ts), "pvalor": float(p_tau), "n": len(sub),
+        })
+    return linhas
+
+
 # --------------------------------------------------------------------------
 # Item 3 -- diagnostico de residuo out-of-sample (holdout) dos candidatos
 # --------------------------------------------------------------------------
@@ -346,15 +384,64 @@ def _ajustar_ols(t, y):
     return reg.slope, reg.intercept, reg.slope - margem, reg.slope + margem
 
 
+def _ic_implausivel(ic_low: np.ndarray, ic_high: np.ndarray, desvio_treino: float) -> bool:
+    largura = ic_high - ic_low
+    if not np.all(np.isfinite(largura)):
+        return True
+    if desvio_treino <= 0:
+        return False
+    return bool(largura.max() > 50 * desvio_treino)
+
+
 def _fit_predict_ic_sarima(ordem, ordem_sazonal, trend):
+    """Achado do /to-spec (issue #10): a ordem fixa, reajustada num treino
+    curto (perto de min_treino=60), pode degenerar numericamente e o IC
+    explodir (visto na pratica: largura ~1e10 num fold vs. ~250-300 nos
+    demais) mesmo com o forecast pontual permanecendo razoavel (auditoria da
+    issue #13 confirmou que o RMSE de ponto NAO sofre o mesmo problema).
+    Corrige na raiz em vez de so sinalizar: (1) detecta IC nao-finito ou
+    implausivelmente largo (>50x o desvio-padrao do proprio treino do fold);
+    (2) se implausivel, reajusta com enforce_stationarity/invertibility=True
+    (restricoes mais fortes, tendem a evitar esse tipo de explosao); (3) se
+    AINDA assim degenerar, cai para um IC de fallback por desvio-padrao do
+    residuo in-sample do fold, crescendo com sqrt(horizonte) -- mesma familia
+    de tecnica "IC por dispersao de residuo" ja usada no projeto (script_10/
+    script_09/script_13), nao uma tecnica nova."""
     def fit_predict_ic(treino: pd.Series, n_passos: int):
-        modelo = SARIMAX(treino, order=ordem, seasonal_order=ordem_sazonal, trend=trend,
-                          enforce_stationarity=False, enforce_invertibility=False)
-        res = modelo.fit(disp=False)
+        desvio_treino = float(np.std(treino.values, ddof=1)) if len(treino) > 1 else 0.0
+
+        res = SARIMAX(treino, order=ordem, seasonal_order=ordem_sazonal, trend=trend,
+                       enforce_stationarity=False, enforce_invertibility=False).fit(disp=False)
         prev = res.get_forecast(steps=n_passos)
         pred = prev.predicted_mean.values
         ic = prev.conf_int(alpha=ALPHA)
-        return pred, ic.iloc[:, 0].values, ic.iloc[:, 1].values
+        ic_low, ic_high = ic.iloc[:, 0].values, ic.iloc[:, 1].values
+
+        if _ic_implausivel(ic_low, ic_high, desvio_treino):
+            try:
+                res_restrito = SARIMAX(treino, order=ordem, seasonal_order=ordem_sazonal, trend=trend,
+                                        enforce_stationarity=True, enforce_invertibility=True).fit(disp=False)
+                prev_restrito = res_restrito.get_forecast(steps=n_passos)
+                ic_restrito = prev_restrito.conf_int(alpha=ALPHA)
+                ic_low_r, ic_high_r = ic_restrito.iloc[:, 0].values, ic_restrito.iloc[:, 1].values
+                if not _ic_implausivel(ic_low_r, ic_high_r, desvio_treino):
+                    pred = prev_restrito.predicted_mean.values
+                    ic_low, ic_high = ic_low_r, ic_high_r
+                else:
+                    raise ValueError("IC ainda implausivel apos refit restrito")
+            except Exception:
+                # fallback: IC por desvio-padrao do residuo in-sample do
+                # proprio fold, crescendo com sqrt(horizonte) -- mesma logica
+                # ja usada em script_10.rodar_detrend para o residuo da arvore.
+                resid_in_sample = res.resid.dropna().values
+                desvio_resid = float(np.std(resid_in_sample, ddof=1)) if len(resid_in_sample) > 1 else desvio_treino
+                z = stats.norm.ppf(1 - ALPHA / 2)
+                passos = np.arange(1, n_passos + 1)
+                margem = z * desvio_resid * np.sqrt(passos / 12)
+                ic_low = pred - margem
+                ic_high = pred + margem
+
+        return pred, ic_low, ic_high
     return fit_predict_ic
 
 
@@ -374,6 +461,102 @@ def _fit_predict_ic_hibrido(ordem, ordem_sazonal, trend):
     return fit_predict_ic
 
 
+def _prever_recursivo_residuo_boot(modelo, d_resid: pd.DataFrame, n_passos: int,
+                                    residuos_boot: np.ndarray, n_boot: int, rng: np.random.Generator):
+    """Mesma tecnica de bootstrap de residuo ja usada em
+    script_09.prever_recursivo_svr (injeta um residuo do treino por passo
+    recursivo, N replicas, percentis 5/95 como IC90) -- aqui replicada para o
+    modelo RF do Detrend+arvore (sobre a serie ja destendenciada), em vez de
+    chamada diretamente, porque a previsao recursiva depende das features
+    especificas de cada modelo (script_09 nao exporta essa parte separada do
+    ajuste do SVR)."""
+    # Nota de performance (2 reescritas): a 1a versao reconstruia um
+    # pd.DataFrame por passo + pd.concat para crescer o historico -- O(n^2)
+    # por caminho, inviavel com n_boot=200 x ~25 folds/origens (rodou por
+    # mais de 1h sem terminar). A 2a versao trocou para listas/arrays puros
+    # mas ainda chamava modelo.predict() uma vez por (passo, replica) --
+    # medido: cada chamada de RandomForestRegressor.predict() tem ~24ms de
+    # overhead FIXO (dispatch do joblib.Parallel, independente do numero de
+    # linhas -- 1 linha ou 200 linhas custam o mesmo, confirmado por
+    # benchmark), entao 200 replicas x 60 passos = 12000 chamadas ~ 5 min SO
+    # pra esse overhead. Fix real: vetorizar as n_boot replicas num UNICO
+    # predict() por passo (200 linhas de uma vez), reduzindo de
+    # n_boot*n_passos para n_passos chamadas -- ~200x menos overhead.
+    historico_base = list(d_resid["TDS_mgL"].values)
+    data_base = d_resid["Data"].iloc[-1]
+    t0 = float(d_resid["t_anos"].iloc[-1])
+
+    def _linha_features(historico: list, t_anos: float, sin_m: float, cos_m: float) -> list:
+        lag_1 = historico[-1]
+        lag_12 = historico[-12] if len(historico) >= 12 else historico[0]
+        media_movel_3 = sum(historico[-3:]) / len(historico[-3:])
+        return [t_anos, sin_m, cos_m, lag_1, lag_12, media_movel_3]
+
+    def caminho_central() -> list:
+        historico = list(historico_base)
+        pontos = []
+        for passo in range(1, n_passos + 1):
+            data_alvo = data_base + pd.DateOffset(months=passo)
+            t_anos = t0 + passo / 12
+            sin_m, cos_m = np.sin(2 * np.pi * data_alvo.month / 12), np.cos(2 * np.pi * data_alvo.month / 12)
+            x = np.array([_linha_features(historico, t_anos, sin_m, cos_m)])
+            ponto = float(modelo.predict(x)[0])
+            pontos.append(ponto)
+            historico.append(ponto)
+        return pontos
+
+    ponto_central = caminho_central()
+    if n_boot == 0:
+        return ponto_central, ponto_central, ponto_central
+
+    historicos = [list(historico_base) for _ in range(n_boot)]
+    replicas = np.empty((n_boot, n_passos))
+    for passo in range(1, n_passos + 1):
+        data_alvo = data_base + pd.DateOffset(months=passo)
+        t_anos = t0 + passo / 12
+        sin_m, cos_m = np.sin(2 * np.pi * data_alvo.month / 12), np.cos(2 * np.pi * data_alvo.month / 12)
+        X = np.array([_linha_features(h, t_anos, sin_m, cos_m) for h in historicos])
+        pontos_passo = modelo.predict(X) + rng.choice(residuos_boot, size=n_boot)
+        replicas[:, passo - 1] = pontos_passo
+        for i, h in enumerate(historicos):
+            h.append(float(pontos_passo[i]))
+
+    baixos = np.percentile(replicas, 100 * ALPHA / 2, axis=0)
+    altos = np.percentile(replicas, 100 * (1 - ALPHA / 2), axis=0)
+    return ponto_central, baixos.tolist(), altos.tolist()
+
+
+def _fit_predict_ic_detrend_rf(n_boot: int = 200):
+    """IC calibrado para detrend_rf (issue #11) -- ate aqui, era o unico dos
+    3 finalistas sem incerteza nativa testavel. Reusa destendenciar/
+    construir_features/RandomForestRegressor ja importados + a tecnica de
+    bootstrap de residuo ja estabelecida no projeto (script_09, SVR)."""
+    rng = np.random.default_rng(SEED)
+
+    def fit_predict_ic(treino: pd.Series, n_passos: int):
+        d_treino = pd.DataFrame({"Data": treino.index, "TDS_mgL": treino.values})
+        d_treino["t_anos"] = (d_treino["Data"] - d_treino["Data"].iloc[0]).dt.days / 365.25
+        treino_resid, reg_treino = destendenciar(d_treino)
+        f_treino_resid = construir_features(treino_resid)
+        modelo = RandomForestRegressor(random_state=SEED, n_estimators=300, min_samples_leaf=1, max_depth=10)
+        modelo.fit(f_treino_resid[FEATURES], f_treino_resid["TDS_mgL"])
+        resid_boot = f_treino_resid["TDS_mgL"].values - modelo.predict(f_treino_resid[FEATURES])
+
+        pontos_resid, baixos_resid, altos_resid = _prever_recursivo_residuo_boot(
+            modelo, treino_resid, n_passos, resid_boot, n_boot, rng
+        )
+
+        t0 = d_treino["t_anos"].iloc[-1]
+        passos = np.arange(1, n_passos + 1)
+        tendencia_futura = reg_treino.intercept + reg_treino.slope * (t0 + passos / 12)
+
+        pred = tendencia_futura + np.array(pontos_resid)
+        ic_low = tendencia_futura + np.array(baixos_resid)
+        ic_high = tendencia_futura + np.array(altos_resid)
+        return pred, ic_low, ic_high
+    return fit_predict_ic
+
+
 def rodar_item1_cobertura_ic(serie: pd.Series, ordem_sarima) -> list:
     ordem, ordem_sazonal, trend = ordem_sarima
 
@@ -383,6 +566,7 @@ def rodar_item1_cobertura_ic(serie: pd.Series, ordem_sarima) -> list:
         "ols": _fit_predict_ic_linear(_ajustar_ols),
         "sarima": _fit_predict_ic_sarima(ordem, ordem_sazonal, trend),
         "hibrido_arima_prophet": _fit_predict_ic_hibrido(ordem, ordem_sazonal, trend),
+        "detrend_rf": _fit_predict_ic_detrend_rf(n_boot=200),
     }
 
     linhas = []
@@ -392,26 +576,25 @@ def rodar_item1_cobertura_ic(serie: pd.Series, ordem_sarima) -> list:
         df_bt = backtest_origem_movel_com_ic(serie, fit_predict_ic, min_treino=60)
         resumo_bt = resumir_backtest_ic(df_bt)
 
-        # SARIMA/hibrido tem ordem FIXA (decisao de escopo, mesma de script_02)
-        # -- quando refeito num fold inicial com pouco treino (perto de
-        # min_treino=60), o ajuste pode ficar numericamente instavel e o IC
-        # explodir (visto na pratica: largura ~1e10 num fold vs. ~250-300 nos
-        # demais). Isso DISTORCE a media -- em vez de escondido, e reportado
-        # como aviso explicito (achado relevante: a ordem escolhida no treino
-        # inteiro nao e robusta o suficiente para refit em janelas curtas).
+        # Sanidade pos-fix (issue #10): mesmo com o refit restrito/fallback em
+        # _fit_predict_ic_sarima, verificar fold a fold (nao so a media
+        # agregada, que um unico fold atipico entre 5 dilui ate ~2x e nao
+        # dispara um limiar de 10x) se algum fold continua discrepante da
+        # mediana entre folds -- mesmo criterio da versao original do check
+        # (fold.max() > 10x mediana), restaurado apos o /code-review apontar
+        # que a comparacao so agregada (media vs mediana) era bem menos
+        # sensivel. Quando dispara, persiste a linha no CSV (nao so print),
+        # para uma analise futura do manuscrito saber que um fold foi
+        # sinalizado como atipico mesmo apos a correcao.
         larguras_fold = df_cv["ic90_largura_media"].values
-        mediana_largura = float(np.median(larguras_fold))
+        mediana_largura = resumo_cv["cv_ic90_largura_mediana"]
         if mediana_largura > 0 and larguras_fold.max() > 10 * mediana_largura:
-            fold_instavel = int(df_cv.loc[df_cv["ic90_largura_media"].idxmax(), "fold"])
-            print(f"  AVISO [{metodo}]: fold {fold_instavel} com IC90 numericamente instavel "
-                  f"(largura={larguras_fold.max():.3g} vs. mediana dos demais folds={mediana_largura:.3g}) -- "
-                  f"a media cv_ic90_largura_media fica distorcida por esse fold; ver mediana abaixo.")
+            fold_atipico = int(df_cv.loc[df_cv["ic90_largura_media"].idxmax(), "fold"])
+            print(f"  AVISO [{metodo}]: fold {fold_atipico} com IC90 atipico "
+                  f"(largura={larguras_fold.max():.3g} vs. mediana entre folds={mediana_largura:.3g}) "
+                  f"mesmo apos o refit restrito/fallback de _fit_predict_ic_sarima.")
             linhas.append({
-                "item": "1_cobertura_ic", "variante": metodo, "metrica": "cv_ic90_largura_mediana_folds",
-                "valor_metrica": mediana_largura, "pvalor": float("nan"), "n": len(df_cv),
-            })
-            linhas.append({
-                "item": "1_cobertura_ic", "variante": metodo, "metrica": "fold_instavel_flag",
+                "item": "1_cobertura_ic", "variante": metodo, "metrica": "fold_atipico_pos_fix_flag",
                 "valor_metrica": 1.0, "pvalor": float("nan"), "n": len(df_cv),
             })
 
@@ -423,6 +606,10 @@ def rodar_item1_cobertura_ic(serie: pd.Series, ordem_sarima) -> list:
             "item": "1_cobertura_ic", "variante": metodo, "metrica": "cv_ic90_largura_media",
             "valor_metrica": resumo_cv["cv_ic90_largura_media"], "pvalor": float("nan"), "n": len(df_cv),
         })
+        linhas.append({
+            "item": "1_cobertura_ic", "variante": metodo, "metrica": "cv_ic90_largura_mediana",
+            "valor_metrica": resumo_cv["cv_ic90_largura_mediana"], "pvalor": float("nan"), "n": len(df_cv),
+        })
         for h in (36, 60):
             chave_cobertura = f"backtest_ic90_cobertura_pct_{h}m"
             if chave_cobertura in resumo_bt:
@@ -432,10 +619,6 @@ def rodar_item1_cobertura_ic(serie: pd.Series, ordem_sarima) -> list:
                     "n": int((df_bt["horizonte_meses"] == h).sum()),
                 })
 
-    linhas.append({
-        "item": "1_cobertura_ic", "variante": "detrend_rf", "metrica": "excluido_sem_ic_nativo",
-        "valor_metrica": float("nan"), "pvalor": float("nan"), "n": 0,
-    })
     return linhas
 
 
@@ -462,6 +645,12 @@ def main():
         print("=== Item 5: leave-one-year-out (Mann-Kendall/Theil-Sen) ===")
         linhas_item5 = rodar_item5_leave_one_year_out(d)
         print(f"  {len(linhas_item5)} linhas geradas")
+        print()
+
+        print("=== Item 5b: remover primeiros N anos (N=1..5) ===")
+        linhas_item5b = rodar_item5b_remover_primeiros_n_anos(d, max_n=5)
+        for l in linhas_item5b:
+            print(f"  {l['variante']:25s} {l['metrica']:30s} = {l['valor_metrica']:.3f}  p={l['pvalor']:.4f}")
         print()
 
         print("=== Buscando ordem SARIMA (reaproveitada nos itens 1, 2 e 3) ===")
@@ -498,7 +687,7 @@ def main():
             print(f"  {l['variante']:22s} {l['metrica']:30s} = {l['valor_metrica']}")
         print()
 
-        todas_linhas = linhas_item5 + linhas_item3 + linhas_item2 + linhas_item4 + linhas_item1
+        todas_linhas = linhas_item5 + linhas_item5b + linhas_item3 + linhas_item2 + linhas_item4 + linhas_item1
         df = gravar_resultados(todas_linhas)
         print(f"Resultados gravados em {RESULTADOS_CSV} / {RESULTADOS_JSON}")
 
