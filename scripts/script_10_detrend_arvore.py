@@ -144,6 +144,11 @@ def rodar_detrend(nome_metodo: str, treinar_fn, d: pd.DataFrame, treino: pd.Data
     pred_holdout = tendencia_holdout + pred_resid_holdout
     rmse, mae, r2 = metrica_holdout(holdout["TDS_mgL"].values, pred_holdout)
 
+    # MODELO_FULL: detrend + refit em serie completa (treino+holdout) -- usado
+    # SOMENTE para o forecast futuro (+10/+15/+20 anos). As metricas reportadas
+    # (rmse/mae/mase_holdout, cv_*, backtest_*) vem exclusivamente do modelo
+    # treino-only acima (reg_treino/modelo_treino); este refit nao entra em
+    # nenhuma metrica de avaliacao.
     d_resid_full, reg_full = destendenciar(d)
     f_full_resid = construir_features(d_resid_full)
     modelo_full, params_full = treinar_fn(f_full_resid[FEATURES], f_full_resid["TDS_mgL"])

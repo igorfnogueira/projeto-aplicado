@@ -156,6 +156,10 @@ def rodar_svr(d: pd.DataFrame, f: pd.DataFrame, treino: pd.DataFrame, holdout: p
     pred_holdout = modelo.predict(holdout[FEATURES])
     rmse, mae, r2 = metrica_holdout(holdout["TDS_mgL"].values, pred_holdout)
 
+    # MODELO_FULL: refit em serie completa (treino+holdout) -- usado SOMENTE
+    # para o forecast futuro (+10/+15/+20 anos). As metricas reportadas
+    # (rmse/mae/mase_holdout, cv_*, backtest_*) vem exclusivamente do modelo
+    # treino-only acima; este refit nao entra em nenhuma metrica de avaliacao.
     modelo_full, params_full = treinar_svr(f[FEATURES], f["TDS_mgL"])
     residuos = f["TDS_mgL"].values - modelo_full.predict(f[FEATURES])
 
@@ -205,6 +209,10 @@ def rodar_gp(d: pd.DataFrame, treino: pd.DataFrame, holdout: pd.DataFrame):
     pred_holdout, _ = gp_treino.predict(holdout["t_anos"].values.reshape(-1, 1), return_std=True)
     rmse, mae, r2 = metrica_holdout(holdout["TDS_mgL"].values, pred_holdout)
 
+    # MODELO_FULL: refit em serie completa (treino+holdout) -- usado SOMENTE
+    # para o forecast futuro (+10/+15/+20 anos). As metricas reportadas
+    # (rmse/mae/mase_holdout, cv_*, backtest_*) vem exclusivamente do modelo
+    # treino-only acima; este refit nao entra em nenhuma metrica de avaliacao.
     gp_full = ajustar_gp(d["t_anos"].values, d["TDS_mgL"].values)
     z = stats.norm.ppf(1 - ALPHA / 2)
     t_full = d["t_anos"].values
