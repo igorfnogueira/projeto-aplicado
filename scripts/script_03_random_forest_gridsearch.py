@@ -209,7 +209,10 @@ def main():
     r2 = float(r2_score(holdout["TDS_mgL"], pred_holdout))
     print(f"Holdout (one-step, lags reais): RMSE={rmse:.2f}  MAE={mae:.2f}  R2={r2:.3f}")
 
-    # refit na serie completa (features), para a previsao recursiva final
+    # MODELO_FULL: refit em serie completa (treino+holdout) -- usado SOMENTE
+    # para o forecast futuro (+10/+15/+20 anos). As metricas reportadas
+    # (rmse/mae/mase_holdout, cv_*, backtest_*) vem exclusivamente do modelo
+    # treino-only acima; este refit nao entra em nenhuma metrica de avaliacao.
     modelo_full, _ = treinar_grid_search(f[FEATURES], f["TDS_mgL"])
 
     max_passos = max(HORIZONTES_ANOS) * 12

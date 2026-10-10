@@ -286,6 +286,10 @@ def main():
     r2 = float(r2_score(holdout["TDS_mgL"], pred_holdout))
     print(f"  Holdout: RMSE={rmse:.2f}  MAE={mae:.2f}  R2={r2:.3f}")
 
+    # MODELO_FULL: refit em serie completa (treino+holdout) -- usado SOMENTE
+    # para o forecast futuro (+10/+15/+20 anos). As metricas reportadas
+    # (rmse/mae/mase_holdout, cv_*, backtest_*) vem exclusivamente do modelo
+    # treino-only acima; este refit nao entra em nenhuma metrica de avaliacao.
     modelo_xgb_full, params_xgb_full, usa_gpu = grid_search_xgb(f[FEATURES], f["TDS_mgL"])
     quantis_xgb = treinar_quantis_xgb(f[FEATURES], f["TDS_mgL"], params_xgb_full, usa_gpu)
     pontos, baixos, altos = prever_recursivo(modelo_xgb_full, quantis_xgb, d, max_passos)
@@ -303,6 +307,10 @@ def main():
     r2 = float(r2_score(holdout["TDS_mgL"], pred_holdout))
     print(f"  Holdout: RMSE={rmse:.2f}  MAE={mae:.2f}  R2={r2:.3f}")
 
+    # MODELO_FULL: refit em serie completa (treino+holdout) -- usado SOMENTE
+    # para o forecast futuro (+10/+15/+20 anos). As metricas reportadas
+    # (rmse/mae/mase_holdout, cv_*, backtest_*) vem exclusivamente do modelo
+    # treino-only acima; este refit nao entra em nenhuma metrica de avaliacao.
     modelo_lgb_full, params_lgb_full = grid_search_lgbm(f[FEATURES], f["TDS_mgL"])
     quantis_lgb = treinar_quantis_lgbm(f[FEATURES], f["TDS_mgL"], params_lgb_full)
     pontos, baixos, altos = prever_recursivo(modelo_lgb_full, quantis_lgb, d, max_passos)
