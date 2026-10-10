@@ -69,6 +69,31 @@ def largura_e_cobertura_ic(y_true, ic_low, ic_high) -> dict:
     return {"ic90_largura_media": largura_media, "ic90_cobertura_pct": cobertura_pct}
 
 
+def _cortes_expansivos(n: int, min_treino: int, horizonte: int, n_folds: int, nome_fn: str) -> list:
+    """Cortes igualmente espacados entre min_treino e n-horizonte -- logica
+    compartilhada por expanding_window_cv e expanding_window_cv_com_ic (achado
+    do /code-review: evita manter a formula de espacamento de folds duplicada
+    em dois lugares que precisariam ser corrigidos juntos)."""
+    primeiro_corte, ultimo_corte = min_treino, n - horizonte
+    if ultimo_corte <= primeiro_corte:
+        raise ValueError(
+            f"Serie curta demais para {nome_fn} (n={n}, min_treino={min_treino}, horizonte={horizonte})"
+        )
+    return sorted(set(np.linspace(primeiro_corte, ultimo_corte, n_folds).astype(int)))
+
+
+def _origens_backtest(n: int, horizontes_meses, min_treino: int, passo_origem: int):
+    """Origens de treino moveis -- logica compartilhada por
+    backtest_origem_movel e backtest_origem_movel_com_ic (mesmo motivo de
+    _cortes_expansivos)."""
+    origem = min_treino
+    while origem <= n - min(horizontes_meses):
+        horizontes_validos = [h for h in horizontes_meses if origem + h <= n]
+        if horizontes_validos:
+            yield origem, horizontes_validos
+        origem += passo_origem
+
+
 def expanding_window_cv(serie: pd.Series, fit_predict_fn, n_folds: int = 5,
                          horizonte: int = 12, min_treino: int = 60) -> pd.DataFrame:
     """CV de series temporais com janela expansiva: a cada fold, treina em
@@ -77,12 +102,7 @@ def expanding_window_cv(serie: pd.Series, fit_predict_fn, n_folds: int = 5,
     split aleatorio, nunca vazamento temporal (treino sempre estritamente
     anterior ao teste)."""
     n = len(serie)
-    primeiro_corte, ultimo_corte = min_treino, n - horizonte
-    if ultimo_corte <= primeiro_corte:
-        raise ValueError(
-            f"Serie curta demais para expanding_window_cv (n={n}, min_treino={min_treino}, horizonte={horizonte})"
-        )
-    cortes = sorted(set(np.linspace(primeiro_corte, ultimo_corte, n_folds).astype(int)))
+    cortes = _cortes_expansivos(n, min_treino, horizonte, n_folds, "expanding_window_cv")
 
     linhas = []
     for i, corte in enumerate(cortes):
@@ -119,12 +139,7 @@ def backtest_origem_movel(serie: pd.Series, fit_predict_fn,
     metodo tende a ser nos horizontes realmente pedidos."""
     n = len(serie)
     linhas = []
-    origem = min_treino
-    while origem <= n - min(horizontes_meses):
-        horizontes_validos = [h for h in horizontes_meses if origem + h <= n]
-        if not horizontes_validos:
-            origem += passo_origem
-            continue
+    for origem, horizontes_validos in _origens_backtest(n, horizontes_meses, min_treino, passo_origem):
         treino = serie.iloc[:origem]
         pred = np.asarray(fit_predict_fn(treino, max(horizontes_validos)), dtype=float)
         for h in horizontes_validos:
@@ -136,7 +151,6 @@ def backtest_origem_movel(serie: pd.Series, fit_predict_fn,
                 "y_true": y_true_h, "y_pred": float(y_pred_h),
                 "erro_abs": abs(y_true_h - y_pred_h),
             })
-        origem += passo_origem
     return pd.DataFrame(linhas)
 
 
@@ -146,6 +160,87 @@ def resumir_backtest(df_bt: pd.DataFrame) -> dict:
     for h, grupo in df_bt.groupby("horizonte_meses"):
         resumo[f"backtest_mae_{h}m"] = float(grupo["erro_abs"].mean())
         resumo[f"backtest_n_origens_{h}m"] = int(len(grupo))
+    return resumo
+
+
+def expanding_window_cv_com_ic(serie: pd.Series, fit_predict_ic_fn, n_folds: int = 5,
+                                horizonte: int = 12, min_treino: int = 60) -> pd.DataFrame:
+    """Variante aditiva de expanding_window_cv para metodos que expoem IC
+    nativo por ponto. `fit_predict_ic_fn(treino, n_passos) -> (y_pred, ic_low,
+    ic_high)` -- contrato novo e paralelo a fit_predict_fn, NAO substitui a
+    funcao original nem afeta nenhum dos chamadores existentes de
+    expanding_window_cv. Mesma regra de corte (sem vazamento temporal);
+    adiciona cobertura/largura do IC90 por fold via largura_e_cobertura_ic
+    (ja existia, nunca tinha sido ligada a CV/backtest)."""
+    n = len(serie)
+    cortes = _cortes_expansivos(n, min_treino, horizonte, n_folds, "expanding_window_cv_com_ic")
+
+    linhas = []
+    for i, corte in enumerate(cortes):
+        treino = serie.iloc[:corte]
+        teste = serie.iloc[corte:corte + horizonte]
+        y_pred, ic_low, ic_high = fit_predict_ic_fn(treino, len(teste))
+        y_pred = np.asarray(y_pred, dtype=float)[: len(teste)]
+        ic_low = np.asarray(ic_low, dtype=float)[: len(teste)]
+        ic_high = np.asarray(ic_high, dtype=float)[: len(teste)]
+        y_true = teste.values
+        ic_info = largura_e_cobertura_ic(y_true, ic_low, ic_high)
+        linhas.append({
+            "fold": i, "corte_idx": int(corte), "corte_data": str(serie.index[corte - 1].date()),
+            "n_treino": len(treino), "n_teste": len(teste),
+            "rmse": rmse(y_true, y_pred), "mae": mae(y_true, y_pred),
+            "mase": mase(y_true, y_pred, treino.values), "smape": smape(y_true, y_pred),
+            "ic90_largura_media": ic_info["ic90_largura_media"],
+            "ic90_cobertura_pct": ic_info["ic90_cobertura_pct"],
+        })
+    return pd.DataFrame(linhas)
+
+
+def resumir_cv_ic(df_cv: pd.DataFrame) -> dict:
+    """Agrega expanding_window_cv_com_ic: media/desvio das metricas de ponto
+    (igual resumir_cv) + media de cobertura/largura do IC90 entre folds."""
+    resumo = resumir_cv(df_cv)
+    resumo["cv_ic90_largura_media"] = float(df_cv["ic90_largura_media"].mean())
+    resumo["cv_ic90_cobertura_pct"] = float(df_cv["ic90_cobertura_pct"].mean())
+    return resumo
+
+
+def backtest_origem_movel_com_ic(serie: pd.Series, fit_predict_ic_fn,
+                                  horizontes_meses=HORIZONTES_BACKTEST_MESES,
+                                  min_treino: int = 60, passo_origem: int = 6) -> pd.DataFrame:
+    """Variante aditiva de backtest_origem_movel para metodos com IC nativo
+    por ponto, mesmo contrato fit_predict_ic_fn de expanding_window_cv_com_ic.
+    Nao substitui nem afeta backtest_origem_movel."""
+    n = len(serie)
+    linhas = []
+    for origem, horizontes_validos in _origens_backtest(n, horizontes_meses, min_treino, passo_origem):
+        treino = serie.iloc[:origem]
+        y_pred, ic_low, ic_high = fit_predict_ic_fn(treino, max(horizontes_validos))
+        y_pred = np.asarray(y_pred, dtype=float)
+        ic_low = np.asarray(ic_low, dtype=float)
+        ic_high = np.asarray(ic_high, dtype=float)
+        for h in horizontes_validos:
+            y_pred_h = float(y_pred[h - 1])
+            y_true_h = float(serie.iloc[origem + h - 1])
+            lo_h, hi_h = float(ic_low[h - 1]), float(ic_high[h - 1])
+            linhas.append({
+                "origem_idx": origem, "origem_data": str(serie.index[origem - 1].date()),
+                "horizonte_meses": h,
+                "y_true": y_true_h, "y_pred": y_pred_h,
+                "erro_abs": abs(y_true_h - y_pred_h),
+                "ic_low": lo_h, "ic_high": hi_h,
+                "dentro_ic90": bool(lo_h <= y_true_h <= hi_h),
+            })
+    return pd.DataFrame(linhas)
+
+
+def resumir_backtest_ic(df_bt: pd.DataFrame) -> dict:
+    """Agrega backtest_origem_movel_com_ic: MAE por horizonte (igual
+    resumir_backtest) + cobertura/largura do IC90 por horizonte."""
+    resumo = resumir_backtest(df_bt)
+    for h, grupo in df_bt.groupby("horizonte_meses"):
+        resumo[f"backtest_ic90_cobertura_pct_{h}m"] = float(grupo["dentro_ic90"].mean() * 100)
+        resumo[f"backtest_ic90_largura_media_{h}m"] = float((grupo["ic_high"] - grupo["ic_low"]).mean())
     return resumo
 
 
