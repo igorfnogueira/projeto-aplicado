@@ -78,9 +78,11 @@ scripts/script_27_cenario_climatico_caladapt.py # Cal-Adapt RCP 8.5 scenario
 scripts/script_28_ladwp_tds_origem.py          # source-water TDS vs. effluent
 scripts/script_29_bateria_pdsi_covariavel.py   # D-56: re-train with PDSI covariate
 scripts/script_30_pdsi_finetuning_multilag.py  # D-57: PDSI multi-lag fine-tuning
+scripts/script_31_testes_robustez_avancados.py # cobertura de IC, Diebold-Mariano, residuo out-of-sample, gap overfitting, leave-one-year-out (issue #1)
+scripts/script_32_cv_aninhada_diagnostico.py   # diagnostico isolado: hiperparametro fixo vs. CV aninhada (RF/XGBoost/LightGBM/SVR)
 ```
 
-Forecasting methods write to `results/resultados_comparacao.csv`/`.json` (append, never overwrite other methods) and figures to `results/figures/`. `script_28` writes `data/processed/ladwp_tds_origem_vs_efluente.csv`. `script_29`/`script_30` append `_com_pdsi` / `_pdsi_multilag` / `_pdsi_lagsel` rows.
+Forecasting methods write to `results/resultados_comparacao.csv`/`.json` (append, never overwrite other methods) and figures to `results/figures/`. `script_28` writes `data/processed/ladwp_tds_origem_vs_efluente.csv`. `script_29`/`script_30` append `_com_pdsi` / `_pdsi_multilag` / `_pdsi_lagsel` rows. `script_31` writes its own `results/testes_robustez_resultados.csv`/`.json` (tidy schema, same pattern as `script_17`); `script_32` writes `results/cv_aninhada_resultados.csv`. Neither touches `resultados_comparacao.csv`.
 
 GPU (RTX 4060 Ti 16GB, CUDA) is mainly useful for XGBoost/LightGBM; other methods are fine on CPU (~180 monthly points).
 
