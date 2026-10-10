@@ -84,6 +84,16 @@ Forecasting methods write to `results/resultados_comparacao.csv`/`.json` (append
 
 GPU (RTX 4060 Ti 16GB, CUDA) is mainly useful for XGBoost/LightGBM; other methods are fine on CPU (~180 monthly points).
 
+## Agent skills
+
+### Issue tracker
+
+Issues/specs live as GitHub issues in `igorfnogueira/projeto-aplicado`, managed via the `gh` CLI. See `docs/agents/issue-tracker.md`.
+
+### Domain docs
+
+Single-context: `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.
+
 ## Reference materials
 
 Assignment and literature PDFs, when present, live in `docs_local/04_literatura/` (gitignored with the rest of `docs_local/`). A PDF dropped at the repository root is also ignored by `/*.pdf`. Nature Sustainability (2020) remains the professor-mandated anchor reference for interpreting rising TDS.
