@@ -201,6 +201,7 @@ def resumir_cv_ic(df_cv: pd.DataFrame) -> dict:
     (igual resumir_cv) + media de cobertura/largura do IC90 entre folds."""
     resumo = resumir_cv(df_cv)
     resumo["cv_ic90_largura_media"] = float(df_cv["ic90_largura_media"].mean())
+    resumo["cv_ic90_largura_mediana"] = float(df_cv["ic90_largura_media"].median())
     resumo["cv_ic90_cobertura_pct"] = float(df_cv["ic90_cobertura_pct"].mean())
     return resumo
 
@@ -239,8 +240,10 @@ def resumir_backtest_ic(df_bt: pd.DataFrame) -> dict:
     resumir_backtest) + cobertura/largura do IC90 por horizonte."""
     resumo = resumir_backtest(df_bt)
     for h, grupo in df_bt.groupby("horizonte_meses"):
+        larguras = grupo["ic_high"] - grupo["ic_low"]
         resumo[f"backtest_ic90_cobertura_pct_{h}m"] = float(grupo["dentro_ic90"].mean() * 100)
-        resumo[f"backtest_ic90_largura_media_{h}m"] = float((grupo["ic_high"] - grupo["ic_low"]).mean())
+        resumo[f"backtest_ic90_largura_media_{h}m"] = float(larguras.mean())
+        resumo[f"backtest_ic90_largura_mediana_{h}m"] = float(larguras.median())
     return resumo
 
 
