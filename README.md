@@ -191,6 +191,24 @@ Before extending the method battery further, two data-treatment steps were run:
 
 **Status:** the expanded Etapa 3 is complete — all 9/9 §3.f methods from the original plan are implemented (WRTDS, mass balance, scenarios, state-space, GAM, quantile regression, intervention analysis, SVR, foundation models), all confirming and deepening the D-14/D-37 cyclical reframing (see D-45–D-50 for each). Decision logs, glossaries, and the LaTeX article live only on the local disk, under `docs_local/` (gitignored) and are **not** part of this public repository. Full commit history and reproducible source at **https://github.com/igorfnogueira/projeto-aplicado**.
 
+## Robustness and overfitting battery (`script_31`/`script_32`)
+
+Before treating any of the above as final, a dedicated battery stress-tested the 5 strongest candidates (OLS, Bayesian regression, Detrend+RF, SARIMA, SARIMA+Prophet hybrid) for overfitting and overconfident uncertainty — own `results/testes_robustez_resultados.csv`/`.json` and `results/cv_aninhada_resultados.csv`, neither touching `resultados_comparacao.csv`.
+
+**IC90 empirical coverage (`script_31`, item 1):** the 90% confidence interval advertised by each method should contain the true value ~90% of the time under cross-validation/backtest — it doesn't. Mann-Kendall/Sen, Theil-Sen and OLS cover only 37–38% (CV) and 27–27% (36/60-month backtest); Detrend+RF, given a calibrated interval for the first time via residual bootstrap (same technique already used for SVR in `script_09`), covers just 27% (CV) and 13–45% (backtest) — the worst of the five. SARIMA and the SARIMA+Prophet hybrid fare better (75% CV, 80–91% backtest) but still short of nominal, and their CV interval width (~247–252 mg/L) is roughly 3× wider than the others' (~70–97 mg/L). **All five methods' stated uncertainty is overconfident relative to the honest validation protocol.**
+
+**Diebold-Mariano (`script_31`, item 2):** pairwise forecast-accuracy comparisons (HLN small-sample correction, n=24 holdout months) between the finalists find Detrend+RF significantly different from both SARIMA (p=0.044) and the hybrid (p=0.041); the other pairs (including the three vs. Bayesian regression) show no significant difference.
+
+**Out-of-sample residual diagnostics (`script_31`, item 3):** unlike the in-sample picture in `script_14` (where Detrend+RF was the only candidate passing both autocorrelation and heteroscedasticity tests), **all 5 finalists fail the Ljung-Box test on their 24-month holdout residuals** (p=0.020–0.049) — out-of-sample residual autocorrelation that the in-sample diagnostics didn't surface. Shapiro-Wilk and ARCH both pass for every method at this horizon.
+
+**In-sample × CV × holdout RMSE gap (`script_31`, item 4):** Detrend+RF shows the starkest overfitting signature — in-sample RMSE of 19.4 balloons to 76.7 under CV (vs. holdout's 49.8), a ~4× gap the single train/test split would have hidden entirely. The other three candidates show a smaller but still real gap (e.g. SARIMA: 78.0 in-sample → 90.8 CV → 48.4 holdout).
+
+**Leave-one-year-out and "remove the first N years" sweep (`script_31`, item 5/5b):** removing any single year leaves the Mann-Kendall/Theil-Sen trend positive, usually still significant (1.2–5.4 mg/L/yr), except when 2011 or 2012 alone is dropped (not significant, p=0.29–0.45). Cumulatively removing the first N years is more dramatic: the slope **flips sign and significance** as N grows — from +1.2 mg/L/yr (N=1, p=0.45) to −4.2 (N=3, p=0.017, *significant negative*) and −4.6 (N=4, p=0.027, *significant negative*) before collapsing back to ~0 (N=5, p=0.91). The headline "statistically significant upward trend" is **not robust** to how many of the early (2011–2015) years are included.
+
+**Nested vs. fixed hyperparameters (`script_32`, diagnostic only — Random Forest/XGBoost/LightGBM/SVR):** re-running each tree/kernel method's hyperparameter search *inside* each CV fold (nested CV) instead of once up front (the pattern used throughout the battery) changes CV-MASE by at most ~3.4% (XGBoost; LightGBM is identical to 10 decimal places) at the cost of 3–200× more compute. **Confirms the fixed-hyperparameter shortcut used everywhere else in this project is a safe simplification, not an optimistic bias.**
+
+See `results/testes_robustez_resultados.csv`/`.json`, `results/cv_aninhada_resultados.csv` and `results/figures/testes-robustez-avancados.png` for the full numbers; `notebooks/notebook.ipynb` discusses these findings alongside the rest of the analysis.
+
 ## References
 
 Primary anchor reference: Schwabe et al., *Nature Sustainability* (2020), on rising wastewater salinity linked to water-conservation practices (professor-mandated). Wolfand et al., *ACS ES&T Water* (2022), on the same LA River basin. Antweiler & Taylor, *Environmental Science & Technology* (2008), for the ROS/Helsel censored-data technique used in `script_00b`.
