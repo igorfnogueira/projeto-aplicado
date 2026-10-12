@@ -6,9 +6,6 @@ __pycache__/
 venv/
 *.egg-info/
 
-# scratch descartavel desta sessao
-scratch_update_notebook6.py
-
 # logs de execucao locais (saida de terminal, nao codigo/resultado)
 *_run.log
 
