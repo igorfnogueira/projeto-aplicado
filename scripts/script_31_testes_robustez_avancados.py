@@ -13,7 +13,14 @@ padrao de `script_17_matriz_sensibilidade.py`:
      (issue #11 -- mesma tecnica ja usada em script_09/SVR). Achado: a
      cobertura empirica do IC90 do `detrend_rf` ficou em ~27% (pior ate que
      MK/Theil-Sen/OLS, ~37%), confirmando quantitativamente a limitacao ja
-     registrada no manuscrito ("IC subestima a incerteza total").
+     registrada no manuscrito ("IC subestima a incerteza total"). Tambem
+     cobre `regressao_bayesiana` (achado da skill revisao-academica,
+     2026-10-12): o item 2/3/4 abaixo reusa o residuo do OLS para esse
+     metodo por decisao de escopo (ver nota seguinte), mas a largura do IC90
+     bayesiano usa a posterior completa (slope + sigma), genuinamente
+     diferente do IC so-da-inclinacao do OLS -- por isso o item 1 roda NUTS
+     completo (mesma construcao de `script_05.rodar_bayesiano`) por
+     fold/origem, em vez de reusar o OLS tambem aqui.
   2. Teste de Diebold-Mariano (correcao HLN de amostra pequena) entre os 3
      finalistas de script_15 + o runner-up imediato do ranking por
      mase_holdout entre os candidatos de script_14.
@@ -57,6 +64,7 @@ from script_01_mann_kendall_theilsen import sens_slope_estimate, sens_slope_ic
 from script_02_arima_sarima import buscar_melhor_sarima
 from script_03_random_forest_gridsearch import carregar_serie_tds, construir_features, FEATURES
 from script_10_detrend_arvore import destendenciar, prever_recursivo_residuo
+from script_05_prophet_bayesiano import ajustar_bayes
 from script_14_diagnostico_residuos import (
     residuos_ols as residuos_ols_full,
     residuos_detrend_rf as residuos_detrend_rf_full,
@@ -557,6 +565,41 @@ def _fit_predict_ic_detrend_rf(n_boot: int = 200):
     return fit_predict_ic
 
 
+def _fit_predict_ic_bayes():
+    """Cobertura empirica de IC90 da regressao bayesiana (achado da skill
+    revisao-academica, 2026-10-12): reusa a MESMA construcao da previsao
+    final de `script_05.rodar_bayesiano` (posterior completa de a/b/sigma via
+    NUTS, ponto = media dos draws preditivos, IC90 = percentis 5/95) --
+    nao e uma aproximacao nova, so repetida por fold/origem de CV/backtest em
+    vez de uma vez na serie inteira. Mais lento que os demais metodos deste
+    item (NUTS por fit, nao fechamento analitico), aceito deliberadamente em
+    troca de rigor (decisao do usuario: NUTS completo, nao atalho analitico)."""
+    rng = np.random.default_rng(SEED)
+
+    def fit_predict_ic(treino: pd.Series, n_passos: int):
+        data0 = treino.index[0]
+        t = ((treino.index - data0).days / 365.25).values
+        y = treino.values
+        idata, t_centro = ajustar_bayes(t, y)
+        a_s = idata.posterior["a"].values.flatten()
+        b_s = idata.posterior["b"].values.flatten()
+        sigma_s = idata.posterior["sigma"].values.flatten()
+
+        datas_futuras = pd.date_range(treino.index[-1], periods=n_passos + 1, freq="ME")[1:]
+        t_futuro = (datas_futuras - data0).days / 365.25
+
+        pred, ic_low, ic_high = [], [], []
+        for tf in t_futuro:
+            mu_draws = a_s + b_s * (tf - t_centro)
+            pred_draws = rng.normal(mu_draws, sigma_s)
+            pred.append(float(np.mean(pred_draws)))
+            lo, hi = np.percentile(pred_draws, [100 * ALPHA / 2, 100 * (1 - ALPHA / 2)])
+            ic_low.append(float(lo))
+            ic_high.append(float(hi))
+        return np.array(pred), np.array(ic_low), np.array(ic_high)
+    return fit_predict_ic
+
+
 def rodar_item1_cobertura_ic(serie: pd.Series, ordem_sarima) -> list:
     ordem, ordem_sazonal, trend = ordem_sarima
 
@@ -567,6 +610,7 @@ def rodar_item1_cobertura_ic(serie: pd.Series, ordem_sarima) -> list:
         "sarima": _fit_predict_ic_sarima(ordem, ordem_sazonal, trend),
         "hibrido_arima_prophet": _fit_predict_ic_hibrido(ordem, ordem_sazonal, trend),
         "detrend_rf": _fit_predict_ic_detrend_rf(n_boot=200),
+        "regressao_bayesiana": _fit_predict_ic_bayes(),
     }
 
     linhas = []

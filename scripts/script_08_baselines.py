@@ -261,6 +261,12 @@ def gerar_figura(s: pd.Series, linhas: list):
     fig, ax = plt.subplots(figsize=(7, 4.2))
     ax.plot(s.index, s.values, color="black", linewidth=1, label="TDS observado")
     cores = {"naive": "gray", "naive_sazonal": "tab:olive", "ets_holt_winters": "tab:pink", "theta": "tab:cyan"}
+    # naive e naive_sazonal avaliados em horizontes que sao multiplos inteiros do
+    # periodo sazonal (10/15/20 anos = multiplos de 12 meses) colapsam no mesmo
+    # forecast_Xy por construcao -- a linha desenhada depois (naive_sazonal) cobre
+    # 100% a de baixo (naive) sem isso. Largura maior na linha desenhada primeiro
+    # cria uma "aureola" que mantem as duas cores visiveis mesmo coincidindo.
+    larguras = {"naive": 3.2}
     ultima_data = s.index[-1]
     for linha in linhas:
         metodo = linha["metodo"]
@@ -270,7 +276,8 @@ def gerar_figura(s: pd.Series, linhas: list):
         baixos = [linha[f"ci90_low_{h}y"] if h > 0 else s.values[-1] for h in anos_futuros]
         altos = [linha[f"ci90_high_{h}y"] if h > 0 else s.values[-1] for h in anos_futuros]
         cor = cores.get(metodo, "gray")
-        ax.plot(datas_futuras, pontos, "--", color=cor, label=f"{metodo} (previsao)")
+        largura = larguras.get(metodo, 1.4)
+        ax.plot(datas_futuras, pontos, "--", color=cor, linewidth=largura, label=f"{metodo} (previsao)")
         ax.fill_between(datas_futuras, baixos, altos, color=cor, alpha=0.12)
     ax.set_xlabel("Data")
     ax.set_ylabel("TDS (mg/L)")

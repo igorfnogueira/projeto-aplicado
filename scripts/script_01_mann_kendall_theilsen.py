@@ -269,6 +269,13 @@ def gerar_figura(d: pd.DataFrame, linhas: list):
 
     ultima_data = d["Data"].iloc[-1]
     cores = {"mann_kendall_sen": "tab:blue", "theil_sen": "tab:green", "ols": "tab:red"}
+    # mann_kendall_sen e theil_sen usam o mesmo estimador de inclinacao (mediana
+    # das inclinacoes par-a-par) por dois caminhos de codigo diferentes -- slope,
+    # intercepto e forecast saem identicos (ver resultados_comparacao.csv). Sem
+    # tratamento especial, a segunda linha desenhada cobre 100% a primeira. Uma
+    # largura maior na linha desenhada primeiro (mann_kendall_sen) cria uma
+    # "aureola" que mantem as duas cores visiveis mesmo com os pontos coincidindo.
+    larguras = {"mann_kendall_sen": 3.2, "theil_sen": 1.4, "ols": 1.4}
     for linha in linhas:
         metodo = linha["metodo"]
         t0 = d["t_anos"].iloc[-1]
@@ -278,7 +285,8 @@ def gerar_figura(d: pd.DataFrame, linhas: list):
         baixos = [linha[f"ci90_low_{h}y"] if h > 0 else d["TDS_mgL"].iloc[-1] for h in anos_futuros]
         altos = [linha[f"ci90_high_{h}y"] if h > 0 else d["TDS_mgL"].iloc[-1] for h in anos_futuros]
         cor = cores.get(metodo, "gray")
-        ax.plot(datas_futuras, pontos, "--", color=cor, label=f"{metodo} (previsao)")
+        largura = larguras.get(metodo, 1.4)
+        ax.plot(datas_futuras, pontos, "--", color=cor, linewidth=largura, label=f"{metodo} (previsao)")
         ax.fill_between(datas_futuras, baixos, altos, color=cor, alpha=0.12)
 
     ax.set_xlabel("Data")
