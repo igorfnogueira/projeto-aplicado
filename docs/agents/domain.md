@@ -37,4 +37,4 @@ If your output contradicts an existing ADR, surface it explicitly rather than si
 
 ## Note on scope
 
-This repo's `CLAUDE.md` restricts public GitHub deliverables to the pipeline (`scripts/`, `data/`, `results/`), the Streamlit dashboard, and the didactic notebook. `CONTEXT.md` and `docs/adr/` are an exception agreed on 2026-10-10 when setting up these engineering skills: they're meta/process documentation (domain glossary, architectural decisions about the pipeline), not manuscript drafts or private process material, so they're tracked publicly alongside the code they describe.
+This repo's `CLAUDE.md` restricts public GitHub deliverables to the pipeline (`scripts/`, `data/`, `results/`) and the didactic notebook. `CONTEXT.md` and `docs/adr/` are an exception agreed on 2026-10-10 when setting up these engineering skills: they're meta/process documentation (domain glossary, architectural decisions about the pipeline), not manuscript drafts or private process material, so they're tracked publicly alongside the code they describe.
