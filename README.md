@@ -131,7 +131,6 @@ mlflow ui --backend-store-uri sqlite:///mlflow.db
 │   ├── *_resultados.* / tabela_sintese_final.csv / comparacao_pdsi_*
 │   └── figures/          # PNGs from the pipeline
 ├── notebooks/            # didactic notebook.ipynb
-├── huggingface_space/    # Streamlit dashboard (own data/ + images/ copies)
 ├── README.md / README.pt-br.md / CLAUDE.md / requirements.txt
 ```
 
