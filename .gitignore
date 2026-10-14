@@ -19,3 +19,9 @@ docs_local/
 
 # PDF solto na raiz fica de fora ate ser arquivado em docs_local/04_literatura
 /*.pdf
+
+# bateria estendida de metodos de previsao -- testados e validados, mas fora
+# do escopo do artigo publico (9 metodos centrais + causal ficam em scripts/).
+# Mantida localmente para referencia, nao e deliverable publico.
+scripts/bateria_estendida/
+results/bateria_estendida/
