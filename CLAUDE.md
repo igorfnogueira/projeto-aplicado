@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a graduate research project (Pós-Graduação em IA Aplicada, UniSENAI) analyzing long-term salinity (TDS) trends in wastewater at the Los Angeles–Glendale Water Reclamation Plant (LAGWRP). It is not a conventional software application — there is no build/lint/test tooling in the CI sense.
 
-**Public deliverables on GitHub** are only: (1) the data-science pipeline (`scripts/script_00` through `scripts/script_30`, plus `script_00b`) with `data/` and `results/`; and (2) the didactic notebook under `notebooks/`. Remote: `github.com/igorfnogueira/projeto-aplicado`.
+**Public deliverables on GitHub** are only: (1) the core data-science pipeline (`scripts/script_00` through `script_21`, `script_28`, `script_31`, plus `script_00b`) with `data/` and `results/`; and (2) the didactic notebook under `notebooks/`. Remote: `github.com/igorfnogueira/projeto-aplicado`. A wider screening battery of forecasting methods lives in `scripts/bateria_estendida/` (gitignored, local-only) — see "Pipeline structure" below.
 
 A Streamlit dashboard (`huggingface_space/`, kept local/untracked — not part of the public repository) exists for optional local use (`streamlit run huggingface_space/streamlit_app.py`), but the project presentation uses `teach` lessons instead; the dashboard's full ~50-method battery was judged too complex for that purpose.
 
@@ -44,7 +44,7 @@ When present locally (gitignored / not on GitHub), private drafts live under `do
 - BOD non-detect treatment: three parallel canonical datasets in `data/processed/` (MDL/2, zero, ROS/Helsel) — do not silently pick one.
 - Old notebook `projeto_aplicado_v1 (1).ipynb` — do not reuse; pipeline is built from scratch.
 
-## Pipeline structure (implemented — `scripts/script_00` through `script_30`)
+## Pipeline structure (implemented — core battery, public)
 
 ```
 scripts/script_00_preprocessamento.py          # canonical monthly datasets from the 4 raw CSVs
@@ -52,16 +52,12 @@ scripts/script_00b_analise_censura_bod.py      # BOD non-detect treatment analys
 scripts/script_01_mann_kendall_theilsen.py     # Mann-Kendall, Sen's slope, Theil-Sen, OLS
 scripts/script_02_arima_sarima.py              # STL + ARIMA/SARIMA
 scripts/script_03_random_forest_gridsearch.py  # Random Forest (CPU)
-scripts/script_04_xgboost_lightgbm.py          # XGBoost/LightGBM (CUDA-capable)
 scripts/script_05_prophet_bayesiano.py         # Prophet + Bayesian regression
 scripts/script_06_correlacao_tds_amonia_bod.py # TDS↔Ammonia/BOD correlation
 scripts/script_07_analise_estrutura_serie.py   # seasonality, ADF/KPSS, changepoints
 scripts/script_08_baselines.py                 # naive, seasonal-naive, ETS, theta
-scripts/script_09_svr_gp.py                    # SVR and Gaussian Process
-scripts/script_10_detrend_arvore.py            # detrend + tree forecasting
-scripts/script_11_multivariado_cloreto.py      # SARIMAX with chloride exog
-scripts/script_12_hibrido_arima_prophet.py     # ARIMA+Prophet hybrid
-scripts/script_13_deep_learning.py             # LSTM
+scripts/script_10_detrend_arvore.py            # detrend + tree forecasting (finalist)
+scripts/script_12_hibrido_arima_prophet.py     # ARIMA+Prophet hybrid (finalist)
 scripts/script_14_diagnostico_residuos.py      # residual diagnostics
 scripts/script_15_sintese_final.py             # consolidates methods / finalists
 scripts/script_16_reconstrucao_vazao.py        # effluent flow from lb/day ÷ (mg/L × 8.34)
@@ -70,22 +66,19 @@ scripts/script_18_pdsi_regimes.py              # NOAA PDSI vs. TDS cycles
 scripts/script_19_wrtds.py                     # WRTDS flow-normalization
 scripts/script_20_balanco_massa.py             # mass balance
 scripts/script_21_cenarios.py                  # Monte Carlo climate scenarios
-scripts/script_22_espaco_estados.py            # state-space / DLM
-scripts/script_23_gam.py                       # GAM (P-splines)
-scripts/script_24_regressao_quantilica.py      # quantile regression
-scripts/script_25_intervencao_arimax.py        # SARIMAX intervention analysis
-scripts/script_26_modelos_fundacionais.py      # Chronos-Bolt
-scripts/script_27_cenario_climatico_caladapt.py # Cal-Adapt RCP 8.5 scenario
 scripts/script_28_ladwp_tds_origem.py          # source-water TDS vs. effluent
-scripts/script_29_bateria_pdsi_covariavel.py   # D-56: re-train with PDSI covariate
-scripts/script_30_pdsi_finetuning_multilag.py  # D-57: PDSI multi-lag fine-tuning
 scripts/script_31_testes_robustez_avancados.py # cobertura de IC, Diebold-Mariano, residuo out-of-sample, gap overfitting, leave-one-year-out (issue #1)
-scripts/script_32_cv_aninhada_diagnostico.py   # diagnostico isolado: hiperparametro fixo vs. CV aninhada (RF/XGBoost/LightGBM/SVR)
 ```
 
-Forecasting methods write to `results/resultados_comparacao.csv`/`.json` (append, never overwrite other methods) and figures to `results/figures/`. `script_28` writes `data/processed/ladwp_tds_origem_vs_efluente.csv`. `script_29`/`script_30` append `_com_pdsi` / `_pdsi_multilag` / `_pdsi_lagsel` rows. `script_31` writes its own `results/testes_robustez_resultados.csv`/`.json` (tidy schema, same pattern as `script_17`); `script_32` writes `results/cv_aninhada_resultados.csv`. Neither touches `resultados_comparacao.csv`.
+This is 9 forecasting-method scripts (producing 15 distinct methods: 3 trend-stat variants + STL/SARIMA + RF + Prophet/Bayesian + 4 baselines + Detrend RF/XGBoost + hybrid) plus the causal/mechanism scripts (06, 07, 16–21, 28) and the robustness battery (31) — this is the set the article reports on.
 
-GPU (RTX 4060 Ti 16GB, CUDA) is mainly useful for XGBoost/LightGBM; other methods are fine on CPU (~180 monthly points).
+### Bateria estendida (local only, gitignored — `scripts/bateria_estendida/`, `results/bateria_estendida/`)
+
+`script_04` (XGBoost/LightGBM), `script_09` (SVR/GP), `script_11` (SARIMAX+Cloreto), `script_13` (LSTM), `script_22`–`script_27` (state-space, GAM, quantile regression, intervention SARIMAX, Chronos, Cal-Adapt scenario), `script_29`/`script_30` (PDSI-covariate re-train), `script_32` (nested-CV diagnostic). These were tested as a methodological screening pass — none changed the core conclusions — and are kept locally for reference rather than in the public article/repo. Corresponding rows were split out of `results/resultados_comparacao.csv`/`.json` into `results/bateria_estendida/resultados_comparacao_estendida.csv`/`.json`.
+
+Forecasting methods write to `results/resultados_comparacao.csv`/`.json` (append, never overwrite other methods) and figures to `results/figures/`. `script_28` writes `data/processed/ladwp_tds_origem_vs_efluente.csv`. `script_31` writes its own `results/testes_robustez_resultados.csv`/`.json` (tidy schema, same pattern as `script_17`) — does not touch `resultados_comparacao.csv`.
+
+GPU (RTX 4060 Ti 16GB, CUDA) was mainly useful for XGBoost/LightGBM (bateria estendida); the core battery is fine on CPU (~180 monthly points).
 
 ## Agent skills
 
