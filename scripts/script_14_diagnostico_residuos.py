@@ -4,20 +4,13 @@ aprofundamento): Ljung-Box (autocorrelacao residual), Shapiro-Wilk
 (normalidade) e ARCH (heterocedasticidade condicional) sobre os residuos
 IN-SAMPLE de cada candidato, ajustado na serie completa.
 
-Candidatos escolhidos por equilibrarem MASE baixo + captacao real de
-tendencia de longo prazo sem saturar/oscilar (baselines ficam de fora --
-nao captam tendencia por construcao):
+Candidatos (D-73: 3, nao mais 5 -- regressao bayesiana e hibrido
+SARIMA+Prophet saem da bateria publica na reducao para os 7 metodos citados
+na revisao externa de 14/10/2026):
   - OLS (script_01): referencia classica.
-  - Regressao bayesiana (script_05): residuos IN-SAMPLE tratados como
-    equivalentes aos da OLS -- e o mesmo modelo linear-gaussiano, a media da
-    posterior converge para a estimativa de maxima verossimilhanca (OLS) com
-    priors fracos, entao o valor ajustado (e o residuo) e praticamente
-    identico; reamostrar NUTS (~230s) so para obter residuos quase iguais
-    nao se justifica computacionalmente. Decisao de escopo registrada aqui.
   - Detrend+RF (script_10): melhor MASE entre os metodos que captam
     tendencia sem saturar.
   - SARIMA (script_02): representante da familia estocastica/diferenciada.
-  - Hibrido SARIMA+Prophet (script_12): representante do ensemble.
 
 Saida: diagnostico_residuos_resultados.csv/json (mesmo padrao de
 diagnostico_serie_resultados.csv do script_07) + figura em painel (residuo x
@@ -61,7 +54,7 @@ from utils.experiment_tracking import iniciar_run, logar_metricas, logar_artefat
 
 RESULTADOS_CSV = result("diagnostico_residuos_resultados.csv")
 RESULTADOS_JSON = result("diagnostico_residuos_resultados.json")
-FIGURA_PATH = figure("diagnostico-residuos-finalistas.png")
+FIGURA_PATH = figure("diagnostico-residuos-candidatos.png")
 SEED = 42
 LAG_LJUNG_BOX = 12
 
@@ -93,25 +86,6 @@ def residuos_sarima():
     res = modelo.fit(disp=False)
     resid = res.resid.dropna()
     return "sarima", resid.index.values, resid.values
-
-
-def residuos_hibrido():
-    from prophet import Prophet
-    s = carregar_serie_02()
-    aic, ordem, ordem_sazonal, trend, _ = buscar_melhor_sarima(s)
-    modelo = SARIMAX(s, order=ordem, seasonal_order=ordem_sazonal, trend=trend,
-                      enforce_stationarity=False, enforce_invertibility=False)
-    res = modelo.fit(disp=False)
-    fitted_sarima = res.fittedvalues
-
-    df = pd.DataFrame({"ds": s.index, "y": s.values})
-    m = Prophet(yearly_seasonality=True, weekly_seasonality=False, daily_seasonality=False)
-    m.fit(df)
-    fitted_prophet = pd.Series(m.predict(df)["yhat"].values, index=s.index)
-
-    media = (fitted_sarima + fitted_prophet) / 2
-    resid = (s - media).dropna()
-    return "hibrido_arima_prophet", resid.index.values, resid.values
 
 
 def rodar_testes(nome: str, datas, resid: np.ndarray) -> dict:
@@ -169,16 +143,12 @@ def gravar_resultados(linhas: list):
 
 
 def main():
-    print("Calculando residuos in-sample dos 5 candidatos...")
+    print("Calculando residuos in-sample dos 3 candidatos...")
     candidatos = [
         residuos_ols(),
         residuos_detrend_rf(),
         residuos_sarima(),
-        residuos_hibrido(),
     ]
-    print("(regressao bayesiana: residuos tratados como equivalentes aos da OLS -- ver docstring)")
-    nome_ols, datas_ols, resid_ols = candidatos[0]
-    candidatos.insert(1, ("regressao_bayesiana", datas_ols, resid_ols))
     print()
 
     linhas = []

@@ -1,20 +1,24 @@
 """
-Series temporais classicas para o TDS (secao 3.b da metodologia):
-  - Decomposicao STL (tendencia dessazonalizada) + extrapolacao linear da tendencia
-  - SARIMA (com drift, ordem escolhida por busca em grade por AIC)
+SARIMA para o TDS (secao 3.b da metodologia), com drift e ordem escolhida por
+busca em grade por AIC.
 
-Mesma nota de desenho do script_01: os dois metodos sao univariados em TDS,
-entao o resultado independe do tratamento de ND do BOD (dataset A vs B do
-script_00). Nao ha necessidade de rodar 2x.
+Mesma nota de desenho do script_01: o metodo e univariado em TDS, entao o
+resultado independe do tratamento de ND do BOD (dataset A vs B do script_00).
+Nao ha necessidade de rodar 2x.
 
-Cada metodo grava uma linha em resultados_comparacao.csv/.json com:
-RMSE/MAE/R2 em holdout, tendencia (mg/L/ano) com p-valor, e previsao pontual +
-IC90% para +10/+15/+20 anos a partir do ultimo dado observado.
+Grava uma linha em resultados_comparacao.csv/.json com: RMSE/MAE/R2 em
+holdout, tendencia (mg/L/ano) com p-valor, e previsao pontual + IC90% para
++10/+15/+20 anos a partir do ultimo dado observado.
 
 Limitacao conhecida (ja registrada no plano, secao 3.b): horizontes de 10/15/20
 anos sao muito maiores que os ~15 anos de historico. O SARIMA extrapola de
 forma quase deterministica alem de poucos passos — o IC tende a nao capturar
 toda a incerteza real em +20 anos. Isso e reportado, nao escondido.
+
+D-73: a decomposicao STL (tendencia dessazonalizada), que ate entao rodava
+junto neste script, deixou de ser reportada como metodo publico na reducao da
+bateria para os 7 metodos citados na revisao externa de 14/10/2026 --
+extraida para scripts/bateria_estendida/script_33_stl_tendencia.py.
 """
 
 from pathlib import Path
@@ -42,7 +46,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from scipy import stats
-from statsmodels.tsa.seasonal import STL
 from statsmodels.tsa.statespace.sarimax import SARIMAX
 
 from script_00_preprocessamento import construir_datasets
@@ -55,7 +58,7 @@ ALPHA = 0.10  # IC90%
 PERIODO_SAZONAL = 12
 RESULTADOS_CSV = RESULTADOS_COMPARACAO_CSV
 RESULTADOS_JSON = RESULTADOS_COMPARACAO_JSON
-FIGURA_PATH = figure("stl-sarima-tds.png")
+FIGURA_PATH = figure("sarima-tds.png")
 warnings.filterwarnings("ignore")
 
 
@@ -78,61 +81,7 @@ def metrica_holdout(y_true, y_pred):
 
 
 # --------------------------------------------------------------------------
-# 3.b.1 STL + extrapolacao linear da tendencia dessazonalizada
-# --------------------------------------------------------------------------
-
-def rodar_stl_trend(s: pd.Series) -> dict:
-    treino, holdout = s.iloc[:-HOLDOUT_MESES], s.iloc[-HOLDOUT_MESES:]
-
-    stl_treino = STL(treino, period=PERIODO_SAZONAL, robust=True).fit()
-    t_treino = np.arange(len(treino))
-    reg_treino = stats.linregress(t_treino, stl_treino.trend)
-    sazonal_media_treino = stl_treino.seasonal.groupby(treino.index.month).mean()
-
-    t_holdout = np.arange(len(treino), len(treino) + len(holdout))
-    tendencia_holdout = reg_treino.intercept + reg_treino.slope * t_holdout
-    sazonal_holdout = holdout.index.month.map(sazonal_media_treino)
-    pred_holdout = tendencia_holdout + sazonal_holdout.values
-    rmse, mae, r2 = metrica_holdout(holdout.values, pred_holdout)
-
-    # ajuste na serie completa
-    stl_full = STL(s, period=PERIODO_SAZONAL, robust=True).fit()
-    t_full = np.arange(len(s))
-    reg_full = stats.linregress(t_full, stl_full.trend)
-    sazonal_media_full = stl_full.seasonal.groupby(s.index.month).mean()
-
-    slope_ano = reg_full.slope * 12  # t_full esta em passos mensais
-    dof = len(s) - 2
-    t_crit = stats.t.ppf(1 - ALPHA / 2, dof)
-    resid_std = float(np.std(stl_full.resid, ddof=1))
-
-    linha = {
-        "metodo": "stl_tendencia_linear",
-        "tendencia_mgL_ano": slope_ano,
-        "tendencia_pvalor": reg_full.pvalue,
-        "tendencia_ic90_baixo": (reg_full.slope - t_crit * reg_full.stderr) * 12,
-        "tendencia_ic90_alto": (reg_full.slope + t_crit * reg_full.stderr) * 12,
-        "rmse_holdout": rmse,
-        "mae_holdout": mae,
-        "r2_holdout": r2,
-    }
-    ultimo_t = t_full[-1]
-    for h in HORIZONTES_ANOS:
-        t_h = ultimo_t + h * 12
-        mes_alvo = s.index[-1].month  # aproximacao: mesmo mes do ultimo dado observado
-        tendencia_ponto = reg_full.intercept + reg_full.slope * t_h
-        ponto = tendencia_ponto + sazonal_media_full.get(mes_alvo, 0.0)
-        # IC90 combina incerteza da tendencia (extrapolada) + variancia residual (fixa)
-        margem = t_crit * np.sqrt(resid_std ** 2 + (reg_full.stderr * (t_h - t_full.mean())) ** 2)
-        linha[f"forecast_{h}y"] = ponto
-        linha[f"ci90_low_{h}y"] = ponto - margem
-        linha[f"ci90_high_{h}y"] = ponto + margem
-
-    return linha, stl_full
-
-
-# --------------------------------------------------------------------------
-# 3.b.2 SARIMA (com drift) — ordem escolhida por AIC em grade pequena
+# SARIMA (com drift) — ordem escolhida por AIC em grade pequena
 # --------------------------------------------------------------------------
 
 def buscar_melhor_sarima(treino: pd.Series):
@@ -225,20 +174,6 @@ def rodar_sarima(s: pd.Series) -> dict:
 # Adaptadores fit_predict (validacao_utils.validar_metodo: CV expansiva + backtest)
 # --------------------------------------------------------------------------
 
-def construir_fit_predict_stl(periodo: int = PERIODO_SAZONAL):
-    def fit_predict(treino: pd.Series, n_passos: int) -> np.ndarray:
-        stl = STL(treino, period=periodo, robust=True).fit()
-        t_treino = np.arange(len(treino))
-        reg = stats.linregress(t_treino, stl.trend)
-        sazonal_media = stl.seasonal.groupby(treino.index.month).mean()
-        t_futuro = np.arange(len(treino), len(treino) + n_passos)
-        tendencia_futura = reg.intercept + reg.slope * t_futuro
-        datas_futuras = pd.date_range(treino.index[-1], periods=n_passos + 1, freq="ME")[1:]
-        sazonal_futura = datas_futuras.month.map(sazonal_media).values.astype(float)
-        return tendencia_futura + sazonal_futura
-    return fit_predict
-
-
 def construir_fit_predict_sarima(ordem, ordem_sazonal, trend):
     """Ordem fixa (a mesma escolhida por AIC uma unica vez, sobre o treino de
     24 meses de holdout) em vez de repetir a busca em grade a cada fold/
@@ -253,30 +188,21 @@ def construir_fit_predict_sarima(ordem, ordem_sazonal, trend):
     return fit_predict
 
 
-def gerar_figura(s: pd.Series, linha_stl: dict, linha_sarima: dict, stl_full):
-    fig, axes = plt.subplots(2, 1, figsize=(7, 6.5))
+def gerar_figura(s: pd.Series, linha_sarima: dict):
+    fig, ax = plt.subplots(figsize=(7, 4))
 
-    ax = axes[0]
-    ax.plot(s.index, s.values, color="black", linewidth=1, label="TDS observado")
-    ax.plot(s.index, stl_full.trend, color="tab:blue", linewidth=1.5, label="Tendencia STL")
-    ax.set_ylabel("TDS (mg/L)")
-    ax.set_title("Decomposicao STL — componente de tendencia")
-    ax.legend(fontsize=7)
-
-    ax = axes[1]
     ax.plot(s.index, s.values, color="black", linewidth=1, label="TDS observado")
     ultima_data = s.index[-1]
-    for linha, cor, nome in [(linha_stl, "tab:blue", "STL+tendencia"), (linha_sarima, "tab:purple", "SARIMA")]:
-        anos_futuros = [0] + HORIZONTES_ANOS
-        datas_futuras = [ultima_data + pd.DateOffset(months=int(a * 12)) for a in anos_futuros]
-        pontos = [linha[f"forecast_{h}y"] if h > 0 else s.values[-1] for h in anos_futuros]
-        baixos = [linha[f"ci90_low_{h}y"] if h > 0 else s.values[-1] for h in anos_futuros]
-        altos = [linha[f"ci90_high_{h}y"] if h > 0 else s.values[-1] for h in anos_futuros]
-        ax.plot(datas_futuras, pontos, "--", color=cor, label=f"{nome} (previsao)")
-        ax.fill_between(datas_futuras, baixos, altos, color=cor, alpha=0.12)
+    anos_futuros = [0] + HORIZONTES_ANOS
+    datas_futuras = [ultima_data + pd.DateOffset(months=int(a * 12)) for a in anos_futuros]
+    pontos = [linha_sarima[f"forecast_{h}y"] if h > 0 else s.values[-1] for h in anos_futuros]
+    baixos = [linha_sarima[f"ci90_low_{h}y"] if h > 0 else s.values[-1] for h in anos_futuros]
+    altos = [linha_sarima[f"ci90_high_{h}y"] if h > 0 else s.values[-1] for h in anos_futuros]
+    ax.plot(datas_futuras, pontos, "--", color="tab:purple", label="SARIMA (previsao)")
+    ax.fill_between(datas_futuras, baixos, altos, color="tab:purple", alpha=0.12)
     ax.set_xlabel("Data")
     ax.set_ylabel("TDS (mg/L)")
-    ax.set_title("Previsao STL+tendencia vs SARIMA (+10/+15/+20 anos)")
+    ax.set_title("Previsao SARIMA (+10/+15/+20 anos)")
     ax.legend(fontsize=7, loc="upper left")
 
     fig.tight_layout()
@@ -328,13 +254,6 @@ def main():
     print(f"Treino: {len(s) - HOLDOUT_MESES} meses | Holdout: {HOLDOUT_MESES} meses")
     print()
 
-    print("--- STL + tendencia linear ---")
-    linha_stl, stl_full = rodar_stl_trend(s)
-    linha_stl.update(validar_metodo(construir_fit_predict_stl(), s, treino_serie, holdout_serie))
-    print(f"  Tendencia: {linha_stl['tendencia_mgL_ano']:.3f} mg/L/ano (p={linha_stl['tendencia_pvalor']:.4f})")
-    imprimir_validacao(linha_stl)
-    print()
-
     print("--- SARIMA ---")
     linha_sarima, res_full, ordem, ordem_sazonal, trend = rodar_sarima(s)
     linha_sarima.update(validar_metodo(
@@ -344,18 +263,17 @@ def main():
     imprimir_validacao(linha_sarima)
     print()
 
-    gravar_resultados([linha_stl, linha_sarima])
+    gravar_resultados([linha_sarima])
     print(f"Resultados gravados em {RESULTADOS_CSV} / {RESULTADOS_JSON}")
-    gerar_figura(s, linha_stl, linha_sarima, stl_full)
+    gerar_figura(s, linha_sarima)
 
-    for linha in (linha_stl, linha_sarima):
-        with iniciar_run(
-            linha["metodo"], "script_02_arima_sarima",
-            params={"alpha_ic": ALPHA, "periodo_sazonal": PERIODO_SAZONAL},
-            janela_treino_holdout={"treino_meses": len(treino_serie), "holdout_meses": len(holdout_serie)},
-        ):
-            logar_linha_resultado(linha)
-            logar_artefatos([FIGURA_PATH])
+    with iniciar_run(
+        linha_sarima["metodo"], "script_02_arima_sarima",
+        params={"alpha_ic": ALPHA, "periodo_sazonal": PERIODO_SAZONAL},
+        janela_treino_holdout={"treino_meses": len(treino_serie), "holdout_meses": len(holdout_serie)},
+    ):
+        logar_linha_resultado(linha_sarima)
+        logar_artefatos([FIGURA_PATH])
 
 
 if __name__ == "__main__":

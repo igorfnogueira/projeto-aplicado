@@ -8,38 +8,32 @@ padrao de `script_17_matriz_sensibilidade.py`:
 
   1. Cobertura empirica de IC90 (via `largura_e_cobertura_ic`, ja existia em
      utils/validacao_utils.py mas nunca tinha sido ligada a CV/backtest) para
-     os metodos com incerteza nativa: Mann-Kendall/Theil-Sen/OLS, SARIMA e o
-     hibrido SARIMA+Prophet, nativa, e `detrend_rf` via bootstrap de residuo
-     (issue #11 -- mesma tecnica ja usada em script_09/SVR). Achado: a
+     os metodos com incerteza nativa: Mann-Kendall/Theil-Sen/OLS e SARIMA,
+     nativa, e `detrend_rf` via bootstrap de residuo (issue #11 -- mesma
+     tecnica ja usada em script_09/SVR, bateria estendida). Achado: a
      cobertura empirica do IC90 do `detrend_rf` ficou em ~27% (pior ate que
      MK/Theil-Sen/OLS, ~37%), confirmando quantitativamente a limitacao ja
-     registrada no manuscrito ("IC subestima a incerteza total"). Tambem
-     cobre `regressao_bayesiana` (achado da skill revisao-academica,
-     2026-10-12): o item 2/3/4 abaixo reusa o residuo do OLS para esse
-     metodo por decisao de escopo (ver nota seguinte), mas a largura do IC90
-     bayesiano usa a posterior completa (slope + sigma), genuinamente
-     diferente do IC so-da-inclinacao do OLS -- por isso o item 1 roda NUTS
-     completo (mesma construcao de `script_05.rodar_bayesiano`) por
-     fold/origem, em vez de reusar o OLS tambem aqui.
-  2. Teste de Diebold-Mariano (correcao HLN de amostra pequena) entre os 3
-     finalistas de script_15 + o runner-up imediato do ranking por
-     mase_holdout entre os candidatos de script_14 + o baseline naive
-     (adicionado em 2026-10-15, por pedido explicito de revisao: a tabela de
-     MASE ja mostra o naive como o melhor da bateria no holdout, mas faltava
-     o teste formal de que essa diferenca e estatisticamente significativa,
-     nao so leitura visual da tabela).
+     registrada no manuscrito ("IC subestima a incerteza total").
+  2. Teste de Diebold-Mariano (correcao HLN de amostra pequena) entre os
+     CANDIDATOS + o baseline naive (adicionado em 2026-10-15, por pedido
+     explicito de revisao: a tabela de MASE ja mostra o naive como o melhor
+     da bateria no holdout, mas faltava o teste formal de que essa diferenca
+     e estatisticamente significativa, nao so leitura visual da tabela).
   3. Diagnostico de residuo OUT-OF-SAMPLE (Ljung-Box/Shapiro/ARCH, mesmas
-     funcoes de script_14) dos mesmos 4 metodos, para comparar com o residuo
+     funcoes de script_14) dos mesmos candidatos, para comparar com o residuo
      IN-SAMPLE ja reportado por script_14.
-  4. Tabela/figura do gap RMSE in-sample x CV x holdout para os mesmos 4
-     metodos.
+  4. Tabela/figura do gap RMSE in-sample x CV x holdout para os mesmos
+     candidatos.
   5. Robustez do Mann-Kendall/Theil-Sen a remocao de cada ano da serie
      (leave-one-year-out).
 
-Candidatos cobertos nos itens 2/3/4 (mesmo conjunto de script_14, menos a
-regressao_bayesiana que reusa o residuo do OLS por decisao de escopo ja
-registrada ali): ols, regressao_bayesiana, detrend_rf, sarima,
-hibrido_arima_prophet.
+D-73 (2026-10-15): CANDIDATOS reduzido de 5 para 3 (ols, detrend_rf, sarima)
+na reducao da bateria publica para os 7 metodos citados na revisao externa
+de 14/10/2026 -- regressao_bayesiana e hibrido_arima_prophet saem da bateria
+publica (ver scripts/bateria_estendida/). CANDIDATOS continua uma lista
+fixa, independente de qualquer lista de "finalistas" (ja nao existe mais
+esse conceito desde script_15 -- ver ADR-0002, que corrigiu exatamente esse
+acoplamento antes de ele voltar a existir aqui).
 """
 
 from pathlib import Path
@@ -68,15 +62,12 @@ from script_01_mann_kendall_theilsen import sens_slope_estimate, sens_slope_ic
 from script_02_arima_sarima import buscar_melhor_sarima
 from script_03_random_forest_gridsearch import carregar_serie_tds, construir_features, FEATURES
 from script_10_detrend_arvore import destendenciar, prever_recursivo_residuo
-from script_05_prophet_bayesiano import ajustar_bayes
 from script_14_diagnostico_residuos import (
     residuos_ols as residuos_ols_full,
     residuos_detrend_rf as residuos_detrend_rf_full,
     residuos_sarima as residuos_sarima_full,
-    residuos_hibrido as residuos_hibrido_full,
     rodar_testes,
 )
-from script_15_sintese_final import FINALISTAS
 from utils.experiment_tracking import iniciar_run, logar_metricas, logar_artefatos
 from utils.validacao_utils import (
     expanding_window_cv_com_ic,
@@ -90,7 +81,7 @@ warnings.filterwarnings("ignore")
 HOLDOUT_MESES = 24
 ALPHA = 0.10  # IC90%
 SEED = 42
-CANDIDATOS = ["ols", "regressao_bayesiana", "detrend_rf", "sarima", "hibrido_arima_prophet"]
+CANDIDATOS = ["ols", "detrend_rf", "sarima"]
 RESULTADOS_CSV = result("testes_robustez_resultados.csv")
 RESULTADOS_JSON = result("testes_robustez_resultados.json")
 FIGURA_PATH = figure("testes-robustez-avancados.png")
@@ -102,15 +93,6 @@ def carregar_dados():
     serie = pd.Series(d["TDS_mgL"].values, index=pd.DatetimeIndex(d["Data"], freq="ME"))
     treino_serie, holdout_serie = serie.iloc[:-HOLDOUT_MESES], serie.iloc[-HOLDOUT_MESES:]
     return d, treino, holdout, serie, treino_serie, holdout_serie
-
-
-def escolher_runner_up() -> str:
-    """Runner-up = melhor mase_holdout entre os candidatos de script_14 que
-    NAO sao finalistas de script_15 (ols/sarima)."""
-    tabela = pd.read_csv(RESULTADOS_COMPARACAO_CSV)
-    candidatos_nao_finalistas = [m for m in CANDIDATOS if m not in FINALISTAS]
-    sub = tabela[tabela["metodo"].isin(candidatos_nao_finalistas)].sort_values("mase_holdout")
-    return str(sub["metodo"].iloc[0])
 
 
 # --------------------------------------------------------------------------
@@ -129,11 +111,11 @@ def _holdout_pred_detrend_rf(treino: pd.DataFrame, holdout: pd.DataFrame):
     com lags reais" aqui (a mesma convencao de rmse_holdout em script_10, que
     so avalia 1 passo a frente com o valor anterior VERDADEIRO conhecido)
     tornaria o erro de detrend_rf artificialmente pequeno e NAO comparavel ao
-    de sarima/hibrido (forecast genuino de 24 passos a frente, sem espiar
+    de sarima (forecast genuino de 24 passos a frente, sem espiar
     valores reais) -- invalidando o Diebold-Mariano do item 2. Aqui, em vez
     disso, reaproveita-se prever_recursivo_residuo (ja usada por script_10
     para o forecast de longo prazo), que alimenta cada passo com a PREVISAO
-    anterior, exatamente como sarima/hibrido fazem a partir da mesma origem
+    anterior, exatamente como sarima faz a partir da mesma origem
     de treino."""
     treino_resid, reg_treino = destendenciar(treino)
     f_treino_resid = construir_features(treino_resid)
@@ -158,7 +140,6 @@ def calcular_erros_holdout(treino, holdout, treino_serie, holdout_serie, ordem_s
 
     y_true, pred = _holdout_pred_ols(treino, holdout)
     erros["ols"] = y_true - pred
-    erros["regressao_bayesiana"] = erros["ols"]  # mesma decisao de escopo de script_14
 
     pred_naive = np.repeat(treino_serie.values[-1], len(holdout_serie))
     erros["naive"] = holdout_serie.values - pred_naive  # mesma construcao de script_08.rodar_naive
@@ -171,14 +152,6 @@ def calcular_erros_holdout(treino, holdout, treino_serie, holdout_serie, ordem_s
     res_treino = modelo.fit(disp=False)
     pred_sarima = res_treino.get_forecast(steps=len(holdout_serie)).predicted_mean.values
     erros["sarima"] = holdout_serie.values - pred_sarima
-
-    from prophet import Prophet
-    df = pd.DataFrame({"ds": treino_serie.index, "y": treino_serie.values})
-    m = Prophet(yearly_seasonality=True, weekly_seasonality=False, daily_seasonality=False)
-    m.fit(df)
-    fc = m.predict(pd.DataFrame({"ds": holdout_serie.index}))
-    pred_hibrido = (pred_sarima + fc["yhat"].values) / 2
-    erros["hibrido_arima_prophet"] = holdout_serie.values - pred_hibrido
 
     return erros
 
@@ -296,16 +269,16 @@ def rodar_item2_diebold_mariano(erros_holdout: dict) -> list:
     # "naive" incluido por pedido explicito de revisao (2026-10-15): a tabela de
     # MASE de script_14/resultados.tex ja mostra o naive como menor MASE de
     # holdout de toda a bateria, mas nenhuma comparacao estatistica formal
-    # contra os finalistas existia ainda -- sem ela, a limitacao (d) do
+    # contra os candidatos existia ainda -- sem ela, a limitacao (d) do
     # manuscrito ("naive supera a maioria dos metodos sofisticados") fica sem
     # teste de significancia, so leitura visual da tabela de MASE.
     #
-    # Usa CANDIDATOS (fixo, igual aos itens 1/3/4), nao FINALISTAS -- FINALISTAS
-    # muda quando a lista de recomendados muda (D-67), e esse item 2 e justamente
-    # o que testa se um candidato deveria sair da lista. Amarrar a FINALISTAS
-    # tornava o proprio achado que motivou D-67 (regressao_bayesiana_vs_naive,
-    # p=0,015) irreproduzivel depois que a regressao bayesiana foi removida dos
-    # finalistas -- achado da revisao-academica de 2026-10-15.
+    # Usa CANDIDATOS (fixo, igual aos itens 1/3/4) -- ja nao ha lista de
+    # "finalistas" de onde derivar isso (D-73/ADR-0002: CANDIDATOS e
+    # deliberadamente independente de qualquer lista de recomendados, pelo
+    # mesmo motivo que motivou ADR-0002 antes de D-73: acoplar este item a uma
+    # lista que muda com a recomendacao do momento tornaria a comparacao
+    # irreproduzivel assim que a recomendacao mudasse de novo).
     metodos = list(dict.fromkeys(CANDIDATOS + ["naive"]))  # preserva ordem, sem duplicar
     linhas = []
     for metodo_a, metodo_b in itertools.combinations(metodos, 2):
@@ -322,19 +295,16 @@ def rodar_item2_diebold_mariano(erros_holdout: dict) -> list:
 # Item 4 -- gap RMSE in-sample x CV x holdout
 # --------------------------------------------------------------------------
 
-def rodar_item4_gap_overfitting(runner_up: str) -> list:
+def rodar_item4_gap_overfitting() -> list:
     tabela = pd.read_csv(RESULTADOS_COMPARACAO_CSV).set_index("metodo")
     residuos_full = {
         "ols": residuos_ols_full(),
         "detrend_rf": residuos_detrend_rf_full(),
         "sarima": residuos_sarima_full(),
-        "hibrido_arima_prophet": residuos_hibrido_full(),
     }
-    residuos_full["regressao_bayesiana"] = ("regressao_bayesiana", residuos_full["ols"][1], residuos_full["ols"][2])
 
-    metodos = list(dict.fromkeys(FINALISTAS + [runner_up]))
     linhas = []
-    for metodo in metodos:
+    for metodo in CANDIDATOS:
         _, _, resid_in_sample = residuos_full[metodo]
         rmse_in_sample = float(np.sqrt(np.mean(np.asarray(resid_in_sample, dtype=float) ** 2)))
         linha_tabela = tabela.loc[metodo]
@@ -365,7 +335,7 @@ def gerar_figura_item4(df: pd.DataFrame):
     ax.set_xticks(x)
     ax.set_xticklabels(pivot.index, rotation=15, fontsize=8)
     ax.set_ylabel("RMSE (mg/L)")
-    ax.set_title("Gap in-sample x CV x holdout -- finalistas + runner-up")
+    ax.set_title("Gap in-sample x CV x holdout -- candidatos")
     ax.legend(fontsize=8)
     fig.tight_layout()
     fig.savefig(FIGURA_PATH, dpi=140)
@@ -473,22 +443,6 @@ def _fit_predict_ic_sarima(ordem, ordem_sazonal, trend):
     return fit_predict_ic
 
 
-def _fit_predict_ic_hibrido(ordem, ordem_sazonal, trend):
-    from prophet import Prophet
-    fit_sarima_ic = _fit_predict_ic_sarima(ordem, ordem_sazonal, trend)
-
-    def fit_predict_ic(treino: pd.Series, n_passos: int):
-        pred_sarima, ic_low, ic_high = fit_sarima_ic(treino, n_passos)
-        df = pd.DataFrame({"ds": treino.index, "y": treino.values})
-        m = Prophet(yearly_seasonality=True, weekly_seasonality=False, daily_seasonality=False)
-        m.fit(df)
-        datas_futuras = pd.date_range(treino.index[-1], periods=n_passos + 1, freq="ME")[1:]
-        fc = m.predict(pd.DataFrame({"ds": datas_futuras}))
-        pred = (pred_sarima + fc["yhat"].values) / 2
-        return pred, ic_low, ic_high  # IC do SARIMA usado como proxy (decisao de escopo)
-    return fit_predict_ic
-
-
 def _prever_recursivo_residuo_boot(modelo, d_resid: pd.DataFrame, n_passos: int,
                                     residuos_boot: np.ndarray, n_boot: int, rng: np.random.Generator):
     """Mesma tecnica de bootstrap de residuo ja usada em
@@ -555,10 +509,10 @@ def _prever_recursivo_residuo_boot(modelo, d_resid: pd.DataFrame, n_passos: int,
 
 
 def _fit_predict_ic_detrend_rf(n_boot: int = 200):
-    """IC calibrado para detrend_rf (issue #11) -- ate aqui, era o unico dos
-    finalistas da epoca (3, antes de D-67) sem incerteza nativa testavel. Reusa destendenciar/
-    construir_features/RandomForestRegressor ja importados + a tecnica de
-    bootstrap de residuo ja estabelecida no projeto (script_09, SVR)."""
+    """IC calibrado para detrend_rf (issue #11) -- e o unico dos CANDIDATOS
+    sem incerteza nativa testavel. Reusa destendenciar/construir_features/
+    RandomForestRegressor ja importados + a tecnica de bootstrap de residuo
+    ja estabelecida no projeto (script_09, SVR, bateria estendida)."""
     rng = np.random.default_rng(SEED)
 
     def fit_predict_ic(treino: pd.Series, n_passos: int):
@@ -585,41 +539,6 @@ def _fit_predict_ic_detrend_rf(n_boot: int = 200):
     return fit_predict_ic
 
 
-def _fit_predict_ic_bayes():
-    """Cobertura empirica de IC90 da regressao bayesiana (achado da skill
-    revisao-academica, 2026-10-12): reusa a MESMA construcao da previsao
-    final de `script_05.rodar_bayesiano` (posterior completa de a/b/sigma via
-    NUTS, ponto = media dos draws preditivos, IC90 = percentis 5/95) --
-    nao e uma aproximacao nova, so repetida por fold/origem de CV/backtest em
-    vez de uma vez na serie inteira. Mais lento que os demais metodos deste
-    item (NUTS por fit, nao fechamento analitico), aceito deliberadamente em
-    troca de rigor (decisao do usuario: NUTS completo, nao atalho analitico)."""
-    rng = np.random.default_rng(SEED)
-
-    def fit_predict_ic(treino: pd.Series, n_passos: int):
-        data0 = treino.index[0]
-        t = ((treino.index - data0).days / 365.25).values
-        y = treino.values
-        idata, t_centro = ajustar_bayes(t, y)
-        a_s = idata.posterior["a"].values.flatten()
-        b_s = idata.posterior["b"].values.flatten()
-        sigma_s = idata.posterior["sigma"].values.flatten()
-
-        datas_futuras = pd.date_range(treino.index[-1], periods=n_passos + 1, freq="ME")[1:]
-        t_futuro = (datas_futuras - data0).days / 365.25
-
-        pred, ic_low, ic_high = [], [], []
-        for tf in t_futuro:
-            mu_draws = a_s + b_s * (tf - t_centro)
-            pred_draws = rng.normal(mu_draws, sigma_s)
-            pred.append(float(np.mean(pred_draws)))
-            lo, hi = np.percentile(pred_draws, [100 * ALPHA / 2, 100 * (1 - ALPHA / 2)])
-            ic_low.append(float(lo))
-            ic_high.append(float(hi))
-        return np.array(pred), np.array(ic_low), np.array(ic_high)
-    return fit_predict_ic
-
-
 def rodar_item1_cobertura_ic(serie: pd.Series, ordem_sarima) -> list:
     ordem, ordem_sazonal, trend = ordem_sarima
 
@@ -628,9 +547,7 @@ def rodar_item1_cobertura_ic(serie: pd.Series, ordem_sarima) -> list:
         "theil_sen": _fit_predict_ic_linear(_ajustar_theil_sen),
         "ols": _fit_predict_ic_linear(_ajustar_ols),
         "sarima": _fit_predict_ic_sarima(ordem, ordem_sazonal, trend),
-        "hibrido_arima_prophet": _fit_predict_ic_hibrido(ordem, ordem_sazonal, trend),
         "detrend_rf": _fit_predict_ic_detrend_rf(n_boot=200),
-        "regressao_bayesiana": _fit_predict_ic_bayes(),
     }
 
     linhas = []
@@ -698,14 +615,11 @@ def gravar_resultados(linhas: list):
 def main():
     d, treino, holdout, serie, treino_serie, holdout_serie = carregar_dados()
     print(f"Serie TDS: {len(d)} meses ({d['Data'].iloc[0].date()} a {d['Data'].iloc[-1].date()})")
-
-    runner_up = escolher_runner_up()
-    print(f"Runner-up (melhor mase_holdout fora dos finalistas, entre ols/sarima): {runner_up}")
-    print(f"Finalistas: {FINALISTAS}")
+    print(f"Candidatos: {CANDIDATOS}")
     print()
 
     with iniciar_run("testes_robustez_avancados", "script_31_testes_robustez_avancados",
-                      params={"runner_up": runner_up, "finalistas": ",".join(FINALISTAS)}):
+                      params={"candidatos": ",".join(CANDIDATOS)}):
         print("=== Item 5: leave-one-year-out (Mann-Kendall/Theil-Sen) ===")
         linhas_item5 = rodar_item5_leave_one_year_out(d)
         print(f"  {len(linhas_item5)} linhas geradas")
@@ -733,14 +647,14 @@ def main():
             print(f"  {l['variante']:40s} p={l['valor_metrica']:.4f}")
         print()
 
-        print("=== Item 2: Diebold-Mariano (5 candidatos + naive) ===")
+        print("=== Item 2: Diebold-Mariano (candidatos + naive) ===")
         linhas_item2 = rodar_item2_diebold_mariano(erros_holdout)
         for l in linhas_item2:
             print(f"  {l['variante']:45s} dm_stat={l['valor_metrica']:.3f}  p={l['pvalor']:.4f}")
         print()
 
         print("=== Item 4: gap RMSE in-sample x CV x holdout ===")
-        linhas_item4 = rodar_item4_gap_overfitting(runner_up)
+        linhas_item4 = rodar_item4_gap_overfitting()
         for l in linhas_item4:
             print(f"  {l['variante']:25s} {l['metrica']:15s} = {l['valor_metrica']:.3f}")
         print()
