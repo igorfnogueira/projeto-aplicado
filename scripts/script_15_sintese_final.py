@@ -51,10 +51,12 @@ RESULTADOS_CSV = RESULTADOS_COMPARACAO_CSV
 TABELA_FINAL_CSV = result("tabela_sintese_final.csv")
 FIGURA_PATH = figure("sintese-final-finalistas.png")
 HORIZONTES_ANOS = [10, 15, 20]
-FINALISTAS = ["regressao_bayesiana", "detrend_rf", "hibrido_arima_prophet"]
-CORES_FINALISTAS = {"regressao_bayesiana": "tab:pink", "detrend_rf": "tab:olive", "hibrido_arima_prophet": "tab:red"}
+# D-67 (2026-10-15): regressao_bayesiana removida -- teste formal de Diebold-Mariano
+# contra o naive mostrou que ela perde de forma estatisticamente significativa
+# (p=0,0147), nao so "nao comprovadamente melhor" como os outros dois.
+FINALISTAS = ["detrend_rf", "hibrido_arima_prophet"]
+CORES_FINALISTAS = {"detrend_rf": "tab:olive", "hibrido_arima_prophet": "tab:red"}
 NOMES_EXIBICAO = {
-    "regressao_bayesiana": "Regressão bayesiana (incerteza honesta)",
     "detrend_rf": "Detrend + RF (melhor MASE + resíduos limpos)",
     "hibrido_arima_prophet": "Híbrido SARIMA+Prophet (cenário cauteloso)",
 }

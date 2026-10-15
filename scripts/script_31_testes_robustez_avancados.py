@@ -23,7 +23,11 @@ padrao de `script_17_matriz_sensibilidade.py`:
      fold/origem, em vez de reusar o OLS tambem aqui.
   2. Teste de Diebold-Mariano (correcao HLN de amostra pequena) entre os 3
      finalistas de script_15 + o runner-up imediato do ranking por
-     mase_holdout entre os candidatos de script_14.
+     mase_holdout entre os candidatos de script_14 + o baseline naive
+     (adicionado em 2026-10-15, por pedido explicito de revisao: a tabela de
+     MASE ja mostra o naive como o melhor da bateria no holdout, mas faltava
+     o teste formal de que essa diferenca e estatisticamente significativa,
+     nao so leitura visual da tabela).
   3. Diagnostico de residuo OUT-OF-SAMPLE (Ljung-Box/Shapiro/ARCH, mesmas
      funcoes de script_14) dos mesmos 4 metodos, para comparar com o residuo
      IN-SAMPLE ja reportado por script_14.
@@ -156,6 +160,9 @@ def calcular_erros_holdout(treino, holdout, treino_serie, holdout_serie, ordem_s
     erros["ols"] = y_true - pred
     erros["regressao_bayesiana"] = erros["ols"]  # mesma decisao de escopo de script_14
 
+    pred_naive = np.repeat(treino_serie.values[-1], len(holdout_serie))
+    erros["naive"] = holdout_serie.values - pred_naive  # mesma construcao de script_08.rodar_naive
+
     y_true, pred = _holdout_pred_detrend_rf(treino, holdout)
     erros["detrend_rf"] = y_true - pred
 
@@ -285,8 +292,21 @@ def diebold_mariano(e1: np.ndarray, e2: np.ndarray, h: int = 1):
     return float(dm_stat_corrigido), p_valor
 
 
-def rodar_item2_diebold_mariano(erros_holdout: dict, runner_up: str) -> list:
-    metodos = list(dict.fromkeys(FINALISTAS + [runner_up]))  # preserva ordem, sem duplicar
+def rodar_item2_diebold_mariano(erros_holdout: dict) -> list:
+    # "naive" incluido por pedido explicito de revisao (2026-10-15): a tabela de
+    # MASE de script_14/resultados.tex ja mostra o naive como menor MASE de
+    # holdout de toda a bateria, mas nenhuma comparacao estatistica formal
+    # contra os finalistas existia ainda -- sem ela, a limitacao (d) do
+    # manuscrito ("naive supera a maioria dos metodos sofisticados") fica sem
+    # teste de significancia, so leitura visual da tabela de MASE.
+    #
+    # Usa CANDIDATOS (fixo, igual aos itens 1/3/4), nao FINALISTAS -- FINALISTAS
+    # muda quando a lista de recomendados muda (D-67), e esse item 2 e justamente
+    # o que testa se um candidato deveria sair da lista. Amarrar a FINALISTAS
+    # tornava o proprio achado que motivou D-67 (regressao_bayesiana_vs_naive,
+    # p=0,015) irreproduzivel depois que a regressao bayesiana foi removida dos
+    # finalistas -- achado da revisao-academica de 2026-10-15.
+    metodos = list(dict.fromkeys(CANDIDATOS + ["naive"]))  # preserva ordem, sem duplicar
     linhas = []
     for metodo_a, metodo_b in itertools.combinations(metodos, 2):
         dm_stat, p_valor = diebold_mariano(erros_holdout[metodo_a], erros_holdout[metodo_b])
@@ -536,7 +556,7 @@ def _prever_recursivo_residuo_boot(modelo, d_resid: pd.DataFrame, n_passos: int,
 
 def _fit_predict_ic_detrend_rf(n_boot: int = 200):
     """IC calibrado para detrend_rf (issue #11) -- ate aqui, era o unico dos
-    3 finalistas sem incerteza nativa testavel. Reusa destendenciar/
+    finalistas da epoca (3, antes de D-67) sem incerteza nativa testavel. Reusa destendenciar/
     construir_features/RandomForestRegressor ja importados + a tecnica de
     bootstrap de residuo ja estabelecida no projeto (script_09, SVR)."""
     rng = np.random.default_rng(SEED)
@@ -713,8 +733,8 @@ def main():
             print(f"  {l['variante']:40s} p={l['valor_metrica']:.4f}")
         print()
 
-        print("=== Item 2: Diebold-Mariano (finalistas + runner-up) ===")
-        linhas_item2 = rodar_item2_diebold_mariano(erros_holdout, runner_up)
+        print("=== Item 2: Diebold-Mariano (5 candidatos + naive) ===")
+        linhas_item2 = rodar_item2_diebold_mariano(erros_holdout)
         for l in linhas_item2:
             print(f"  {l['variante']:45s} dm_stat={l['valor_metrica']:.3f}  p={l['pvalor']:.4f}")
         print()

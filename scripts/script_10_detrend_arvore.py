@@ -51,7 +51,6 @@ from sklearn.model_selection import GridSearchCV, TimeSeriesSplit
 import xgboost as xgb
 
 from script_03_random_forest_gridsearch import carregar_serie_tds, construir_features, FEATURES
-from script_04_xgboost_lightgbm import checar_gpu_xgboost
 from utils.experiment_tracking import iniciar_run, logar_linha_resultado, logar_artefatos
 from utils.validacao_utils import validar_metodo
 
@@ -63,6 +62,25 @@ RESULTADOS_CSV = RESULTADOS_COMPARACAO_CSV
 RESULTADOS_JSON = RESULTADOS_COMPARACAO_JSON
 FIGURA_PATH = figure("detrend-arvore-tds.png")
 warnings.filterwarnings("ignore")
+
+XGBOOST_GPU_OK = None  # descoberto em tempo de execucao
+
+
+def checar_gpu_xgboost() -> bool:
+    """Copia local (D-66: script_04 saiu do rastreamento publico para
+    scripts/bateria_estendida/, e script_10 continua publico e precisa rodar
+    sozinho, sem depender de import cruzado com a bateria estendida)."""
+    global XGBOOST_GPU_OK
+    if XGBOOST_GPU_OK is not None:
+        return XGBOOST_GPU_OK
+    try:
+        m = xgb.XGBRegressor(tree_method="hist", device="cuda", n_estimators=5)
+        m.fit(np.random.rand(20, 2), np.random.rand(20))
+        XGBOOST_GPU_OK = True
+    except Exception as e:
+        print(f"  Aviso: XGBoost CUDA indisponivel ({e}); caindo para CPU.")
+        XGBOOST_GPU_OK = False
+    return XGBOOST_GPU_OK
 
 
 def metrica_holdout(y_true, y_pred):
