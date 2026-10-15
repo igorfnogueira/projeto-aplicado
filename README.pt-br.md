@@ -120,6 +120,9 @@ mlflow ui --backend-store-uri sqlite:///mlflow.db
 │   ├── *_resultados.* / tabela_sintese_final.csv / comparacao_pdsi_*
 │   └── figures/          # PNGs gerados pelo pipeline
 ├── notebooks/            # notebook.ipynb didático
+├── docs/
+│   ├── GLOSSARIO.md      # glossário de domínio público
+│   └── adr/              # registros de decisão arquitetural (0001–0003)
 ├── README.md / README.pt-br.md / CLAUDE.md / requirements.txt
 ```
 
