@@ -8,7 +8,7 @@ This is a graduate research project (Pós-Graduação em IA Aplicada, UniSENAI) 
 
 **Public deliverables on GitHub** are only: (1) the core data-science pipeline (`scripts/script_00` through `script_21`, `script_28`, `script_31`, plus `script_00b`) with `data/` and `results/`; and (2) the didactic notebook under `notebooks/`. Remote: `github.com/igorfnogueira/projeto-aplicado`. A wider screening battery of forecasting methods lives in `scripts/bateria_estendida/` (gitignored, local-only) — see "Pipeline structure" below.
 
-A Streamlit dashboard (`huggingface_space/`, kept local/untracked — not part of the public repository) exists for optional local use (`streamlit run huggingface_space/streamlit_app.py`), but the project presentation uses `teach` lessons instead; the dashboard's full ~50-method battery was judged too complex for that purpose.
+A Streamlit dashboard (`huggingface_space/`, kept local/untracked — not part of the public repository) exists for optional local use (`streamlit run huggingface_space/streamlit_app.py`), but the project presentation uses `teach` lessons instead; the dashboard's full battery (15 core forecasting methods plus the extended screening battery kept in `scripts/bateria_estendida/`) was judged too complex for that purpose.
 
 Draft manuscripts, execution plans, decision logs, and process prompts may exist only on the local disk (gitignored). They are **not** part of the public repository. Agents working against the public tree must **not** treat maintaining private drafts as a repository obligation.
 
