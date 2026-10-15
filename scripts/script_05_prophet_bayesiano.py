@@ -1,18 +1,20 @@
 """
-Prophet e regressao bayesiana para o TDS (secao 3.d da metodologia) —
-os dois metodos escolhidos por exporem explicitamente a incerteza crescente
-com o horizonte, mais honestos para extrapolar ~15 anos de historico para
-+20 anos (ao contrario dos metodos baseados em arvore dos scripts 03/04, que
-saturam ou oscilam sem sinalizar a propria fragilidade).
+Prophet para o TDS (secao 3.d da metodologia) — escolhido por expor
+explicitamente a incerteza crescente com o horizonte, mais honesto para
+extrapolar ~15 anos de historico para +20 anos (ao contrario dos metodos
+baseados em arvore, que saturam ou oscilam sem sinalizar a propria
+fragilidade).
 
-GPU: nao aplicavel. Prophet usa Stan/CmdStan (sem backend CUDA); a regressao
-bayesiana aqui usa PyMC/NUTS via CPU puro (sem g++ nesta maquina, PyTensor
-cai para o fallback Python — mais lento, mas funcional para um dataset deste
-tamanho). A variante JAX/CUDA mencionada no plano nao foi configurada nesta
-sessao (exigiria jax[cuda12] + driver compativel, fora do escopo atual).
+GPU: nao aplicavel. Prophet usa Stan/CmdStan (sem backend CUDA).
 
-Mesma nota de desenho dos scripts 01-04: univariado em TDS, independe do
+Mesma nota de desenho dos scripts 01-03: univariado em TDS, independe do
 tratamento de ND do BOD.
+
+D-73: a regressao bayesiana (PyMC/NUTS), que rodava junto neste script, ja
+havia saido da lista de finalistas (D-67/ADR-0001) e agora sai tambem da
+bateria publica de metodos na reducao para os 7 metodos citados na revisao
+externa de 14/10/2026 -- extraida para
+scripts/bateria_estendida/script_35_regressao_bayesiana.py.
 """
 
 from pathlib import Path
@@ -48,7 +50,7 @@ HOLDOUT_MESES = 24
 ALPHA = 0.10  # IC90%
 RESULTADOS_CSV = RESULTADOS_COMPARACAO_CSV
 RESULTADOS_JSON = RESULTADOS_COMPARACAO_JSON
-FIGURA_PATH = figure("prophet-bayes-tds.png")
+FIGURA_PATH = figure("prophet-tds.png")
 SEED = 42
 
 
@@ -68,10 +70,6 @@ def metrica_holdout(y_true, y_pred):
     r2 = float(1 - ss_res / ss_tot) if ss_tot > 0 else float("nan")
     return rmse, mae, r2
 
-
-# --------------------------------------------------------------------------
-# 3.d.1 Prophet
-# --------------------------------------------------------------------------
 
 def rodar_prophet(d: pd.DataFrame) -> dict:
     from prophet import Prophet
@@ -120,77 +118,6 @@ def rodar_prophet(d: pd.DataFrame) -> dict:
     return linha, prev_full
 
 
-# --------------------------------------------------------------------------
-# 3.d.2 Regressao bayesiana (PyMC/NUTS)
-# --------------------------------------------------------------------------
-
-def ajustar_bayes(t: np.ndarray, y: np.ndarray, draws=800, tune=800):
-    import pymc as pm
-
-    t_centro = t.mean()
-    tc = t - t_centro
-    with pm.Model():
-        a = pm.Normal("a", mu=float(y.mean()), sigma=float(y.std() * 3 + 50))
-        b = pm.Normal("b", mu=0, sigma=50)
-        sigma = pm.HalfNormal("sigma", sigma=float(y.std() * 2 + 10))
-        mu = a + b * tc
-        pm.Normal("obs", mu=mu, sigma=sigma, observed=y)
-        idata = pm.sample(draws, tune=tune, chains=2, cores=1, progressbar=False,
-                           random_seed=SEED, target_accept=0.9)
-    return idata, t_centro
-
-
-def rodar_bayesiano(d: pd.DataFrame) -> dict:
-    treino, holdout = d.iloc[:-HOLDOUT_MESES], d.iloc[-HOLDOUT_MESES:]
-
-    print("  Ajustando regressao bayesiana (treino, NUTS)...")
-    idata_tr, t_centro_tr = ajustar_bayes(treino["t_anos"].values, treino["TDS_mgL"].values)
-    a_tr = float(idata_tr.posterior["a"].mean())
-    b_tr = float(idata_tr.posterior["b"].mean())
-    pred_holdout = a_tr + b_tr * (holdout["t_anos"].values - t_centro_tr)
-    rmse, mae, r2 = metrica_holdout(holdout["TDS_mgL"].values, pred_holdout)
-
-    print("  Ajustando regressao bayesiana (serie completa, NUTS)...")
-    idata_full, t_centro_full = ajustar_bayes(d["t_anos"].values, d["TDS_mgL"].values)
-    a_s = idata_full.posterior["a"].values.flatten()
-    b_s = idata_full.posterior["b"].values.flatten()
-    sigma_s = idata_full.posterior["sigma"].values.flatten()
-
-    b_mean = float(b_s.mean())
-    prob_b_positivo = float((b_s > 0).mean())
-    p_valor_bayes = 2 * min(prob_b_positivo, 1 - prob_b_positivo)
-    slope_lo, slope_hi = np.percentile(b_s, [100 * ALPHA / 2, 100 * (1 - ALPHA / 2)])
-
-    linha = {
-        "metodo": "regressao_bayesiana",
-        "tendencia_mgL_ano": b_mean,
-        "tendencia_pvalor": p_valor_bayes,
-        "tendencia_ic90_baixo": float(slope_lo),
-        "tendencia_ic90_alto": float(slope_hi),
-        "rmse_holdout": rmse,
-        "mae_holdout": mae,
-        "r2_holdout": r2,
-        "prob_tendencia_positiva": prob_b_positivo,
-    }
-
-    rng = np.random.default_rng(SEED)
-    for h in HORIZONTES_ANOS:
-        t_h = d["t_anos"].iloc[-1] + h
-        mu_draws = a_s + b_s * (t_h - t_centro_full)
-        pred_draws = rng.normal(mu_draws, sigma_s)
-        ponto = float(np.mean(pred_draws))
-        lo, hi = np.percentile(pred_draws, [100 * ALPHA / 2, 100 * (1 - ALPHA / 2)])
-        linha[f"forecast_{h}y"] = ponto
-        linha[f"ci90_low_{h}y"] = float(lo)
-        linha[f"ci90_high_{h}y"] = float(hi)
-
-    return linha, (a_s, b_s, sigma_s, t_centro_full)
-
-
-# --------------------------------------------------------------------------
-# Adaptadores fit_predict (validacao_utils.validar_metodo: CV expansiva + backtest)
-# --------------------------------------------------------------------------
-
 def construir_fit_predict_prophet():
     def fit_predict(treino: pd.Series, n_passos: int) -> np.ndarray:
         from prophet import Prophet
@@ -203,27 +130,7 @@ def construir_fit_predict_prophet():
     return fit_predict
 
 
-def construir_fit_predict_bayes_rapido():
-    """Aproximacao rapida para CV/backtest: usa o estimador de minimos
-    quadrados (a media da posterior de um modelo linear-gaussiano com priors
-    fracos converge para a OLS) em vez de reamostrar NUTS a cada um dos ~25
-    folds/origens -- a amostragem completa (800+800 iteracoes, ~225s por
-    ajuste so na serie inteira) tornaria a validacao inviavel em tempo
-    habil. A previsao final (+10/+15/+20 anos, reportada em
-    resultados_comparacao.csv) continua usando NUTS completo com incerteza
-    posterior real -- so a validacao de fold usa este atalho, documentado
-    aqui explicitamente para nao ser confundido com o metodo final."""
-    def fit_predict(treino: pd.Series, n_passos: int) -> np.ndarray:
-        data0 = treino.index[0]
-        t = (treino.index - data0).days / 365.25
-        reg = stats.linregress(t.values, treino.values)
-        datas_futuras = pd.date_range(treino.index[-1], periods=n_passos + 1, freq="ME")[1:]
-        t_futuro = (datas_futuras - data0).days / 365.25
-        return reg.intercept + reg.slope * t_futuro
-    return fit_predict
-
-
-def gerar_figura(d, linha_prophet, prev_full_prophet, linha_bayes):
+def gerar_figura(d, linha_prophet, prev_full_prophet):
     fig, ax = plt.subplots(figsize=(7, 4.2))
     ax.plot(d["Data"], d["TDS_mgL"], color="black", linewidth=1, label="TDS observado")
 
@@ -233,17 +140,9 @@ def gerar_figura(d, linha_prophet, prev_full_prophet, linha_bayes):
     ax.fill_between(prev_futuro["ds"], prev_futuro["yhat_lower"], prev_futuro["yhat_upper"],
                      color="tab:green", alpha=0.12)
 
-    anos_futuros = [0] + HORIZONTES_ANOS
-    datas_futuras = [ultima_data + pd.DateOffset(months=int(a * 12)) for a in anos_futuros]
-    pontos = [linha_bayes[f"forecast_{h}y"] if h > 0 else d["TDS_mgL"].iloc[-1] for h in anos_futuros]
-    baixos = [linha_bayes[f"ci90_low_{h}y"] if h > 0 else d["TDS_mgL"].iloc[-1] for h in anos_futuros]
-    altos = [linha_bayes[f"ci90_high_{h}y"] if h > 0 else d["TDS_mgL"].iloc[-1] for h in anos_futuros]
-    ax.plot(datas_futuras, pontos, "--", color="tab:pink", label="Regressao bayesiana (previsao)")
-    ax.fill_between(datas_futuras, baixos, altos, color="tab:pink", alpha=0.15)
-
     ax.set_xlabel("Data")
     ax.set_ylabel("TDS (mg/L)")
-    ax.set_title("Prophet e regressao bayesiana — previsao de TDS (+10/+15/+20 anos)")
+    ax.set_title("Prophet — previsao de TDS (+10/+15/+20 anos)")
     ax.legend(fontsize=7, loc="upper left")
     fig.tight_layout()
     fig.savefig(FIGURA_PATH, dpi=140)
@@ -251,13 +150,12 @@ def gerar_figura(d, linha_prophet, prev_full_prophet, linha_bayes):
     print(f"Figura salva em {FIGURA_PATH}")
 
 
-def gravar_resultados(linhas: list):
-    for linha in linhas:
-        linha["script"] = "script_05_prophet_bayesiano"
-        linha["tratamento_nd_bod"] = "nao_aplicavel_metodo_univariado_tds"
-        linha["data_execucao"] = datetime.now().isoformat(timespec="seconds")
+def gravar_resultados(linha: dict):
+    linha["script"] = "script_05_prophet_bayesiano"
+    linha["tratamento_nd_bod"] = "nao_aplicavel_metodo_univariado_tds"
+    linha["data_execucao"] = datetime.now().isoformat(timespec="seconds")
 
-    novas = pd.DataFrame(linhas)
+    novas = pd.DataFrame([linha])
     if pd.io.common.file_exists(RESULTADOS_CSV):
         existentes = pd.read_csv(RESULTADOS_CSV)
         existentes = existentes[~existentes["metodo"].isin(novas["metodo"])]
@@ -295,33 +193,16 @@ def main():
         print(f"  +{h}a: {linha_prophet[f'forecast_{h}y']:.1f} mg/L  IC90% [{baixo:.1f}, {alto:.1f}]")
     print()
 
-    print("--- Regressao bayesiana (PyMC/NUTS) ---")
-    linha_bayes, _ = rodar_bayesiano(d)
-    linha_bayes.update(validar_metodo(construir_fit_predict_bayes_rapido(), serie, treino_serie, holdout_serie))
-    print(f"  Tendencia: {linha_bayes['tendencia_mgL_ano']:.3f} mg/L/ano "
-          f"(p~{linha_bayes['tendencia_pvalor']:.4f}, P(tendencia>0)={linha_bayes['prob_tendencia_positiva']:.4f}, "
-          f"IC90% [{linha_bayes['tendencia_ic90_baixo']:.3f}, {linha_bayes['tendencia_ic90_alto']:.3f}])")
-    print(f"  Holdout: RMSE={linha_bayes['rmse_holdout']:.2f}  MAE={linha_bayes['mae_holdout']:.2f}  R2={linha_bayes['r2_holdout']:.3f}  "
-          f"MASE={linha_bayes['mase_holdout']:.3f}  sMAPE={linha_bayes['smape_holdout']:.2f}%")
-    print(f"  CV (5 folds expansivos, aproximacao OLS): RMSE={linha_bayes['cv_rmse_media']:.2f}±{linha_bayes['cv_rmse_desvio']:.2f}  "
-          f"MASE={linha_bayes['cv_mase_media']:.3f}±{linha_bayes['cv_mase_desvio']:.3f}")
-    for h in HORIZONTES_ANOS:
-        baixo, alto = linha_bayes[f"ci90_low_{h}y"], linha_bayes[f"ci90_high_{h}y"]
-        if not (np.isnan(baixo) or np.isnan(alto)):
-            linha_bayes[f"ic90_width_{h}y"] = alto - baixo
-        print(f"  +{h}a: {linha_bayes[f'forecast_{h}y']:.1f} mg/L  IC90% [{baixo:.1f}, {alto:.1f}]")
-
-    gravar_resultados([linha_prophet, linha_bayes])
+    gravar_resultados(linha_prophet)
     print(f"\nResultados gravados em {RESULTADOS_CSV} / {RESULTADOS_JSON}")
-    gerar_figura(d, linha_prophet, prev_full_prophet, linha_bayes)
+    gerar_figura(d, linha_prophet, prev_full_prophet)
 
-    for linha in (linha_prophet, linha_bayes):
-        with iniciar_run(
-            linha["metodo"], "script_05_prophet_bayesiano", seed=SEED,
-            janela_treino_holdout={"treino_meses": len(treino_serie), "holdout_meses": len(holdout_serie)},
-        ):
-            logar_linha_resultado(linha)
-            logar_artefatos([FIGURA_PATH])
+    with iniciar_run(
+        "prophet", "script_05_prophet_bayesiano", seed=SEED,
+        janela_treino_holdout={"treino_meses": len(treino_serie), "holdout_meses": len(holdout_serie)},
+    ):
+        logar_linha_resultado(linha_prophet)
+        logar_artefatos([FIGURA_PATH])
 
 
 if __name__ == "__main__":

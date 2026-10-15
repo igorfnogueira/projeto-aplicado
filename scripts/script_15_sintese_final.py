@@ -1,25 +1,20 @@
 """
 Sintese final da bateria de modelagem de TDS (bloco final do aprofundamento):
-le resultados_comparacao.csv (21 metodos) e produz (1) uma tabela consolidada
-ordenada por MASE de holdout e (2) o grafico unico com a serie historica e a
-previsao dos finalistas recomendados, com IC90 sobreposto.
+le resultados_comparacao.csv e produz (1) uma tabela consolidada ordenada por
+MASE de holdout e (2) uma figura com a serie historica e a previsao de cada
+um dos 7 metodos do nucleo publico, com IC90 sobreposto.
 
-Finalistas escolhidos (nao um unico vencedor, conforme criterio de comparacao
-do plano do projeto, secao 5) -- justificativa registrada aqui, nao inventada:
-  - detrend_rf: melhor MASE de holdout (0,44) entre os metodos que captam
-    tendencia de longo prazo sem saturar/oscilar, e o UNICO candidato sem
-    autocorrelacao residual nem heterocedasticidade detectavel (script_14).
-  - hibrido_arima_prophet: melhor RMSE de holdout entre os metodos de serie
-    temporal, IC90 mais largo (envoltoria de SARIMA+Prophet) -- cenario mais
-    cauteloso/conservador para planejamento de infraestrutura, sem a
-    explosao do IC do SARIMA isolado.
-
-Uma terceira candidata, regressao_bayesiana (unico metodo com incerteza
-honesta, IC90 crescendo de forma suave e proporcional ao horizonte), foi
-descartada da lista de finalistas (D-67/ADR-0001): um teste de
-Diebold-Mariano contra o baseline naive mostrou que ela perde de forma
-estatisticamente significativa (p=0,0147) -- diferente dos dois finalistas
-mantidos, estatisticamente empatados com o naive (p=0,81 e p=0,29).
+D-73 (2026-10-15): abandona o conceito de "finalista recomendado". Ate
+entao, FINALISTAS elegia 2 metodos (detrend_rf, hibrido_arima_prophet) como
+recomendacao destacada, com uma figura de convergencia em +20 anos. Na
+reducao da bateria publica para os 7 metodos citados na revisao externa
+(Mann-Kendall/Sen, Theil-Sen, OLS, SARIMA, Prophet, naive, Detrend+RF), o
+hibrido SARIMA+Prophet -- um dos 2 finalistas -- saiu da bateria publica
+(ver D-73 em scripts/bateria_estendida/), o que deixaria um unico "finalista"
+sobrevivente: contradiz a propria premissa original ("nao um unico
+vencedor"). Em vez de forcar uma recomendacao com 1 metodo so, este script
+passa a reportar apenas as metricas de cada metodo (MASE/R2 de holdout),
+igual ao formato da tabela 3.6 da revisao externa -- sem eleger vencedor.
 
 Nao gera novos ajustes de modelo -- consome exclusivamente o que ja esta em
 resultados_comparacao.csv (nenhum numero novo e calculado aqui, so
@@ -53,16 +48,23 @@ from utils.experiment_tracking import iniciar_run, logar_artefatos
 
 RESULTADOS_CSV = RESULTADOS_COMPARACAO_CSV
 TABELA_FINAL_CSV = result("tabela_sintese_final.csv")
-FIGURA_PATH = figure("sintese-final-finalistas.png")
+FIGURA_PATH = figure("sintese-final-metodos.png")
 HORIZONTES_ANOS = [10, 15, 20]
-# D-67 (2026-10-15): regressao_bayesiana removida -- teste formal de Diebold-Mariano
-# contra o naive mostrou que ela perde de forma estatisticamente significativa
-# (p=0,0147), nao so "nao comprovadamente melhor" como os outros dois.
-FINALISTAS = ["detrend_rf", "hibrido_arima_prophet"]
-CORES_FINALISTAS = {"detrend_rf": "tab:olive", "hibrido_arima_prophet": "tab:red"}
+
+# Os 7 metodos do nucleo publico (D-73) -- os demais metodos presentes em
+# resultados_comparacao.csv (causais/mecanismo: balanco_massa, wrtds,
+# cenarios; e os arquivados em bateria_estendida, se alguem rodar aqueles
+# scripts localmente) nao entram na figura, so na tabela consolidada.
+METODOS_NUCLEO = [
+    "mann_kendall_sen", "theil_sen", "ols", "sarima", "prophet", "naive", "detrend_rf",
+]
+CORES_NUCLEO = {
+    "mann_kendall_sen": "tab:blue", "theil_sen": "tab:orange", "ols": "tab:green",
+    "sarima": "tab:purple", "prophet": "tab:brown", "naive": "gray", "detrend_rf": "tab:olive",
+}
 NOMES_EXIBICAO = {
-    "detrend_rf": "Detrend + RF (melhor MASE + resíduos limpos)",
-    "hibrido_arima_prophet": "Híbrido SARIMA+Prophet (cenário cauteloso)",
+    "mann_kendall_sen": "Mann-Kendall/Sen", "theil_sen": "Theil-Sen", "ols": "OLS",
+    "sarima": "SARIMA", "prophet": "Prophet", "naive": "Naive", "detrend_rf": "Detrend + RF",
 }
 
 
@@ -78,7 +80,6 @@ def gerar_tabela_consolidada(df: pd.DataFrame) -> pd.DataFrame:
     for h in HORIZONTES_ANOS:
         cols += [f"forecast_{h}y", f"ci90_low_{h}y", f"ci90_high_{h}y"]
     tabela = df[cols].copy()
-    tabela["finalista"] = tabela["metodo"].isin(FINALISTAS)
     tabela = tabela.sort_values("mase_holdout").reset_index(drop=True)
     tabela.to_csv(TABELA_FINAL_CSV, index=False)
     return tabela
@@ -90,7 +91,7 @@ def gerar_figura(d: pd.DataFrame, df: pd.DataFrame):
 
     ultima_data = d["Data"].iloc[-1]
     ultimo_valor = d["TDS_mgL"].iloc[-1]
-    for metodo in FINALISTAS:
+    for metodo in METODOS_NUCLEO:
         linha = df[df["metodo"] == metodo]
         if linha.empty:
             continue
@@ -100,14 +101,14 @@ def gerar_figura(d: pd.DataFrame, df: pd.DataFrame):
         pontos = [ultimo_valor] + [linha[f"forecast_{h}y"] for h in HORIZONTES_ANOS]
         baixos = [ultimo_valor] + [linha[f"ci90_low_{h}y"] for h in HORIZONTES_ANOS]
         altos = [ultimo_valor] + [linha[f"ci90_high_{h}y"] for h in HORIZONTES_ANOS]
-        cor = CORES_FINALISTAS[metodo]
-        ax.plot(datas_futuras, pontos, "--", color=cor, linewidth=1.6, label=NOMES_EXIBICAO[metodo])
-        ax.fill_between(datas_futuras, baixos, altos, color=cor, alpha=0.12)
+        cor = CORES_NUCLEO[metodo]
+        ax.plot(datas_futuras, pontos, "--", color=cor, linewidth=1.3, label=NOMES_EXIBICAO[metodo])
+        ax.fill_between(datas_futuras, baixos, altos, color=cor, alpha=0.08)
 
     ax.set_xlabel("Data")
     ax.set_ylabel("TDS (mg/L)")
-    ax.set_title("Finalistas recomendados — previsão de TDS com IC90% (+10/+15/+20 anos)")
-    ax.legend(fontsize=8, loc="upper left")
+    ax.set_title("Bateria de 7 métodos — previsão de TDS com IC90% (+10/+15/+20 anos)")
+    ax.legend(fontsize=7, loc="upper left", ncol=2)
     fig.tight_layout()
     fig.savefig(FIGURA_PATH, dpi=140)
     plt.close(fig)
@@ -123,27 +124,17 @@ def main():
     tabela = gerar_tabela_consolidada(df)
     print(f"Tabela consolidada salva em {TABELA_FINAL_CSV}")
     print()
-    print("--- Top 5 por MASE de holdout ---")
-    print(tabela[["metodo", "mase_holdout", "cv_mase_media", "r2_holdout", "finalista"]].head(5).to_string(index=False))
+    print("--- Bateria do nucleo publico, por MASE de holdout ---")
+    tabela_nucleo = tabela[tabela["metodo"].isin(METODOS_NUCLEO)]
+    print(tabela_nucleo[["metodo", "mase_holdout", "r2_holdout", "cv_mase_media"]].to_string(index=False))
     print()
-
-    print("--- Finalistas recomendados ---")
-    for metodo in FINALISTAS:
-        linha = tabela[tabela["metodo"] == metodo]
-        if linha.empty:
-            print(f"  AVISO: {metodo} nao encontrado em {RESULTADOS_CSV}")
-            continue
-        linha = linha.iloc[0]
-        print(f"  {NOMES_EXIBICAO[metodo]}")
-        print(f"    MASE holdout={linha['mase_holdout']:.3f}  RMSE={linha['rmse_holdout']:.2f}  "
-              f"Tendencia={linha['tendencia_mgL_ano']:.2f} mg/L/ano")
-        for h in HORIZONTES_ANOS:
-            print(f"    +{h}a: {linha[f'forecast_{h}y']:.1f} mg/L  IC90% [{linha[f'ci90_low_{h}y']:.1f}, {linha[f'ci90_high_{h}y']:.1f}]")
+    print("Nenhum metodo e recomendado como vencedor (D-73) -- ver tabela completa para "
+          "MASE/R2/tendencia/IC90 de cada um.")
 
     gerar_figura(d, df)
 
     with iniciar_run("sintese_final", "script_15_sintese_final",
-                      params={"finalistas": ",".join(FINALISTAS)}):
+                      params={"metodos_nucleo": ",".join(METODOS_NUCLEO)}):
         logar_artefatos([FIGURA_PATH, TABELA_FINAL_CSV])
 
 

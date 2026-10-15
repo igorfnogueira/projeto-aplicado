@@ -1,14 +1,14 @@
 """
-Tendencia linear + arvore no residuo para o TDS (bloco 3 do aprofundamento) --
-ataca diretamente a limitacao ja documentada empiricamente em script_03/04:
-Random Forest, XGBoost e LightGBM saturam ou oscilam ao extrapolar porque
-arvores nao extrapolam fora do range de valores vistos no treino.
+Tendencia linear + Random Forest no residuo para o TDS (bloco 3 do
+aprofundamento) -- ataca diretamente a limitacao ja documentada
+empiricamente em script_03: Random Forest satura ou oscila ao extrapolar
+porque arvores nao extrapolam fora do range de valores vistos no treino.
 
 Estrategia: (1) ajusta uma tendencia linear OLS na serie completa de TDS;
 (2) calcula o residuo (TDS - tendencia) -- uma serie sem tendencia, so
 sazonalidade/ruido, que fica DENTRO do range historico mesmo longe no futuro
-(nao precisa extrapolar); (3) treina RF e XGBoost para prever esse residuo,
-reaproveitando features/GridSearchCV de script_03/04; (4) previsao final =
+(nao precisa extrapolar); (3) treina RF para prever esse residuo,
+reaproveitando features/GridSearchCV de script_03; (4) previsao final =
 tendencia extrapolada (que capta a direcao de longo prazo corretamente, como
 os metodos estatisticos classicos ja mostraram) + residuo previsto pela
 arvore (que so precisa modelar padroes de curto prazo, dentro do seu range de
@@ -16,9 +16,17 @@ treino).
 
 Limitacao registrada: a incerteza da tendencia OLS (seu proprio IC) nao e
 propagada para o IC90 final -- o IC reportado vem so da dispersao entre
-arvores/regressao quantilica do residuo, subestimando a incerteza total.
+arvores do residuo, subestimando a incerteza total.
 
 Univariado em TDS: independe do tratamento de ND do BOD.
+
+D-73: Detrend+XGBoost, que rodava junto neste script, deixou de ser
+reportado como metodo publico na reducao da bateria para os 7 metodos
+citados na revisao externa de 14/10/2026 (que so cita Detrend+RF na tabela
+3.6) -- extraido para scripts/bateria_estendida/script_37_detrend_xgboost.py,
+que importa `destendenciar`, `prever_recursivo_residuo`,
+`construir_fit_predict_detrend` e `rodar_detrend` deste arquivo (continuam
+publicos por serem genericos, independentes do modelo treinado no residuo).
 """
 
 from pathlib import Path
@@ -48,7 +56,6 @@ from scipy import stats
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import GridSearchCV, TimeSeriesSplit
-import xgboost as xgb
 
 from script_03_random_forest_gridsearch import carregar_serie_tds, construir_features, FEATURES
 from utils.experiment_tracking import iniciar_run, logar_linha_resultado, logar_artefatos
@@ -62,25 +69,6 @@ RESULTADOS_CSV = RESULTADOS_COMPARACAO_CSV
 RESULTADOS_JSON = RESULTADOS_COMPARACAO_JSON
 FIGURA_PATH = figure("detrend-arvore-tds.png")
 warnings.filterwarnings("ignore")
-
-XGBOOST_GPU_OK = None  # descoberto em tempo de execucao
-
-
-def checar_gpu_xgboost() -> bool:
-    """Copia local (D-66: script_04 saiu do rastreamento publico para
-    scripts/bateria_estendida/, e script_10 continua publico e precisa rodar
-    sozinho, sem depender de import cruzado com a bateria estendida)."""
-    global XGBOOST_GPU_OK
-    if XGBOOST_GPU_OK is not None:
-        return XGBOOST_GPU_OK
-    try:
-        m = xgb.XGBRegressor(tree_method="hist", device="cuda", n_estimators=5)
-        m.fit(np.random.rand(20, 2), np.random.rand(20))
-        XGBOOST_GPU_OK = True
-    except Exception as e:
-        print(f"  Aviso: XGBoost CUDA indisponivel ({e}); caindo para CPU.")
-        XGBOOST_GPU_OK = False
-    return XGBOOST_GPU_OK
 
 
 def metrica_holdout(y_true, y_pred):
@@ -135,15 +123,6 @@ def treinar_rf(X, y):
     tscv = TimeSeriesSplit(n_splits=5)
     busca = GridSearchCV(RandomForestRegressor(random_state=SEED), grade, cv=tscv,
                           scoring="neg_root_mean_squared_error", n_jobs=-1)
-    busca.fit(X, y)
-    return busca.best_estimator_, busca.best_params_
-
-
-def treinar_xgb(X, y, usa_gpu):
-    grade = {"n_estimators": [100, 300], "max_depth": [3, 5, 7], "learning_rate": [0.03, 0.1]}
-    tscv = TimeSeriesSplit(n_splits=5)
-    base = xgb.XGBRegressor(tree_method="hist", device="cuda" if usa_gpu else "cpu", random_state=SEED)
-    busca = GridSearchCV(base, grade, cv=tscv, scoring="neg_root_mean_squared_error", n_jobs=1 if usa_gpu else -1)
     busca.fit(X, y)
     return busca.best_estimator_, busca.best_params_
 
@@ -218,15 +197,14 @@ def construir_fit_predict_detrend(treinar_fn_com_params):
     return fit_predict
 
 
-def gerar_figura(d, dados_rf, dados_xgb):
+def gerar_figura(d, dados_rf):
     fig, ax = plt.subplots(figsize=(7, 4.2))
     ax.plot(d["Data"], d["TDS_mgL"], color="black", linewidth=1, label="TDS observado")
-    for nome, dados, cor in [("Detrend+RF", dados_rf, "tab:olive"), ("Detrend+XGBoost", dados_xgb, "tab:gray")]:
-        datas_futuras, pontos = dados
-        ax.plot(datas_futuras, pontos, "--", color=cor, label=f"{nome} (previsao)")
+    datas_futuras, pontos = dados_rf
+    ax.plot(datas_futuras, pontos, "--", color="tab:olive", label="Detrend+RF (previsao)")
     ax.set_xlabel("Data")
     ax.set_ylabel("TDS (mg/L)")
-    ax.set_title("Tendência + árvore no resíduo — previsão de TDS (+10/+15/+20 anos)")
+    ax.set_title("Tendência + Random Forest no resíduo — previsão de TDS (+10/+15/+20 anos)")
     ax.legend(fontsize=7, loc="upper left")
     fig.tight_layout()
     fig.savefig(FIGURA_PATH, dpi=140)
@@ -234,12 +212,11 @@ def gerar_figura(d, dados_rf, dados_xgb):
     print(f"Figura salva em {FIGURA_PATH}")
 
 
-def gravar_resultados(linhas: list):
-    for linha in linhas:
-        linha["script"] = "script_10_detrend_arvore"
-        linha["tratamento_nd_bod"] = "nao_aplicavel_metodo_univariado_tds"
-        linha["data_execucao"] = datetime.now().isoformat(timespec="seconds")
-    novas = pd.DataFrame(linhas)
+def gravar_resultados(linha: dict):
+    linha["script"] = "script_10_detrend_arvore"
+    linha["tratamento_nd_bod"] = "nao_aplicavel_metodo_univariado_tds"
+    linha["data_execucao"] = datetime.now().isoformat(timespec="seconds")
+    novas = pd.DataFrame([linha])
     if pd.io.common.file_exists(RESULTADOS_CSV):
         existentes = pd.read_csv(RESULTADOS_CSV)
         existentes = existentes[~existentes["metodo"].isin(novas["metodo"])]
@@ -269,36 +246,17 @@ def main():
     print(f"  CV: MASE={linha_rf['cv_mase_media']:.3f}±{linha_rf['cv_mase_desvio']:.3f}  Backtest+3a: MAE={linha_rf.get('backtest_mae_36m', float('nan')):.2f}")
     for h in HORIZONTES_ANOS:
         print(f"  +{h}a: {linha_rf[f'forecast_{h}y']:.1f} mg/L  IC90% [{linha_rf[f'ci90_low_{h}y']:.1f}, {linha_rf[f'ci90_high_{h}y']:.1f}]")
-    print()
 
-    usa_gpu = checar_gpu_xgboost()
-    print("--- Detrend + XGBoost ---")
-    linha_xgb, params_xgb, dados_xgb = rodar_detrend(
-        "detrend_xgb", lambda X, y: treinar_xgb(X, y, usa_gpu), d, treino, holdout
-    )
-    linha_xgb.update(validar_metodo(
-        construir_fit_predict_detrend(lambda X, y: xgb.XGBRegressor(
-            tree_method="hist", device="cuda" if usa_gpu else "cpu", random_state=SEED, **params_xgb
-        ).fit(X, y)),
-        serie, treino_serie, holdout_serie,
-    ))
-    print(f"  Hiperparametros: {params_xgb}  (GPU={usa_gpu})")
-    print(f"  Holdout: RMSE={linha_xgb['rmse_holdout']:.2f}  MASE={linha_xgb['mase_holdout']:.3f}  sMAPE={linha_xgb['smape_holdout']:.2f}%")
-    print(f"  CV: MASE={linha_xgb['cv_mase_media']:.3f}±{linha_xgb['cv_mase_desvio']:.3f}  Backtest+3a: MAE={linha_xgb.get('backtest_mae_36m', float('nan')):.2f}")
-    for h in HORIZONTES_ANOS:
-        print(f"  +{h}a: {linha_xgb[f'forecast_{h}y']:.1f} mg/L  IC90% [{linha_xgb[f'ci90_low_{h}y']:.1f}, {linha_xgb[f'ci90_high_{h}y']:.1f}]")
-
-    gravar_resultados([linha_rf, linha_xgb])
+    gravar_resultados(linha_rf)
     print(f"\nResultados gravados em {RESULTADOS_CSV} / {RESULTADOS_JSON}")
-    gerar_figura(d, dados_rf, dados_xgb)
+    gerar_figura(d, dados_rf)
 
-    for linha in (linha_rf, linha_xgb):
-        with iniciar_run(
-            linha["metodo"], "script_10_detrend_arvore", seed=SEED,
-            janela_treino_holdout={"treino_meses": len(treino_serie), "holdout_meses": len(holdout_serie)},
-        ):
-            logar_linha_resultado(linha)
-            logar_artefatos([FIGURA_PATH])
+    with iniciar_run(
+        linha_rf["metodo"], "script_10_detrend_arvore", seed=SEED,
+        janela_treino_holdout={"treino_meses": len(treino_serie), "holdout_meses": len(holdout_serie)},
+    ):
+        logar_linha_resultado(linha_rf)
+        logar_artefatos([FIGURA_PATH])
 
 
 if __name__ == "__main__":

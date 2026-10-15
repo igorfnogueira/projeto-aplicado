@@ -15,11 +15,16 @@ tambem faz parte da incerteza total.
 Ordem SARIMA reaproveitada da busca por AIC ja feita em script_02 (mesma
 decisao de escopo de outros scripts desta fase). Univariado em TDS: independe
 do tratamento de ND do BOD.
+
+D-73: deixou de ser reportado como finalista/metodo publico na reducao da
+bateria para os 7 metodos citados na revisao externa de 14/10/2026 (que nao
+cita o hibrido em nenhuma tabela) -- movido para scripts/bateria_estendida/
+sem mudanca de numero.
 """
 
 from pathlib import Path
 import sys
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from utils.paths import (
     bootstrap_sys_path,
     raw,

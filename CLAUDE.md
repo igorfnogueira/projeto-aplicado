@@ -8,7 +8,7 @@ This is a graduate research project (Pós-Graduação em IA Aplicada, UniSENAI) 
 
 **Public deliverables on GitHub** are only: (1) the core data-science pipeline (`scripts/script_00` through `script_21`, `script_28`, `script_31`, plus `script_00b`) with `data/` and `results/`; and (2) the didactic notebook under `notebooks/`. Remote: `github.com/igorfnogueira/projeto-aplicado`. A wider screening battery of forecasting methods lives in `scripts/bateria_estendida/` (gitignored, local-only) — see "Pipeline structure" below.
 
-A Streamlit dashboard (`huggingface_space/`, kept local/untracked — not part of the public repository) exists for optional local use (`streamlit run huggingface_space/streamlit_app.py`), but the project presentation uses `teach` lessons instead; the dashboard's full battery (15 core forecasting methods plus the extended screening battery kept in `scripts/bateria_estendida/`) was judged too complex for that purpose.
+A Streamlit dashboard (`huggingface_space/`, kept local/untracked — not part of the public repository) exists for optional local use (`streamlit run huggingface_space/streamlit_app.py`), but the project presentation uses `teach` lessons instead; the dashboard's full battery (7 core forecasting methods plus the extended screening battery kept in `scripts/bateria_estendida/`) was judged too complex for that purpose.
 
 Draft manuscripts, execution plans, decision logs, and process prompts may exist only on the local disk (gitignored). They are **not** part of the public repository. Agents working against the public tree must **not** treat maintaining private drafts as a repository obligation.
 
@@ -50,16 +50,15 @@ When present locally (gitignored / not on GitHub), private drafts live under `do
 scripts/script_00_preprocessamento.py          # canonical monthly datasets from the 4 raw CSVs
 scripts/script_00b_analise_censura_bod.py      # BOD non-detect treatment analysis (5 options, D-16)
 scripts/script_01_mann_kendall_theilsen.py     # Mann-Kendall, Sen's slope, Theil-Sen, OLS
-scripts/script_02_arima_sarima.py              # STL + ARIMA/SARIMA
-scripts/script_03_random_forest_gridsearch.py  # Random Forest (CPU)
-scripts/script_05_prophet_bayesiano.py         # Prophet + Bayesian regression
+scripts/script_02_arima_sarima.py              # SARIMA
+scripts/script_03_random_forest_gridsearch.py  # feature utilities (Random Forest, shared with script_10/14/31)
+scripts/script_05_prophet_bayesiano.py         # Prophet
 scripts/script_06_correlacao_tds_amonia_bod.py # TDS↔Ammonia/BOD correlation
 scripts/script_07_analise_estrutura_serie.py   # seasonality, ADF/KPSS, changepoints
-scripts/script_08_baselines.py                 # naive, seasonal-naive, ETS, theta
-scripts/script_10_detrend_arvore.py            # detrend + tree forecasting (finalist)
-scripts/script_12_hibrido_arima_prophet.py     # ARIMA+Prophet hybrid (finalist)
-scripts/script_14_diagnostico_residuos.py      # residual diagnostics
-scripts/script_15_sintese_final.py             # consolidates methods / finalists
+scripts/script_08_baselines.py                 # naive
+scripts/script_10_detrend_arvore.py            # Detrend + Random Forest
+scripts/script_14_diagnostico_residuos.py      # residual diagnostics (3 candidates: OLS, Detrend+RF, SARIMA)
+scripts/script_15_sintese_final.py             # consolidates method metrics (no recommended winner, D-73)
 scripts/script_16_reconstrucao_vazao.py        # effluent flow from lb/day ÷ (mg/L × 8.34)
 scripts/script_17_matriz_sensibilidade.py      # 9-item sensitivity matrix
 scripts/script_18_pdsi_regimes.py              # NOAA PDSI vs. TDS cycles
@@ -70,11 +69,11 @@ scripts/script_28_ladwp_tds_origem.py          # source-water TDS vs. effluent
 scripts/script_31_testes_robustez_avancados.py # cobertura de IC, Diebold-Mariano, residuo out-of-sample, gap overfitting, leave-one-year-out (issue #1)
 ```
 
-This is 9 forecasting-method scripts (producing 15 distinct methods: 3 trend-stat variants + STL/SARIMA + RF + Prophet/Bayesian + 4 baselines + Detrend RF/XGBoost + hybrid) plus the causal/mechanism scripts (06, 07, 16–21, 28) and the robustness battery (31) — this is the set the article reports on.
+This is 8 forecasting-method scripts (producing 7 distinct methods — D-73, 2026-10-15: reduced from 15 to the 7 cited with results in the external review of the manuscript — Mann-Kendall/Sen, Theil-Sen, OLS, SARIMA, Prophet, naive, Detrend+RF) plus the causal/mechanism scripts (06, 07, 16–21, 28) and the robustness battery (31) — this is the set the article reports on. `script_15` no longer recommends a "finalist" (that concept required the ARIMA+Prophet hybrid, which left the public battery — see `docs/adr/0001`–`0003`); it reports MASE/R²/trend/IC90 for all 7 methods without picking a winner.
 
 ### Bateria estendida (local only, gitignored — `scripts/bateria_estendida/`, `results/bateria_estendida/`)
 
-`script_04` (XGBoost/LightGBM), `script_09` (SVR/GP), `script_11` (SARIMAX+Cloreto), `script_13` (LSTM), `script_22`–`script_27` (state-space, GAM, quantile regression, intervention SARIMAX, Chronos, Cal-Adapt scenario), `script_29`/`script_30` (PDSI-covariate re-train), `script_32` (nested-CV diagnostic). These were tested as a methodological screening pass — none changed the core conclusions — and are kept locally for reference rather than in the public article/repo. Corresponding rows were split out of `results/resultados_comparacao.csv`/`.json` into `results/bateria_estendida/resultados_comparacao_estendida.csv`/`.json`.
+`script_04` (XGBoost/LightGBM), `script_09` (SVR/GP), `script_11` (SARIMAX+Cloreto), `script_12` (ARIMA+Prophet hybrid, D-73), `script_13` (LSTM), `script_22`–`script_27` (state-space, GAM, quantile regression, intervention SARIMAX, Chronos, Cal-Adapt scenario), `script_29`/`script_30` (PDSI-covariate re-train), `script_32` (nested-CV diagnostic), `script_33` (STL trend), `script_34` (Random Forest, plain), `script_35` (Bayesian regression), `script_36` (seasonal-naive/ETS/Theta baselines), `script_37` (Detrend+XGBoost). These were tested as a methodological screening pass, or (33–37, D-73) were part of the original 15-method core battery before the public reduction to 7 — none changed the core conclusions — and are kept locally for reference rather than in the public article/repo. Corresponding rows were split out of `results/resultados_comparacao.csv`/`.json` into `results/bateria_estendida/resultados_comparacao_estendida.csv`/`.json`.
 
 Forecasting methods write to `results/resultados_comparacao.csv`/`.json` (append, never overwrite other methods) and figures to `results/figures/`. `script_28` writes `data/processed/ladwp_tds_origem_vs_efluente.csv`. `script_31` writes its own `results/testes_robustez_resultados.csv`/`.json` (tidy schema, same pattern as `script_17`) — does not touch `resultados_comparacao.csv`.
 

@@ -12,22 +12,7 @@
     "arch_pvalor": 2.5914551074087247e-06,
     "arch_ok": false,
     "script": "script_14_diagnostico_residuos",
-    "data_execucao": "2026-08-13T20:26:15"
-  },
-  {
-    "metodo": "regressao_bayesiana",
-    "n_residuos": 182,
-    "ljung_box_stat": 504.91208077912717,
-    "ljung_box_pvalor": 1.995881978022131e-100,
-    "ljung_box_ok": false,
-    "shapiro_stat": 0.9886641206509739,
-    "shapiro_pvalor": 0.15492106693527397,
-    "shapiro_ok": true,
-    "arch_stat": 48.467206742651086,
-    "arch_pvalor": 2.5914551074087247e-06,
-    "arch_ok": false,
-    "script": "script_14_diagnostico_residuos",
-    "data_execucao": "2026-08-13T20:26:15"
+    "data_execucao": "2026-10-15T19:30:58"
   },
   {
     "metodo": "detrend_rf",
@@ -42,7 +27,7 @@
     "arch_pvalor": 0.7617649502066962,
     "arch_ok": true,
     "script": "script_14_diagnostico_residuos",
-    "data_execucao": "2026-08-13T20:26:15"
+    "data_execucao": "2026-10-15T19:30:58"
   },
   {
     "metodo": "sarima",
@@ -57,21 +42,6 @@
     "arch_pvalor": 2.0667127038187432e-19,
     "arch_ok": false,
     "script": "script_14_diagnostico_residuos",
-    "data_execucao": "2026-08-13T20:26:15"
-  },
-  {
-    "metodo": "hibrido_arima_prophet",
-    "n_residuos": 182,
-    "ljung_box_stat": 35.94375125870927,
-    "ljung_box_pvalor": 0.0003308071148848007,
-    "ljung_box_ok": false,
-    "shapiro_stat": 0.9467360593149452,
-    "shapiro_pvalor": 2.5748122064011263e-06,
-    "shapiro_ok": false,
-    "arch_stat": 45.4340011527441,
-    "arch_pvalor": 8.681703026448895e-06,
-    "arch_ok": false,
-    "script": "script_14_diagnostico_residuos",
-    "data_execucao": "2026-08-13T20:26:15"
+    "data_execucao": "2026-10-15T19:30:58"
   }
 ]
