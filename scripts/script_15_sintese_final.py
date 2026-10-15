@@ -6,9 +6,6 @@ previsao dos finalistas recomendados, com IC90 sobreposto.
 
 Finalistas escolhidos (nao um unico vencedor, conforme criterio de comparacao
 do plano do projeto, secao 5) -- justificativa registrada aqui, nao inventada:
-  - regressao_bayesiana: unico metodo com incerteza honesta (IC90 cresce de
-    forma suave e proporcional ao horizonte, tendencia estatisticamente
-    significativa com probabilidade posterior >99%).
   - detrend_rf: melhor MASE de holdout (0,44) entre os metodos que captam
     tendencia de longo prazo sem saturar/oscilar, e o UNICO candidato sem
     autocorrelacao residual nem heterocedasticidade detectavel (script_14).
@@ -16,6 +13,13 @@ do plano do projeto, secao 5) -- justificativa registrada aqui, nao inventada:
     temporal, IC90 mais largo (envoltoria de SARIMA+Prophet) -- cenario mais
     cauteloso/conservador para planejamento de infraestrutura, sem a
     explosao do IC do SARIMA isolado.
+
+Uma terceira candidata, regressao_bayesiana (unico metodo com incerteza
+honesta, IC90 crescendo de forma suave e proporcional ao horizonte), foi
+descartada da lista de finalistas (D-67/ADR-0001): um teste de
+Diebold-Mariano contra o baseline naive mostrou que ela perde de forma
+estatisticamente significativa (p=0,0147) -- diferente dos dois finalistas
+mantidos, estatisticamente empatados com o naive (p=0,81 e p=0,29).
 
 Nao gera novos ajustes de modelo -- consome exclusivamente o que ja esta em
 resultados_comparacao.csv (nenhum numero novo e calculado aqui, so
