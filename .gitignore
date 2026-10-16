@@ -21,7 +21,10 @@ docs_local/
 /*.pdf
 
 # bateria estendida de metodos de previsao -- testados e validados, mas fora
-# do escopo do artigo publico (9 metodos centrais + causal ficam em scripts/).
+# do escopo do artigo publico (7 metodos centrais + causal ficam em scripts/; D-73).
 # Mantida localmente para referencia, nao e deliverable publico.
 scripts/bateria_estendida/
 results/bateria_estendida/
+
+# dashboard Streamlit local (uso opcional); nao e deliverable publico
+huggingface_space/
