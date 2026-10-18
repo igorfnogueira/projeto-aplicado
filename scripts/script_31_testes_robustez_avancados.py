@@ -564,6 +564,11 @@ def _fit_predict_ic_prophet():
 def rodar_item1_cobertura_ic(serie: pd.Series, ordem_sarima) -> list:
     ordem, ordem_sazonal, trend = ordem_sarima
 
+    # Lista isolada, independente de CANDIDATOS (usada nos itens 2/3/4/5/5b) --
+    # ao mudar esta lista, atualizar manualmente a contagem/range citados em
+    # README.md/README.pt-br.md ("IC90 empirical coverage" / "Cobertura
+    # empirica do IC90"), que nao e derivado automaticamente daqui (ja
+    # aconteceu de ficar desatualizado ao adicionar o Prophet, 2026-10-18).
     fit_predicts_ic = {
         "mann_kendall_sen": _fit_predict_ic_linear(_ajustar_mk),
         "theil_sen": _fit_predict_ic_linear(_ajustar_theil_sen),
