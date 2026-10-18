@@ -1,21 +1,21 @@
 """
-Projecao por cenarios climaticos (docs_local/03_prompts/prompt_wrtds_balanco_cenarios.md, Tarefa 3):
-substitui a previsao pontual de longo prazo por uma FAIXA condicionada ao
-regime de seca, usando o PDSI ja baixado em script_18 e a relacao PDSI->TDS
-de D-37.
+Projecao por cenarios climaticos: substitui a previsao pontual de longo
+prazo por uma FAIXA condicionada ao regime de seca, usando o PDSI ja
+baixado em script_18 e a relacao PDSI->TDS ja estabelecida (lag otimo,
+decomposicao LMG) em script_18.
 
 Por que cenarios em vez de ponto: script_20 (balanco de massa) mostrou que
 extrapolar linearmente carga e vazao por 20 anos cruza valores fisicamente
 implausiveis (vazao negativa/perto de zero) -- a serie e dirigida por ciclos
-de seca (D-37), e prever seca em +20 anos nao e possivel. Cenarios com faixas
+de seca, e prever seca em +20 anos nao e possivel. Cenarios com faixas
 historicamente observadas de PDSI sao a alternativa honesta.
 
 Metodo:
-  1. PDSI historico (1895-2026, serie California estadual -- maior LMG% em
-     D-37) caracteriza a distribuicao e ajusta um AR(1) simples
-     (PDSI_t = mu + phi*(PDSI_{t-1}-mu) + eps).
-  2. Regressao TDS ~ PDSI(defasado, mesmo lag de D-37) + intercepto, com
-     erro-padrao dos coeficientes e desvio-padrao residual.
+  1. PDSI historico (1895-2026, serie California estadual -- a de maior
+     LMG% na decomposicao de script_18) caracteriza a distribuicao e ajusta
+     um AR(1) simples (PDSI_t = mu + phi*(PDSI_{t-1}-mu) + eps).
+  2. Regressao TDS ~ PDSI(defasado, mesmo lag otimo de script_18) +
+     intercepto, com erro-padrao dos coeficientes e desvio-padrao residual.
   3. Quatro cenarios de trajetoria futura de PDSI (todos simulados pelo MESMO
      AR(1) ajustado no historico, so mudando a media-alvo -- nao se inventa
      um processo novo por cenario):
@@ -286,7 +286,7 @@ def gravar_resultados_comparacao(resumo: pd.DataFrame, t_referencia_anos: float)
 def main():
     rng = np.random.default_rng(SEED)
     lag = carregar_lag_otimo()
-    print(f"=== Projeção por cenários climáticos (PDSI: {SERIE_PDSI_PRIMARIA}, lag={lag} meses de D-37) ===")
+    print(f"=== Projeção por cenários climáticos (PDSI: {SERIE_PDSI_PRIMARIA}, lag={lag} meses) ===")
     print()
 
     pdsi_hist = carregar_pdsi_historico()

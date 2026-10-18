@@ -1,7 +1,7 @@
 """
 Passo 1 da etapa de regimes climaticos: testa se os ciclos de TDS do
-LAGWRP (D-14) sao explicados por ciclos de seca (PDSI),
-antes de investir em WRTDS/balanco de massa/busca de estacao comparadora.
+LAGWRP sao explicados por ciclos de seca (PDSI), antes de investir em
+WRTDS/balanco de massa/busca de estacao comparadora.
 
 Fonte dos dados de seca: NOAA NCEI nClimDiv (mesmo indice PMDI/PDSI usado
 pelo estudo SCSC/DBS&A 2018).
@@ -21,7 +21,7 @@ Codigos confirmados na documentacao oficial (nao assumidos):
     state-code 3 digitos "004" + divisao "0" [area-averaged] + elemento "05"=PDSI)
   - Divisional: prefixo "04" + divisao (2 digitos) + "05" (divisional-readme.txt)
 
-Tres series testam mecanismos diferentes (D-29): se a seca do NORTE (Sacramento,
+Tres series testam mecanismos diferentes: se a seca do NORTE (Sacramento,
 origem do SWP) explicar o TDS do LAGWRP melhor que a seca LOCAL (LA), isso e
 evidencia a favor do mecanismo "agua de origem" sobre o mecanismo "conservacao
 local" da Nature (2020).
@@ -173,7 +173,7 @@ def n_efetivo(x: np.ndarray, y: np.ndarray, max_lag_acf: int = 20) -> float:
     1998; formula de Bartlett truncada): penaliza o n nominal pela soma dos
     produtos das autocorrelacoes de x e y, porque series autocorrelacionadas
     tem menos informacao independente do que n sugere (mesma armadilha
-    documentada em D-15 para o Mann-Kendall mensal)."""
+    ja tratada para o Mann-Kendall mensal)."""
     n = len(x)
     max_lag_acf = min(max_lag_acf, n // 4)
     x_c, y_c = x - x.mean(), y - y.mean()

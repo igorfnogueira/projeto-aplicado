@@ -4,9 +4,7 @@ aprofundamento): Ljung-Box (autocorrelacao residual), Shapiro-Wilk
 (normalidade) e ARCH (heterocedasticidade condicional) sobre os residuos
 IN-SAMPLE de cada candidato, ajustado na serie completa.
 
-Candidatos (D-73: 3, nao mais 5 -- regressao bayesiana e hibrido
-SARIMA+Prophet saem da bateria publica na reducao para os 7 metodos citados
-na revisao externa de 14/10/2026):
+Candidatos:
   - OLS (script_01): referencia classica.
   - Detrend+RF (script_10): melhor MASE entre os metodos que captam
     tendencia sem saturar.

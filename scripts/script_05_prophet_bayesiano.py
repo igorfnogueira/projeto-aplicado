@@ -9,12 +9,6 @@ GPU: nao aplicavel. Prophet usa Stan/CmdStan (sem backend CUDA).
 
 Mesma nota de desenho dos scripts 01-03: univariado em TDS, independe do
 tratamento de ND do BOD.
-
-D-73: a regressao bayesiana (PyMC/NUTS), que rodava junto neste script, ja
-havia saido da lista de finalistas (D-67/ADR-0001) e agora sai tambem da
-bateria publica de metodos na reducao para os 7 metodos citados na revisao
-externa de 14/10/2026 -- extraida para
-scripts/bateria_estendida/script_35_regressao_bayesiana.py.
 """
 
 from pathlib import Path

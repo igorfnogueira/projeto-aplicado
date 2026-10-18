@@ -50,7 +50,7 @@ remove matéria orgânica e nitrogênio. O sal atravessa a estação praticament
 O corpo d'água onde o efluente é descarregado. No caso do LAGWRP, o **Rio Los Angeles**.
 
 **No projeto:** os pontos `R-4`, `R-7`, `RSW-650`, `RSW-654` monitoram a água receptora, não o
-efluente — por isso foram mantidos apenas como contexto (D-07).
+efluente — por isso foram mantidos apenas como contexto.
 
 ### Tratamento terciário
 Nível de tratamento além do secundário (biológico), incluindo filtração e desinfecção. Produz água
@@ -65,7 +65,7 @@ nossa série (2011), então não introduz quebra no período analisado.
 ### Reúso / Água reciclada (Recycled Water)
 Efluente tratado destinado a uso não potável (irrigação, indústria, recarga de aquífero). Relevante
 porque **plantas majoritariamente de reúso podem não ter descarga em água superficial** — motivo
-pelo qual o San Jose Creek apareceu como "No Discharge" (D-21).
+pelo qual o San Jose Creek apareceu como "No Discharge".
 
 ### SRWS — Self-Regenerating Water Softener (abrandador de água autoregenerável)
 Equipamento doméstico que remove dureza da água usando sal, e descarta salmoura no esgoto. **Fonte
@@ -93,12 +93,12 @@ via portal CIWQS. Formato rico: uma linha por medição, com método analítico,
 qualificador e unidade.
 
 ### CIWQS — California Integrated Water Quality System
-Portal do California Water Boards que hospeda o eSMR. **Fonte preferida do projeto** (D-19) porque
+Portal do California Water Boards que hospeda o eSMR. **Fonte preferida do projeto** porque
 entrega formato idêntico ao já processado, série desde 2010, e ambas as unidades (mg/L e lb/day).
 
 ### DMR — Discharge Monitoring Report / ECHO
 DMR é o relatório de conformidade submetido à EPA federal; **ECHO** (Enforcement and Compliance
-History Online) é o portal que o publica. **Rejeitado como fonte** neste projeto (D-19): contém só
+History Online) é o portal que o publica. **Rejeitado como fonte** neste projeto: contém só
 o que a outorga obriga a reportar, em formato de conformidade, com janela curta e cobertura
 irregular.
 
@@ -128,7 +128,7 @@ detecção, `Qual` sempre `=`). Não é inconsistência do arquivo.
 
 **Por que importa:** o MDL do TDS **mudou 4 vezes** ao longo da série (28→25→35→28→35 mg/L), e três
 dessas mudanças coincidem com diferenças de nível estatisticamente detectáveis — o que confunde
-mudança de método com mudança real (D-17).
+mudança de método com mudança real.
 
 ### ND — Non-Detect (não detectado)
 Resultado abaixo do limite de detecção. **Não significa "zero"** — significa "menor que o limite,
@@ -169,8 +169,7 @@ existe explicitamente no dataset:
 ```
 vazão(MGD) ≈ lb/day ÷ (mg/L × 8,34)
 ```
-Validada com TDS e Cloreto independentemente, dando 9,4863 e 9,4877 MGD (diferença de 0,015%) —
-ver D-12.
+Validada com TDS e Cloreto independentemente, dando 9,4863 e 9,4877 MGD (diferença de 0,015%).
 
 ---
 
@@ -219,7 +218,7 @@ Mann-Kendall, porque o teste assume observações independentes.
   proposto justamente para corrigir a perda de poder do PW.
 
 **No projeto:** essa escolha **inverte a conclusão** — PW dá p=0,417 (não significativo), TFPW dá
-p=0,00014 (altamente significativo). Ver D-15.
+p=0,00014 (altamente significativo).
 
 ### Correção de variância de Hamed & Rao
 Alternativa: em vez de alterar a série, ajusta a variância da estatística do teste para refletir a
@@ -276,7 +275,7 @@ diretamente à pergunta central: a subida do TDS é falta de diluição ou mais 
 equivalente Python maduro) — regressão ponderada localmente (kernel tricúbico em tempo, log(vazão)
 e sazonalidade) com janelas fixas, não adaptativas como o EGRET real (simplificação declarada).
 Resultado: a tendência flow-normalized não é significativa (p=0,064) — quase toda a tendência
-bruta desaparece ao descontar a vazão. Ver D-39.
+bruta desaparece ao descontar a vazão.
 
 ### Flow-normalização (flow-normalization)
 O passo final do WRTDS: em vez de olhar a concentração ajustada no instante `t` com a vazão
@@ -287,20 +286,19 @@ efeito de tempo/regime do efeito puramente hidrológico.
 
 ### Risco de circularidade (em variáveis derivadas)
 Quando uma variável explicativa foi calculada a partir da própria variável-alvo (aqui: a vazão
-reconstruída via `lb/dia ÷ (mg/L × 8,34)`, D-12, usa o próprio TDS), usá-la para "explicar" o alvo
+reconstruída via `lb/dia ÷ (mg/L × 8,34)` usa o próprio TDS), usá-la para "explicar" o alvo
 pode gerar uma relação artificial ou até tautológica (ver `script_20`, onde `TDS = carga_TDS ÷
 (vazão_TDS × 8,34)` dá R²=1,000000 exato, por identidade algébrica, não por poder explicativo real).
 **Mitigação usada no projeto:** repetir a análise com a vazão derivada de uma série independente
-(Cloreto) e comparar — se os resultados coincidirem, a circularidade não invalida o achado (D-39,
-D-40).
+(Cloreto) e comparar — se os resultados coincidirem, a circularidade não invalida o achado.
 
 ### Balanço de massa (mass balance)
 Em vez de extrapolar a concentração (TDS) diretamente, modela separadamente os dois componentes
 físicos que a compõem — carga de sal (massa por tempo, lb/dia) e vazão (volume por tempo, MGD) — e
 deriva a concentração pela identidade `TDS = carga ÷ (vazão × 8,34)`. Mais defensável fisicamente
 que extrapolar TDS como caixa-preta, mas **herda a fragilidade de cada componente**: se a
-extrapolação da vazão ou da carga for instável, a razão entre elas também será (D-40 documenta um
-caso concreto: vazão extrapolada linearmente cruza valores negativos em +20 anos).
+extrapolação da vazão ou da carga for instável, a razão entre elas também será (caso concreto
+observado: vazão extrapolada linearmente cruza valores negativos em +20 anos).
 
 ### LMG (Lindeman, Merenda & Gold) — importância relativa
 Método que decompõe o R² de uma regressão múltipla entre as variáveis explicativas, considerando
@@ -333,7 +331,7 @@ torno de Y" — não afirma qual cenário vai de fato acontecer. Diferente de um
 "o TDS em 2046 será Z mg/L"), que implicitamente afirma saber o futuro do clima também.
 
 **No projeto:** `script_21` reporta 4 projeções condicionais (seco/normal/úmido/agravamento
-climático), nunca um valor único para +20 anos — ver D-41.
+climático), nunca um valor único para +20 anos.
 
 ### Espaço de estados / DLM (Dynamic Linear Model) e filtro de Kalman
 Família de modelos em que a tendência e a sazonalidade são tratadas como **estados** que evoluem
@@ -342,48 +340,26 @@ ARIMA). O filtro de Kalman é o algoritmo que estima esses estados a cada instan
 observação até ali. Vantagem teórica: a incerteza da previsão é nativa do modelo, e a tendência
 pode variar ao longo da série em vez de ser uma inclinação única.
 
-**No projeto:** testou se a tendência do TDS realmente varia no tempo (bateria estendida, local) —
-a variância estimada do estado de tendência ficou praticamente zero, ou seja, mesmo com liberdade
-para variar, o modelo não encontrou evidência de que ela varie (D-45).
-
 ### GAM — Modelo Aditivo Generalizado (Generalized Additive Model)
 Modelo em que a resposta é a soma de funções suaves (splines) de cada variável explicativa, em vez
 de uma combinação linear simples: `y = s(x1) + s(x2) + ...`. Permite capturar relações não-lineares
 sem especificar sua forma exata a priori — a "forma" da tendência é aprendida dos dados, não
 assumida como reta.
 
-**No projeto:** testado na bateria estendida (local) (`TDS ~ s(tempo) + s(mês)`, via `pyGAM`) —
-revelou uma patologia conhecida de P-splines: minimizar o critério de ajuste (GCV) sem restrição
-escolhe uma spline pouco suavizada que extrapola de forma explosiva fora do intervalo observado.
-Corrigido com um piso na suavização, declarado como decisão, não escondido (D-46).
-
 ### Regressão quantílica
 Em vez de estimar a média condicional (como OLS), estima um **quantil** condicional específico (ex.
 a mediana, ou o percentil 90) — permite perguntar se o *pico* de uma série muda de forma diferente
 do seu *centro*.
-
-**No projeto:** testado na bateria estendida (local) se os picos de TDS (Q90, relevantes para
-conformidade regulatória) sobem mais rápido que a mediana (Q50) — encontrou o oposto: a inclinação
-do Q90 é negativa e a do Q10/Q50 é positiva (D-47).
 
 ### Cruzamento de quantis (quantile crossing)
 Problema que ocorre quando quantis diferentes (ex. Q10, Q50, Q90) são ajustados de forma
 **independente** e, ao extrapolar, produzem previsões fora de ordem (ex. Q90 previsto menor que
 Q50) — fisicamente/estatisticamente incoerente, já que por definição Q10≤Q50≤Q90 sempre.
 
-**No projeto:** ocorre nos 3 horizontes de previsão da regressão quantílica (D-47), porque as
-inclinações de Q50 e Q90 têm sinais opostos — reportado como limitação da extrapolação, não
-corrigido artificialmente (ex. reordenando os valores).
-
 ### Modelo fundacional de séries temporais / previsão zero-shot
 Modelo de aprendizado profundo pré-treinado numa quantidade massiva de séries temporais públicas
 (de domínios variados), capaz de gerar previsões para uma série nova **sem re-treinar** nela
 ("zero-shot") — análogo a um LLM generalista aplicado a números em vez de texto.
-
-**No projeto:** testado na bateria estendida (local) o Chronos-Bolt-Small (Amazon, pesos abertos)
-como representante dessa categoria — não superou o baseline naive (MASE 0,59 > 0,44), resultado
-esperado e declarado antes de rodar, dado o tamanho pequeno da nossa série (~180 pontos) frente ao
-volume de dados que motiva esse tipo de modelo (D-49).
 
 ---
 
@@ -441,14 +417,7 @@ Um TDS anual da água de abastecimento, calculado a partir dos relatórios públ
 água da LADWP: a média do TDS de cada fonte (Los Angeles Aqueduct, poços locais, e as três estações
 de tratamento da MWD — Weymouth, Diemer, Jensen), ponderada pelo percentual de mistura de cada
 fonte naquele ano. É um proxy real e direto do driver que a literatura (SCSC 2018) aponta como
-dominante — diferente do PDSI, que é um proxy indireto (índice de seca, não medição de TDS). Ver
-D-54.
-
-**No projeto:** testado na bateria estendida (local) com médias de 30 anos de precipitação
-projetada (ensemble de 32 modelos LOCA, RCP 8.5) como um 5º cenário climático, complementando os 4
-cenários históricos de `script_21` — ver D-51. A mudança projetada na precipitação (-2,3% entre
-1961-1990 e 2035-2064 no ponto da LAGWRP) foi convertida num "PDSI-alvo implícito" via uma
-calibração empírica própria (regressão real precipitação↔PDSI, não um PDSI oficial projetado).
+dominante — diferente do PDSI, que é um proxy indireto (índice de seca, não medição de TDS).
 
 ---
 

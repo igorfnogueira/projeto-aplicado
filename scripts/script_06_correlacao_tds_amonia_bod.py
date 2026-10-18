@@ -1,8 +1,8 @@
 """
-Analise de correlacao TDS-Amonia e TDS-BOD (objetivo 3 da metodologia;
-docs_local/04_literatura/AI_Project_Instructions.pdf, objetivo 3): investiga como a salinidade crescente pode
-afetar o tratamento biologico, correlacionando TDS com Amonia (indicador de
-nitrificacao) e TDS com BOD (indicador de remocao de materia organica).
+Analise de correlacao TDS-Amonia e TDS-BOD (objetivo 3 da metodologia):
+investiga como a salinidade crescente pode afetar o tratamento biologico,
+correlacionando TDS com Amonia (indicador de nitrificacao) e TDS com BOD
+(indicador de remocao de materia organica).
 
 Roda nos DOIS datasets canonicos (tratamento de ND do BOD: A=MDL/2, B=zero) —
 aqui a distincao realmente importa, ao contrario dos scripts 01-05 (que eram

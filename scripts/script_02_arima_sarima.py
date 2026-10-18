@@ -14,11 +14,6 @@ Limitacao conhecida (ja registrada no plano, secao 3.b): horizontes de 10/15/20
 anos sao muito maiores que os ~15 anos de historico. O SARIMA extrapola de
 forma quase deterministica alem de poucos passos — o IC tende a nao capturar
 toda a incerteza real em +20 anos. Isso e reportado, nao escondido.
-
-D-73: a decomposicao STL (tendencia dessazonalizada), que ate entao rodava
-junto neste script, deixou de ser reportada como metodo publico na reducao da
-bateria para os 7 metodos citados na revisao externa de 14/10/2026 --
-extraida para scripts/bateria_estendida/script_33_stl_tendencia.py.
 """
 
 from pathlib import Path

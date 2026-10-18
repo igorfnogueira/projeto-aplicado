@@ -1,8 +1,8 @@
 """
-WRTDS / normalizacao por vazao (docs_local/03_prompts/prompt_wrtds_balanco_cenarios.md, Tarefa 1):
-separa a variacao de TDS causada por variacao de vazao daquela que resta
-depois de descontar a vazao ("flow-normalized"), respondendo a pergunta que
-D-37 tornou central: ha tendencia de TDS POR BAIXO dos ciclos de seca/vazao?
+WRTDS / normalizacao por vazao: separa a variacao de TDS causada por
+variacao de vazao daquela que resta depois de descontar a vazao
+("flow-normalized"), respondendo a pergunta central: ha tendencia de TDS
+POR BAIXO dos ciclos de seca/vazao?
 
 Metodo (Hirsch et al., 2010, WRTDS -- Weighted Regressions on Time, Discharge,
 and Season): regressao ponderada localmente de log(concentracao) sobre tempo,

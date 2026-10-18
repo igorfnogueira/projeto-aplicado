@@ -1,29 +1,24 @@
 """
 Bateria de 5 testes avancados de robustez/overfitting para a bateria de
-previsao de TDS (issue #1 do repositorio, spec gerada via /to-spec).
+previsao de TDS.
 
 Nao altera nenhum dos scripts 01-30 nem `results/resultados_comparacao.csv`
 -- schema tidy proprio (item/variante/metrica/valor_metrica/pvalor/n), mesmo
 padrao de `script_17_matriz_sensibilidade.py`:
 
-  1. Cobertura empirica de IC90 (via `largura_e_cobertura_ic`, ja existia em
-     utils/validacao_utils.py mas nunca tinha sido ligada a CV/backtest) para
-     os metodos com incerteza nativa: Mann-Kendall/Theil-Sen/OLS e SARIMA,
-     nativa, `detrend_rf` via bootstrap de residuo (issue #11 -- mesma
-     tecnica ja usada em script_09/SVR, bateria estendida), e Prophet via seu
-     proprio `yhat_lower`/`yhat_upper` (interval_width=0.90, 2026-10-18,
-     achado de `/revisao-academica`: era o unico dos 7 metodos do nucleo
-     publico com IC90 nativo nunca testado por este script -- o texto do
-     manuscrito generalizava "nenhum tem IC90 bem calibrado" para os 7 sem
-     ter testado este). Achado: a cobertura empirica do IC90 do `detrend_rf`
-     ficou em ~27% (pior ate que MK/Theil-Sen/OLS, ~37%), confirmando
-     quantitativamente a limitacao ja registrada no manuscrito ("IC subestima
-     a incerteza total").
+  1. Cobertura empirica de IC90 (via `largura_e_cobertura_ic` em
+     utils/validacao_utils.py) para os metodos com incerteza nativa:
+     Mann-Kendall/Theil-Sen/OLS e SARIMA, `detrend_rf` via bootstrap de
+     residuo (mesma tecnica usada em script_09/SVR), e Prophet via seu
+     proprio `yhat_lower`/`yhat_upper` (interval_width=0.90). Achado: a
+     cobertura empirica do IC90 do `detrend_rf` ficou em ~27% (pior ate que
+     MK/Theil-Sen/OLS, ~37%), confirmando quantitativamente a limitacao ja
+     registrada no manuscrito ("IC subestima a incerteza total").
   2. Teste de Diebold-Mariano (correcao HLN de amostra pequena) entre os
-     CANDIDATOS + o baseline naive (adicionado em 2026-10-15, por pedido
-     explicito de revisao: a tabela de MASE ja mostra o naive como o melhor
-     da bateria no holdout, mas faltava o teste formal de que essa diferenca
-     e estatisticamente significativa, nao so leitura visual da tabela).
+     CANDIDATOS + o baseline naive -- a tabela de MASE ja mostra o naive
+     como o melhor da bateria no holdout, mas faltava o teste formal de que
+     essa diferenca e estatisticamente significativa, nao so leitura visual
+     da tabela.
   3. Diagnostico de residuo OUT-OF-SAMPLE (Ljung-Box/Shapiro/ARCH, mesmas
      funcoes de script_14) dos mesmos candidatos, para comparar com o residuo
      IN-SAMPLE ja reportado por script_14.
@@ -32,13 +27,10 @@ padrao de `script_17_matriz_sensibilidade.py`:
   5. Robustez do Mann-Kendall/Theil-Sen a remocao de cada ano da serie
      (leave-one-year-out).
 
-D-73 (2026-10-15): CANDIDATOS reduzido de 5 para 3 (ols, detrend_rf, sarima)
-na reducao da bateria publica para os 7 metodos citados na revisao externa
-de 14/10/2026 -- regressao_bayesiana e hibrido_arima_prophet saem da bateria
-publica (ver scripts/bateria_estendida/). CANDIDATOS continua uma lista
-fixa, independente de qualquer lista de "finalistas" (ja nao existe mais
-esse conceito desde script_15 -- ver ADR-0002, que corrigiu exatamente esse
-acoplamento antes de ele voltar a existir aqui).
+CANDIDATOS cobre 3 dos 7 metodos do nucleo publico (ols, detrend_rf,
+sarima); os demais com IC proprio ou estimavel (Mann-Kendall/Sen,
+Theil-Sen, Prophet) entram no item 1 (cobertura de IC90) mas nao nos
+itens 2-5, que ficam restritos aos 3 candidatos.
 """
 
 from pathlib import Path
@@ -112,8 +104,8 @@ def _holdout_pred_ols(treino: pd.DataFrame, holdout: pd.DataFrame):
 
 def _holdout_pred_detrend_rf(treino: pd.DataFrame, holdout: pd.DataFrame):
     """IMPORTANTE: forecast RECURSIVO (lags alimentados pela propria previsao,
-    nunca pelo valor real do holdout) -- achado do /code-review: usar "one-step
-    com lags reais" aqui (a mesma convencao de rmse_holdout em script_10, que
+    nunca pelo valor real do holdout) -- usar "one-step com lags reais" aqui
+    (a mesma convencao de rmse_holdout em script_10, que
     so avalia 1 passo a frente com o valor anterior VERDADEIRO conhecido)
     tornaria o erro de detrend_rf artificialmente pequeno e NAO comparavel ao
     de sarima (forecast genuino de 24 passos a frente, sem espiar
@@ -191,7 +183,7 @@ def rodar_item5_leave_one_year_out(d: pd.DataFrame) -> list:
 
 
 def rodar_item5b_remover_primeiros_n_anos(d: pd.DataFrame, max_n: int = 5) -> list:
-    """Extensao do item 5 (issue #12): em vez de remover um unico ano
+    """Extensao do item 5: em vez de remover um unico ano
     isolado, remove cumulativamente os N primeiros anos (N=1..max_n) para
     delimitar com mais precisao quantos anos iniciais sao necessarios para a
     tendencia voltar a ser significativa -- mesma logica de MK/Theil-Sen do
@@ -245,7 +237,7 @@ def rodar_item3_residuos_holdout(holdout: pd.DataFrame, erros_holdout: dict) -> 
 
 
 # --------------------------------------------------------------------------
-# Item 2 -- Diebold-Mariano entre finalistas + runner-up
+# Item 2 -- Diebold-Mariano entre os candidatos + o baseline naive
 # --------------------------------------------------------------------------
 
 def diebold_mariano(e1: np.ndarray, e2: np.ndarray, h: int = 1):
@@ -278,12 +270,10 @@ def rodar_item2_diebold_mariano(erros_holdout: dict) -> list:
     # manuscrito ("naive supera a maioria dos metodos sofisticados") fica sem
     # teste de significancia, so leitura visual da tabela de MASE.
     #
-    # Usa CANDIDATOS (fixo, igual aos itens 1/3/4) -- ja nao ha lista de
-    # "finalistas" de onde derivar isso (D-73/ADR-0002: CANDIDATOS e
-    # deliberadamente independente de qualquer lista de recomendados, pelo
-    # mesmo motivo que motivou ADR-0002 antes de D-73: acoplar este item a uma
-    # lista que muda com a recomendacao do momento tornaria a comparacao
-    # irreproduzivel assim que a recomendacao mudasse de novo).
+    # Usa CANDIDATOS (fixo, igual aos itens 1/3/4) -- deliberadamente
+    # independente de qualquer lista de "recomendados", pois acoplar este
+    # item a uma lista que mudasse junto com a recomendacao do momento
+    # tornaria a comparacao irreproduzivel a cada mudanca.
     metodos = list(dict.fromkeys(CANDIDATOS + ["naive"]))  # preserva ordem, sem duplicar
     linhas = []
     for metodo_a, metodo_b in itertools.combinations(metodos, 2):
@@ -397,11 +387,11 @@ def _ic_implausivel(ic_low: np.ndarray, ic_high: np.ndarray, desvio_treino: floa
 
 
 def _fit_predict_ic_sarima(ordem, ordem_sazonal, trend):
-    """Achado do /to-spec (issue #10): a ordem fixa, reajustada num treino
-    curto (perto de min_treino=60), pode degenerar numericamente e o IC
-    explodir (visto na pratica: largura ~1e10 num fold vs. ~250-300 nos
-    demais) mesmo com o forecast pontual permanecendo razoavel (auditoria da
-    issue #13 confirmou que o RMSE de ponto NAO sofre o mesmo problema).
+    """Achado: a ordem fixa, reajustada num treino curto (perto de
+    min_treino=60), pode degenerar numericamente e o IC explodir (visto na
+    pratica: largura ~1e10 num fold vs. ~250-300 nos demais) mesmo com o
+    forecast pontual permanecendo razoavel (o RMSE de ponto nao sofre o
+    mesmo problema).
     Corrige na raiz em vez de so sinalizar: (1) detecta IC nao-finito ou
     implausivelmente largo (>50x o desvio-padrao do proprio treino do fold);
     (2) se implausivel, reajusta com enforce_stationarity/invertibility=True
@@ -514,10 +504,10 @@ def _prever_recursivo_residuo_boot(modelo, d_resid: pd.DataFrame, n_passos: int,
 
 
 def _fit_predict_ic_detrend_rf(n_boot: int = 200):
-    """IC calibrado para detrend_rf (issue #11) -- e o unico dos CANDIDATOS
-    sem incerteza nativa testavel. Reusa destendenciar/construir_features/
-    RandomForestRegressor ja importados + a tecnica de bootstrap de residuo
-    ja estabelecida no projeto (script_09, SVR, bateria estendida)."""
+    """IC calibrado para detrend_rf -- e o unico dos CANDIDATOS sem
+    incerteza nativa testavel. Reusa destendenciar/construir_features/
+    RandomForestRegressor ja importados + a mesma tecnica de bootstrap de
+    residuo usada em script_09 (SVR)."""
     rng = np.random.default_rng(SEED)
 
     def fit_predict_ic(treino: pd.Series, n_passos: int):
@@ -547,8 +537,7 @@ def _fit_predict_ic_detrend_rf(n_boot: int = 200):
 def _fit_predict_ic_prophet():
     """IC nativo do Prophet (yhat_lower/yhat_upper, interval_width=1-ALPHA),
     mesmo ajuste de script_05.rodar_prophet -- unico dos 7 metodos do nucleo
-    publico com incerteza nativa que faltava neste item (achado de
-    /revisao-academica, 2026-10-18)."""
+    publico com incerteza nativa que faltava neste item."""
     def fit_predict_ic(treino: pd.Series, n_passos: int):
         from prophet import Prophet
         df_treino = pd.DataFrame({"ds": treino.index, "y": treino.values})
@@ -585,14 +574,12 @@ def rodar_item1_cobertura_ic(serie: pd.Series, ordem_sarima) -> list:
         df_bt = backtest_origem_movel_com_ic(serie, fit_predict_ic, min_treino=60)
         resumo_bt = resumir_backtest_ic(df_bt)
 
-        # Sanidade pos-fix (issue #10): mesmo com o refit restrito/fallback em
+        # Sanidade pos-fix: mesmo com o refit restrito/fallback em
         # _fit_predict_ic_sarima, verificar fold a fold (nao so a media
         # agregada, que um unico fold atipico entre 5 dilui ate ~2x e nao
         # dispara um limiar de 10x) se algum fold continua discrepante da
-        # mediana entre folds -- mesmo criterio da versao original do check
-        # (fold.max() > 10x mediana), restaurado apos o /code-review apontar
-        # que a comparacao so agregada (media vs mediana) era bem menos
-        # sensivel. Quando dispara, persiste a linha no CSV (nao so print),
+        # mediana entre folds (fold.max() > 10x mediana). Quando dispara,
+        # persiste a linha no CSV (nao so print),
         # para uma analise futura do manuscrito saber que um fold foi
         # sinalizado como atipico mesmo apos a correcao.
         larguras_fold = df_cv["ic90_largura_media"].values

@@ -1,7 +1,7 @@
 """
-Modelo de balanco de massa (docs_local/03_prompts/prompt_wrtds_balanco_cenarios.md, Tarefa 2):
-em vez de extrapolar TDS diretamente, modela carga de sal (lb/day) e vazao
-(MGD) SEPARADAMENTE e deriva TDS = carga / (vazao * 8,34).
+Modelo de balanco de massa: em vez de extrapolar TDS diretamente, modela
+carga de sal (lb/day) e vazao (MGD) SEPARADAMENTE e deriva TDS = carga /
+(vazao * 8,34).
 
 Pergunta central: a carga de sal esta estavel/caindo enquanto a vazao cai
 (-> confirma diluicao) ou a carga tambem sobe (-> mais sal entrando,
@@ -16,8 +16,8 @@ usada no modelo principal e a derivada do CLORETO (serie independente); a
 versao com vazao de TDS e calculada so para EXPOR a tautologia explicitamente
 (nao como resultado).
 
-Adaptacao da forma do SCSC (nao aplicada por falta de dado, D-30): o estudo
-usa TDS_influente = TDS_origem + SML*populacao/vazao. Nao temos populacao nem
+Adaptacao da forma do SCSC (nao aplicada por falta de dado): o estudo usa
+TDS_influente = TDS_origem + SML*populacao/vazao. Nao temos populacao nem
 TDS de origem -- a forma usada aqui e a identidade fisica direta
 TDS = carga/(vazao*8,34), sem o termo per-capita.
 """

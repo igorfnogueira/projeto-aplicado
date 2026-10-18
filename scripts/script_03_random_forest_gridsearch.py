@@ -4,12 +4,8 @@ Utilitarios de engenharia de features baseados em arvore para o TDS (secao
 mes do ano, lags, media movel). Usados por script_10_detrend_arvore.py
 (Detrend+RF, publico) e pelos capstones script_14/script_31.
 
-D-73: o Random Forest "puro" (sem destendenciamento) que rodava neste script
-deixou de ser reportado como metodo publico na reducao da bateria para os 7
-metodos citados na revisao externa de 14/10/2026 -- extraido para
-scripts/bateria_estendida/script_34_random_forest_puro.py, que importa as
-funcoes abaixo. Este arquivo continua publico por ser dependencia direta de
-script_10/14/31 (nao pode sumir do repositorio junto com o metodo).
+Este arquivo nao roda um metodo publico por si so -- continua no repositorio
+por ser dependencia direta de script_10/14/31.
 """
 
 from pathlib import Path

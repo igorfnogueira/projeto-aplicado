@@ -71,9 +71,9 @@ def largura_e_cobertura_ic(y_true, ic_low, ic_high) -> dict:
 
 def _cortes_expansivos(n: int, min_treino: int, horizonte: int, n_folds: int, nome_fn: str) -> list:
     """Cortes igualmente espacados entre min_treino e n-horizonte -- logica
-    compartilhada por expanding_window_cv e expanding_window_cv_com_ic (achado
-    do /code-review: evita manter a formula de espacamento de folds duplicada
-    em dois lugares que precisariam ser corrigidos juntos)."""
+    compartilhada por expanding_window_cv e expanding_window_cv_com_ic, para
+    evitar manter a formula de espacamento de folds duplicada em dois
+    lugares que precisariam ser corrigidos juntos."""
     primeiro_corte, ultimo_corte = min_treino, n - horizonte
     if ultimo_corte <= primeiro_corte:
         raise ValueError(

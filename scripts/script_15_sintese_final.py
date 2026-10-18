@@ -4,17 +4,9 @@ le resultados_comparacao.csv e produz (1) uma tabela consolidada ordenada por
 MASE de holdout e (2) uma figura com a serie historica e a previsao de cada
 um dos 7 metodos do nucleo publico, com IC90 sobreposto.
 
-D-73 (2026-10-15): abandona o conceito de "finalista recomendado". Ate
-entao, FINALISTAS elegia 2 metodos (detrend_rf, hibrido_arima_prophet) como
-recomendacao destacada, com uma figura de convergencia em +20 anos. Na
-reducao da bateria publica para os 7 metodos citados na revisao externa
-(Mann-Kendall/Sen, Theil-Sen, OLS, SARIMA, Prophet, naive, Detrend+RF), o
-hibrido SARIMA+Prophet -- um dos 2 finalistas -- saiu da bateria publica
-(ver D-73 em scripts/bateria_estendida/), o que deixaria um unico "finalista"
-sobrevivente: contradiz a propria premissa original ("nao um unico
-vencedor"). Em vez de forcar uma recomendacao com 1 metodo so, este script
-passa a reportar apenas as metricas de cada metodo (MASE/R2 de holdout),
-igual ao formato da tabela 3.6 da revisao externa -- sem eleger vencedor.
+Nenhum dos 7 metodos e apresentado como recomendacao de vencedor -- o script
+reporta apenas as metricas de cada um (MASE/R2 de holdout, tendencia, IC90),
+deixando a leitura comparativa a cargo de quem consome a tabela.
 
 Nao gera novos ajustes de modelo -- consome exclusivamente o que ja esta em
 resultados_comparacao.csv (nenhum numero novo e calculado aqui, so
@@ -51,10 +43,9 @@ TABELA_FINAL_CSV = result("tabela_sintese_final.csv")
 FIGURA_PATH = figure("sintese-final-metodos.png")
 HORIZONTES_ANOS = [10, 15, 20]
 
-# Os 7 metodos do nucleo publico (D-73) -- os demais metodos presentes em
+# Os 7 metodos do nucleo publico -- os demais metodos presentes em
 # resultados_comparacao.csv (causais/mecanismo: balanco_massa, wrtds,
-# cenarios; e os arquivados em bateria_estendida, se alguem rodar aqueles
-# scripts localmente) nao entram na figura, so na tabela consolidada.
+# cenarios) nao entram na figura, so na tabela consolidada.
 METODOS_NUCLEO = [
     "mann_kendall_sen", "theil_sen", "ols", "sarima", "prophet", "naive", "detrend_rf",
 ]
@@ -129,7 +120,7 @@ def main():
     tabela_nucleo = tabela[tabela["metodo"].isin(METODOS_NUCLEO)]
     print(tabela_nucleo[["metodo", "mase_holdout", "r2_holdout", "cv_mase_media"]].to_string(index=False))
     print()
-    print("Nenhum metodo e recomendado como vencedor (D-73) -- ver tabela completa para "
+    print("Nenhum metodo e recomendado como vencedor -- ver tabela completa para "
           "MASE/R2/tendencia/IC90 de cada um.")
 
     gerar_figura(d, df)

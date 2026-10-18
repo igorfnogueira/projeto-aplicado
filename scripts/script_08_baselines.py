@@ -1,8 +1,6 @@
 """
-Baseline obrigatorio (bloco 3 do pedido de aprofundamento): naive. Nenhum
-metodo mais sofisticado da bateria entra no relatorio final sem vencer este
-baseline em MASE -- este script so estabelece o "piso", nao escolhe
-finalistas.
+Baseline naive: nenhum metodo mais sofisticado da bateria e lido como
+melhor sem comparar contra este "piso" em MASE.
 
 IC90%: formula analitica classica de Hyndman (desvio-padrao dos residuos
 historicos de passo-fixo, escalado por sqrt(horizonte) em unidades de
@@ -10,12 +8,6 @@ ciclo).
 
 Univariado em TDS (mesma nota de desenho dos scripts 01-05): independe do
 tratamento de ND do BOD.
-
-D-73: naive sazonal, ETS/Holt-Winters e Theta, que rodavam junto neste
-script, deixaram de ser reportados como metodo publico na reducao da
-bateria para os 7 metodos citados na revisao externa de 14/10/2026 (que so
-cita o naive simples na tabela 3.6) -- extraidos para
-scripts/bateria_estendida/script_36_baselines_estendidos.py.
 """
 
 from pathlib import Path

@@ -20,13 +20,10 @@ arvores do residuo, subestimando a incerteza total.
 
 Univariado em TDS: independe do tratamento de ND do BOD.
 
-D-73: Detrend+XGBoost, que rodava junto neste script, deixou de ser
-reportado como metodo publico na reducao da bateria para os 7 metodos
-citados na revisao externa de 14/10/2026 (que so cita Detrend+RF na tabela
-3.6) -- extraido para scripts/bateria_estendida/script_37_detrend_xgboost.py,
-que importa `destendenciar`, `prever_recursivo_residuo`,
-`construir_fit_predict_detrend` e `rodar_detrend` deste arquivo (continuam
-publicos por serem genericos, independentes do modelo treinado no residuo).
+As funcoes `destendenciar`, `prever_recursivo_residuo`,
+`construir_fit_predict_detrend` e `rodar_detrend` deste arquivo sao
+genericas em relacao ao modelo treinado no residuo (nao especificas do
+Random Forest).
 """
 
 from pathlib import Path
