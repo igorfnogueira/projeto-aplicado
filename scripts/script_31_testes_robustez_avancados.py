@@ -9,11 +9,16 @@ padrao de `script_17_matriz_sensibilidade.py`:
   1. Cobertura empirica de IC90 (via `largura_e_cobertura_ic`, ja existia em
      utils/validacao_utils.py mas nunca tinha sido ligada a CV/backtest) para
      os metodos com incerteza nativa: Mann-Kendall/Theil-Sen/OLS e SARIMA,
-     nativa, e `detrend_rf` via bootstrap de residuo (issue #11 -- mesma
-     tecnica ja usada em script_09/SVR, bateria estendida). Achado: a
-     cobertura empirica do IC90 do `detrend_rf` ficou em ~27% (pior ate que
-     MK/Theil-Sen/OLS, ~37%), confirmando quantitativamente a limitacao ja
-     registrada no manuscrito ("IC subestima a incerteza total").
+     nativa, `detrend_rf` via bootstrap de residuo (issue #11 -- mesma
+     tecnica ja usada em script_09/SVR, bateria estendida), e Prophet via seu
+     proprio `yhat_lower`/`yhat_upper` (interval_width=0.90, 2026-10-18,
+     achado de `/revisao-academica`: era o unico dos 7 metodos do nucleo
+     publico com IC90 nativo nunca testado por este script -- o texto do
+     manuscrito generalizava "nenhum tem IC90 bem calibrado" para os 7 sem
+     ter testado este). Achado: a cobertura empirica do IC90 do `detrend_rf`
+     ficou em ~27% (pior ate que MK/Theil-Sen/OLS, ~37%), confirmando
+     quantitativamente a limitacao ja registrada no manuscrito ("IC subestima
+     a incerteza total").
   2. Teste de Diebold-Mariano (correcao HLN de amostra pequena) entre os
      CANDIDATOS + o baseline naive (adicionado em 2026-10-15, por pedido
      explicito de revisao: a tabela de MASE ja mostra o naive como o melhor
@@ -539,6 +544,23 @@ def _fit_predict_ic_detrend_rf(n_boot: int = 200):
     return fit_predict_ic
 
 
+def _fit_predict_ic_prophet():
+    """IC nativo do Prophet (yhat_lower/yhat_upper, interval_width=1-ALPHA),
+    mesmo ajuste de script_05.rodar_prophet -- unico dos 7 metodos do nucleo
+    publico com incerteza nativa que faltava neste item (achado de
+    /revisao-academica, 2026-10-18)."""
+    def fit_predict_ic(treino: pd.Series, n_passos: int):
+        from prophet import Prophet
+        df_treino = pd.DataFrame({"ds": treino.index, "y": treino.values})
+        m = Prophet(interval_width=1 - ALPHA, yearly_seasonality=True,
+                    weekly_seasonality=False, daily_seasonality=False)
+        m.fit(df_treino)
+        futuro = m.make_future_dataframe(periods=n_passos, freq="MS")
+        prev = m.predict(futuro).tail(n_passos)
+        return prev["yhat"].values, prev["yhat_lower"].values, prev["yhat_upper"].values
+    return fit_predict_ic
+
+
 def rodar_item1_cobertura_ic(serie: pd.Series, ordem_sarima) -> list:
     ordem, ordem_sazonal, trend = ordem_sarima
 
@@ -548,6 +570,7 @@ def rodar_item1_cobertura_ic(serie: pd.Series, ordem_sarima) -> list:
         "ols": _fit_predict_ic_linear(_ajustar_ols),
         "sarima": _fit_predict_ic_sarima(ordem, ordem_sazonal, trend),
         "detrend_rf": _fit_predict_ic_detrend_rf(n_boot=200),
+        "prophet": _fit_predict_ic_prophet(),
     }
 
     linhas = []
