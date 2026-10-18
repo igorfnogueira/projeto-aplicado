@@ -101,21 +101,24 @@ def metrica_validacao(y_true, y_pred) -> dict:
 def gerar_figura_decomposicao(d: pd.DataFrame):
     fig, axes = plt.subplots(3, 1, figsize=(8, 8.5), sharex=True)
     axes[0].plot(d["Data"], d["carga_lb_dia"], color="tab:purple")
-    axes[0].set_ylabel("Carga de sal (lb/dia)")
-    axes[0].set_title("Decomposição do balanço de massa: carga × vazão × TDS")
+    axes[0].set_ylabel("Carga de sal (lb/dia)", fontsize=14)
+    axes[0].tick_params(labelsize=12)
+    axes[0].set_title("Decomposição do balanço de massa: carga × vazão × TDS", fontsize=15)
 
     axes[1].plot(d["Data"], d["vazao_mgd_chloride"], color="tab:green")
-    axes[1].set_ylabel("Vazão (MGD, via Cloreto)")
+    axes[1].set_ylabel("Vazão (MGD, via Cloreto)", fontsize=14)
+    axes[1].tick_params(labelsize=12)
 
     axes[2].plot(d["Data"], d["TDS_mgL"], color="black", label="TDS observado", linewidth=1)
     axes[2].plot(d["Data"], d["tds_previsto_vazao_chloride"], color="tab:orange", linestyle="--",
                  label="TDS derivado (carga ÷ vazão de Cloreto)", linewidth=1.2)
-    axes[2].set_ylabel("TDS (mg/L)")
-    axes[2].legend(fontsize=7)
-    axes[2].set_xlabel("Data")
+    axes[2].set_ylabel("TDS (mg/L)", fontsize=14)
+    axes[2].tick_params(labelsize=12)
+    axes[2].legend(fontsize=10)
+    axes[2].set_xlabel("Data", fontsize=14)
 
     fig.tight_layout()
-    fig.savefig(FIGURA_DECOMP, dpi=140)
+    fig.savefig(FIGURA_DECOMP, dpi=160)
     plt.close(fig)
     print(f"Figura salva em {FIGURA_DECOMP}")
 
@@ -125,12 +128,13 @@ def gerar_figura_validacao(d: pd.DataFrame):
     ax.scatter(d["TDS_mgL"], d["tds_previsto_vazao_chloride"], s=12, alpha=0.6, color="tab:orange")
     lims = [d[["TDS_mgL", "tds_previsto_vazao_chloride"]].min().min(), d[["TDS_mgL", "tds_previsto_vazao_chloride"]].max().max()]
     ax.plot(lims, lims, color="black", linewidth=0.8, linestyle="--", label="y=x")
-    ax.set_xlabel("TDS observado (mg/L)")
-    ax.set_ylabel("TDS derivado do balanço de massa (mg/L)")
-    ax.set_title("Validação histórica: carga ÷ (vazão de Cloreto × 8,34)")
-    ax.legend(fontsize=8)
+    ax.set_xlabel("TDS observado (mg/L)", fontsize=14)
+    ax.set_ylabel("TDS derivado do balanço de massa (mg/L)", fontsize=14)
+    ax.tick_params(labelsize=12)
+    ax.set_title("Validação histórica: carga ÷ (vazão de Cloreto × 8,34)", fontsize=15)
+    ax.legend(fontsize=10)
     fig.tight_layout()
-    fig.savefig(FIGURA_VALIDACAO, dpi=140)
+    fig.savefig(FIGURA_VALIDACAO, dpi=160)
     plt.close(fig)
     print(f"Figura salva em {FIGURA_VALIDACAO}")
 

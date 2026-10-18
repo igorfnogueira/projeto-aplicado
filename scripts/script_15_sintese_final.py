@@ -105,12 +105,13 @@ def gerar_figura(d: pd.DataFrame, df: pd.DataFrame):
         ax.plot(datas_futuras, pontos, "--", color=cor, linewidth=1.3, label=NOMES_EXIBICAO[metodo])
         ax.fill_between(datas_futuras, baixos, altos, color=cor, alpha=0.08)
 
-    ax.set_xlabel("Data")
-    ax.set_ylabel("TDS (mg/L)")
-    ax.set_title("Bateria de 7 métodos — previsão de TDS com IC90% (+10/+15/+20 anos)")
-    ax.legend(fontsize=7, loc="upper left", ncol=2)
+    ax.set_xlabel("Data", fontsize=14)
+    ax.set_ylabel("TDS (mg/L)", fontsize=14)
+    ax.tick_params(labelsize=12)
+    ax.set_title("Bateria de 7 métodos — previsão de TDS com IC90% (+10/+15/+20 anos)", fontsize=15)
+    ax.legend(fontsize=10, loc="upper left", ncol=2)
     fig.tight_layout()
-    fig.savefig(FIGURA_PATH, dpi=140)
+    fig.savefig(FIGURA_PATH, dpi=160)
     plt.close(fig)
     print(f"Figura salva em {FIGURA_PATH}")
 

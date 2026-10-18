@@ -198,18 +198,23 @@ def gerar_figura_fan(tds: pd.Series, sim: pd.DataFrame, ar1: dict, reg: dict, pd
     ax.plot(tds.index, tds.values, color="black", linewidth=1, label="TDS observado")
     ax.plot(datas_futuras, p50, color="tab:blue", linewidth=1.3, label="Cenário normal (mediana)")
     ax.fill_between(datas_futuras, p5, p95, color="tab:blue", alpha=0.15, label="IC90% (cenário normal)")
-    ax.set_xlabel("Data")
-    ax.set_ylabel("TDS (mg/L)")
-    ax.set_title("Projeção condicional (cenário normal) -- não é previsão pontual")
-    ax.legend(fontsize=8)
+    ax.set_xlabel("Data", fontsize=14)
+    ax.set_ylabel("TDS (mg/L)", fontsize=14)
+    ax.tick_params(labelsize=12)
+    ax.set_title("Projeção condicional (cenário normal) -- não é previsão pontual", fontsize=15)
+    ax.legend(fontsize=10)
     fig.tight_layout()
-    fig.savefig(FIGURA_FAN, dpi=140)
+    fig.savefig(FIGURA_FAN, dpi=160)
     plt.close(fig)
     print(f"Figura salva em {FIGURA_FAN}")
 
 
 def gerar_figura_horizontes(resumo: pd.DataFrame):
-    fig, axes = plt.subplots(1, len(HORIZONTES_ANOS), figsize=(11, 4), sharey=True)
+    # Um painel por horizonte, empilhados (melhor legibilidade em slide/artigo).
+    fig, axes = plt.subplots(
+        len(HORIZONTES_ANOS), 1, figsize=(8, 10.2), sharex=True, sharey=True,
+        layout="constrained",
+    )
     cores = {"seco": "tab:red", "normal": "tab:blue", "umido": "tab:green", "agravamento_climatico": "tab:orange"}
     for ax, h in zip(axes, HORIZONTES_ANOS):
         sub = resumo[resumo["horizonte_anos"] == h]
@@ -217,12 +222,16 @@ def gerar_figura_horizontes(resumo: pd.DataFrame):
             cor = cores.get(row["cenario"], "gray")
             ax.errorbar(row["cenario"], row["p50"], yerr=[[row["p50"] - row["p5"]], [row["p95"] - row["p50"]]],
                         fmt="o", color=cor, capsize=4)
-        ax.set_title(f"+{h} anos")
-        ax.tick_params(axis="x", rotation=30, labelsize=7)
-    axes[0].set_ylabel("TDS simulado (mg/L)")
-    fig.suptitle("Faixa de TDS por cenário climático (mediana + IC90%) -- não é previsão pontual")
-    fig.tight_layout()
-    fig.savefig(FIGURA_HORIZONTES, dpi=140)
+        ax.set_title(f"+{h} anos", fontsize=14)
+        ax.tick_params(axis="x", rotation=20, labelsize=11)
+        ax.tick_params(axis="y", labelsize=12)
+        ax.set_ylabel("TDS simulado (mg/L)", fontsize=13)
+    axes[-1].set_xlabel("Cenário", fontsize=14)
+    fig.suptitle(
+        "Faixa de TDS por cenário climático (mediana + IC90%) -- não é previsão pontual",
+        fontsize=15,
+    )
+    fig.savefig(FIGURA_HORIZONTES, dpi=160, bbox_inches="tight", pad_inches=0.35)
     plt.close(fig)
     print(f"Figura salva em {FIGURA_HORIZONTES}")
 

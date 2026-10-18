@@ -26,7 +26,7 @@
     "regime_n":182,
     "n_changepoints_detectados":4,
     "changepoints_dentro_12m_de_4":3,
-    "data_execucao":"2026-08-14T12:40:42"
+    "data_execucao":"2026-10-17T17:51:15"
   },
   {
     "serie_pdsi":"los_angeles_divisao6",
@@ -55,7 +55,7 @@
     "regime_n":182,
     "n_changepoints_detectados":4,
     "changepoints_dentro_12m_de_4":4,
-    "data_execucao":"2026-08-14T12:40:42"
+    "data_execucao":"2026-10-17T17:51:15"
   },
   {
     "serie_pdsi":"sacramento_divisao2",
@@ -84,6 +84,6 @@
     "regime_n":182,
     "n_changepoints_detectados":4,
     "changepoints_dentro_12m_de_4":4,
-    "data_execucao":"2026-08-14T12:40:42"
+    "data_execucao":"2026-10-17T17:51:15"
   }
 ]

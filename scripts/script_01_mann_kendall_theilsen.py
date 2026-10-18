@@ -289,12 +289,13 @@ def gerar_figura(d: pd.DataFrame, linhas: list):
         ax.plot(datas_futuras, pontos, "--", color=cor, linewidth=largura, label=f"{metodo} (previsao)")
         ax.fill_between(datas_futuras, baixos, altos, color=cor, alpha=0.12)
 
-    ax.set_xlabel("Data")
-    ax.set_ylabel("TDS (mg/L)")
-    ax.set_title("Tendencia observada e previsao de TDS (+10/+15/+20 anos)")
-    ax.legend(fontsize=7, loc="upper left")
+    ax.set_xlabel("Data", fontsize=14)
+    ax.set_ylabel("TDS (mg/L)", fontsize=14)
+    ax.tick_params(labelsize=12)
+    ax.set_title("Tendencia observada e previsao de TDS (+10/+15/+20 anos)", fontsize=15)
+    ax.legend(fontsize=10, loc="upper left")
     fig.tight_layout()
-    fig.savefig(FIGURA_PATH, dpi=140)
+    fig.savefig(FIGURA_PATH, dpi=160)
     plt.close(fig)
     print(f"Figura salva em {FIGURA_PATH}")
 

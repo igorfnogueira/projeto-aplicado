@@ -122,31 +122,33 @@ def analisar_par(nome: str, d: pd.DataFrame, col_x: str, col_y: str) -> dict:
 
 
 def gerar_figura(d_amonia: pd.DataFrame, d_bod_a: pd.DataFrame, d_bod_b: pd.DataFrame, d_bod_c: pd.DataFrame):
-    fig, axes = plt.subplots(1, 4, figsize=(14, 3.6))
-
-    for ax, (titulo, sub, col_y, cor) in zip(axes, [
+    # Grade 2x2 (melhor legibilidade em slide/artigo do que 4 painéis em linha).
+    fig, axes = plt.subplots(2, 2, figsize=(9.5, 8.5))
+    paineis = [
         ("TDS vs Amônia", d_amonia, "Ammonia_mgL", "tab:orange"),
         ("TDS vs BOD (ND=MDL/2)", d_bod_a, "BOD_mgL", "tab:red"),
         ("TDS vs BOD (ND=0)", d_bod_b, "BOD_mgL", "tab:purple"),
         ("TDS vs BOD (ND=ROS/Helsel)", d_bod_c, "BOD_mgL", "tab:brown"),
-    ]):
+    ]
+
+    for ax, (titulo, sub, col_y, cor) in zip(axes.ravel(), paineis):
         sub = sub.dropna(subset=["TDS_mgL", col_y])
         t = sub["t_anos"].values
         x_resid = residuos_ols(t, sub["TDS_mgL"].values)
         y_resid = residuos_ols(t, sub[col_y].values)
-        ax.scatter(x_resid, y_resid, s=10, alpha=0.5, color=cor)
+        ax.scatter(x_resid, y_resid, s=12, alpha=0.5, color=cor)
         if len(x_resid) > 2:
             reg = stats.linregress(x_resid, y_resid)
             xs = np.linspace(x_resid.min(), x_resid.max(), 50)
             ax.plot(xs, reg.intercept + reg.slope * xs, color="black", linewidth=1)
-        ax.set_title(titulo, fontsize=9)
-        ax.set_xlabel("Resíduo TDS (mg/L)", fontsize=8)
-        ax.set_ylabel("Resíduo (mg/L)", fontsize=8)
-        ax.tick_params(labelsize=7)
+        ax.set_title(titulo, fontsize=12)
+        ax.set_xlabel("Resíduo TDS (mg/L)", fontsize=13)
+        ax.set_ylabel("Resíduo (mg/L)", fontsize=13)
+        ax.tick_params(labelsize=11)
 
-    fig.suptitle("Correlação destendenciada (resíduos de OLS vs. tempo)", fontsize=10)
+    fig.suptitle("Correlação destendenciada (resíduos de OLS vs. tempo)", fontsize=14)
     fig.tight_layout()
-    fig.savefig(FIGURA_PATH, dpi=140)
+    fig.savefig(FIGURA_PATH, dpi=160)
     plt.close(fig)
     print(f"Figura salva em {FIGURA_PATH}")
 
