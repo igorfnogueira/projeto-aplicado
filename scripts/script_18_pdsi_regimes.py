@@ -335,10 +335,18 @@ def regressao_por_regime(tds: pd.Series, pdsi: pd.Series, melhor_lag: int) -> di
     dummies = pd.get_dummies(df["regime"], drop_first=True, dtype=float)
     X = sm.add_constant(pd.concat([df[["pdsi_lag"]], dummies], axis=1))
     modelo = sm.OLS(df["tds"], X).fit()
+
+    # Multicolinearidade entre pdsi_lag e as dummies de regime (mesmo padrao
+    # de decompor_mecanismos acima, achado de /varredura-de-padrao, 2026-10-18):
+    # os regimes foram definidos por periodo de seca, i.e. derivados do proprio
+    # PDSI, entao pdsi_lag e as dummies sao candidatos plausiveis a colinearidade.
+    vif_pdsi = float(variance_inflation_factor(X.values, X.columns.get_loc("pdsi_lag")))
+
     return {
         "coef_pdsi_intra_regime": float(modelo.params["pdsi_lag"]),
         "p_pdsi_intra_regime": float(modelo.pvalues["pdsi_lag"]),
         "r2_com_regime_e_pdsi": float(modelo.rsquared),
+        "vif_pdsi_intra_regime": vif_pdsi,
         "n": len(df),
     }
 
@@ -427,7 +435,9 @@ def main():
             rr = regressao_por_regime(tds, pdsi_df[col], lag)
             resultados_regime[col] = rr
             print(f"--- {col} (lag={lag}m) --- coef PDSI intra-regime={rr['coef_pdsi_intra_regime']:.3f} "
-                  f"(p={rr['p_pdsi_intra_regime']:.4f}), R2 total={rr['r2_com_regime_e_pdsi']:.3f}, n={rr['n']}")
+                  f"(p={rr['p_pdsi_intra_regime']:.4f}), R2 total={rr['r2_com_regime_e_pdsi']:.3f}, n={rr['n']}, "
+                  f"VIF pdsi={rr['vif_pdsi_intra_regime']:.2f}"
+                  f"{'  [ATENCAO: VIF>5]' if rr['vif_pdsi_intra_regime'] > 5 else ''}")
         print()
 
         # -------------------------------------------------------------
