@@ -222,10 +222,22 @@ def gerar_figura_horizontes(resumo: pd.DataFrame):
             cor = cores.get(row["cenario"], "gray")
             ax.errorbar(row["cenario"], row["p50"], yerr=[[row["p50"] - row["p5"]], [row["p95"] - row["p50"]]],
                         fmt="o", color=cor, capsize=4)
+            # Rotula min (P5), mediana (P50) e maximo (P95) cada um do lado da
+            # propria barra, na altura exata em que o valor esta no eixo Y --
+            # nao um bloco de texto empilhado acima do ponto.
+            for valor, peso in [(row["p95"], "bold"), (row["p50"], "normal"), (row["p5"], "bold")]:
+                ax.annotate(
+                    f"{valor:.0f}",
+                    xy=(row["cenario"], valor),
+                    xytext=(10, 0), textcoords="offset points",
+                    ha="left", va="center", fontsize=9.5, color=cor,
+                    fontweight=peso,
+                )
         ax.set_title(f"+{h} anos", fontsize=14)
         ax.tick_params(axis="x", rotation=20, labelsize=11)
         ax.tick_params(axis="y", labelsize=12)
         ax.set_ylabel("TDS simulado (mg/L)", fontsize=13)
+        ax.margins(x=0.18)  # folga a direita do ultimo cenario para o rotulo nao ser cortado
     axes[-1].set_xlabel("Cenário", fontsize=14)
     fig.suptitle(
         "Faixa de TDS por cenário climático (mediana + IC90%) -- não é previsão pontual",
