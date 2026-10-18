@@ -20,13 +20,16 @@
     "lmg_p_pdsi":1.305020319e-24,
     "lmg_coef_vazao":-7.8687561608,
     "lmg_p_vazao":0.0000002732,
+    "lmg_corr_pdsi_vazao":0.1501208174,
+    "lmg_vif_pdsi":1.0230558525,
+    "lmg_vif_vazao":1.0230558525,
     "regime_coef_pdsi_intra_regime":-18.5459233129,
     "regime_p_pdsi_intra_regime":0.0,
     "regime_r2_com_regime_e_pdsi":0.4823239008,
     "regime_n":182,
     "n_changepoints_detectados":4,
     "changepoints_dentro_12m_de_4":3,
-    "data_execucao":"2026-10-17T17:51:15"
+    "data_execucao":"2026-10-18T09:02:52"
   },
   {
     "serie_pdsi":"los_angeles_divisao6",
@@ -49,13 +52,16 @@
     "lmg_p_pdsi":4.19861298e-18,
     "lmg_coef_vazao":-10.6746190851,
     "lmg_p_vazao":0.0000000002,
+    "lmg_corr_pdsi_vazao":-0.0105865663,
+    "lmg_vif_pdsi":1.0001120879,
+    "lmg_vif_vazao":1.0001120879,
     "regime_coef_pdsi_intra_regime":-14.0392979408,
     "regime_p_pdsi_intra_regime":0.0,
     "regime_r2_com_regime_e_pdsi":0.453361649,
     "regime_n":182,
     "n_changepoints_detectados":4,
     "changepoints_dentro_12m_de_4":4,
-    "data_execucao":"2026-10-17T17:51:15"
+    "data_execucao":"2026-10-18T09:02:52"
   },
   {
     "serie_pdsi":"sacramento_divisao2",
@@ -78,12 +84,15 @@
     "lmg_p_pdsi":1.460946651e-17,
     "lmg_coef_vazao":-8.744987378,
     "lmg_p_vazao":0.0000001616,
+    "lmg_corr_pdsi_vazao":0.1161510793,
+    "lmg_vif_pdsi":1.0136755714,
+    "lmg_vif_vazao":1.0136755714,
     "regime_coef_pdsi_intra_regime":-15.7687346632,
     "regime_p_pdsi_intra_regime":0.0000000227,
     "regime_r2_com_regime_e_pdsi":0.3907975934,
     "regime_n":182,
     "n_changepoints_detectados":4,
     "changepoints_dentro_12m_de_4":4,
-    "data_execucao":"2026-10-17T17:51:15"
+    "data_execucao":"2026-10-18T09:02:52"
   }
 ]

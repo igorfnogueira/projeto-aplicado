@@ -54,6 +54,7 @@ import numpy as np
 import pandas as pd
 import statsmodels.api as sm
 from scipy import stats
+from statsmodels.stats.outliers_influence import variance_inflation_factor
 
 from script_00_preprocessamento import construir_datasets
 from script_07_analise_estrutura_serie import pettitt_test
@@ -309,6 +310,15 @@ def decompor_mecanismos(tds: pd.Series, pdsi: pd.Series, vazao: pd.Series, melho
     resultado["p_pdsi"] = float(modelo.pvalues["pdsi_lag"])
     resultado["coef_vazao"] = float(modelo.params["vazao"])
     resultado["p_vazao"] = float(modelo.pvalues["vazao"])
+
+    # Multicolinearidade entre os dois preditores (achado de auditoria estatistica,
+    # 2026-10-18): o % de LMG (pct_pdsi/pct_vazao acima) e robusto a colinearidade
+    # entre pdsi_lag/vazao por desenho, mas coef_pdsi/coef_vazao/p_pdsi/p_vazao do
+    # mesmo OLS nao sao -- corr/VIF documentam o risco de ler esses coeficientes
+    # isoladamente quando a correlacao entre os preditores for alta.
+    resultado["corr_pdsi_vazao"] = float(df["pdsi_lag"].corr(df["vazao"]))
+    resultado["vif_pdsi"] = float(variance_inflation_factor(X.values, X.columns.get_loc("pdsi_lag")))
+    resultado["vif_vazao"] = float(variance_inflation_factor(X.values, X.columns.get_loc("vazao")))
     return resultado
 
 
@@ -406,6 +416,8 @@ def main():
             print(f"  R2 total={lmg['r2_total']:.3f} | LMG PDSI={lmg['pct_pdsi']:.1f}% | LMG vazao={lmg['pct_vazao']:.1f}%")
             print(f"  (benchmark SCSC: agua de origem ~88% / consumo per capita ~12%)")
             print(f"  coef PDSI={lmg['coef_pdsi']:.3f} (p={lmg['p_pdsi']:.4f}) | coef vazao={lmg['coef_vazao']:.3f} (p={lmg['p_vazao']:.4f})")
+            print(f"  corr(pdsi_lag, vazao)={lmg['corr_pdsi_vazao']:.3f} | VIF pdsi={lmg['vif_pdsi']:.2f} | VIF vazao={lmg['vif_vazao']:.2f}"
+                  f"{'  [ATENCAO: VIF>5, coeficientes individuais instaveis]' if max(lmg['vif_pdsi'], lmg['vif_vazao']) > 5 else ''}")
             print()
 
         print("=== Etapa 2.5: PDSI ainda explica dentro dos regimes, ou o efeito e absorvido pelas dummies? ===")
