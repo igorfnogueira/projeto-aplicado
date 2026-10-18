@@ -33,6 +33,7 @@ docs/adr/
 # Mantida localmente para referencia, nao e deliverable publico.
 scripts/bateria_estendida/
 results/bateria_estendida/
+requirements-bateria-estendida.txt
 
 # dashboard Streamlit local (uso opcional); nao e deliverable publico
 huggingface_space/
