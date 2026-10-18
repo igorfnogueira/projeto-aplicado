@@ -17,6 +17,13 @@ venv/
 docs_local/
 .claude/
 
+# instrucoes/regras de agente de IA usadas no desenvolvimento -- higienizacao
+# para entrega academica (banca). Removidos do historico publico via
+# git filter-repo em 2026-10-18; mantidos so localmente para orientar
+# sessoes futuras do Claude Code.
+CLAUDE.md
+docs/agents/
+
 # PDF solto na raiz fica de fora ate ser arquivado em docs_local/04_literatura
 /*.pdf
 
