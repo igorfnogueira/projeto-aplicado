@@ -23,12 +23,13 @@ docs_local/
 # sessoes futuras do Claude Code.
 CLAUDE.md
 docs/agents/
+docs/adr/
 
 # PDF solto na raiz fica de fora ate ser arquivado em docs_local/04_literatura
 /*.pdf
 
 # bateria estendida de metodos de previsao -- testados e validados, mas fora
-# do escopo do artigo publico (7 metodos centrais + causal ficam em scripts/; D-73).
+# do escopo do artigo publico (7 metodos centrais + causal ficam em scripts/).
 # Mantida localmente para referencia, nao e deliverable publico.
 scripts/bateria_estendida/
 results/bateria_estendida/
